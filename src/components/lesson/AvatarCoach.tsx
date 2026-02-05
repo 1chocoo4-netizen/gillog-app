@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence, useAnimation } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface AvatarCoachProps {
   coachName?: string
@@ -14,694 +14,863 @@ export function AvatarCoach({
   isListening = false,
   isSpeaking = false
 }: AvatarCoachProps) {
-  // 애니메이션 상태
-  const [blinkState, setBlinkState] = useState(false)
-  const [mouthState, setMouthState] = useState<0 | 1 | 2>(0)
+  const [blinkState, setBlinkState] = useState(0) // 0: open, 1: closing, 2: closed, 3: opening
+  const [mouthOpenness, setMouthOpenness] = useState(0) // 0-1 continuous
   const [breathPhase, setBreathPhase] = useState(0)
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 })
-  const [headTilt, setHeadTilt] = useState({ x: 0, y: 0, rotate: 0 })
-  const [eyebrowRaise, setEyebrowRaise] = useState(0)
-  const [cheekFlush, setCheekFlush] = useState(0.3)
-  const [nodPhase, setNodPhase] = useState(0)
+  const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 })
+  const [headPose, setHeadPose] = useState({ rotateY: 0, rotateX: 0, rotateZ: 0 })
+  const [eyebrowOffset, setEyebrowOffset] = useState(0)
+  const [microExpression, setMicroExpression] = useState(0)
 
-  const bodyControls = useAnimation()
-
-  // 자연스러운 눈 깜빡임 (3-6초 랜덤)
+  // 자연스러운 눈 깜빡임 (불규칙한 타이밍)
   useEffect(() => {
     const blink = () => {
-      setBlinkState(true)
-      setTimeout(() => setBlinkState(false), 120)
+      setBlinkState(1)
+      setTimeout(() => setBlinkState(2), 50)
+      setTimeout(() => setBlinkState(3), 100)
+      setTimeout(() => setBlinkState(0), 150)
     }
 
     const scheduleNextBlink = () => {
-      const delay = 3000 + Math.random() * 3000
+      // 자연스러운 깜빡임: 2-5초 + 가끔 연속 깜빡임
+      const baseDelay = 2500 + Math.random() * 2500
+      const doubleBlink = Math.random() < 0.2
+
       return setTimeout(() => {
         blink()
+        if (doubleBlink) {
+          setTimeout(blink, 300)
+        }
         timerId = scheduleNextBlink()
-      }, delay)
+      }, baseDelay)
     }
 
     let timerId = scheduleNextBlink()
     return () => clearTimeout(timerId)
   }, [])
 
-  // 호흡 애니메이션 (미세 상하 움직임)
+  // 호흡 애니메이션
   useEffect(() => {
-    const breathInterval = setInterval(() => {
-      setBreathPhase(prev => (prev + 1) % 360)
-    }, 50)
-    return () => clearInterval(breathInterval)
+    let frame: number
+    const animate = () => {
+      setBreathPhase(prev => (prev + 0.8) % 360)
+      frame = requestAnimationFrame(animate)
+    }
+    frame = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(frame)
   }, [])
 
-  // Idle 상태: 미세 고개 움직임
+  // Idle 미세 움직임
   useEffect(() => {
     if (!isSpeaking && !isListening) {
-      const idleInterval = setInterval(() => {
-        setHeadTilt({
-          x: (Math.random() - 0.5) * 3,
-          y: (Math.random() - 0.5) * 2,
-          rotate: (Math.random() - 0.5) * 2
+      const interval = setInterval(() => {
+        setHeadPose({
+          rotateY: (Math.random() - 0.5) * 4,
+          rotateX: (Math.random() - 0.5) * 2,
+          rotateZ: (Math.random() - 0.5) * 1.5
         })
-      }, 2500 + Math.random() * 1500)
-      return () => clearInterval(idleInterval)
+        setPupilOffset({
+          x: (Math.random() - 0.5) * 3,
+          y: (Math.random() - 0.5) * 2
+        })
+        setMicroExpression(Math.random())
+      }, 3000 + Math.random() * 2000)
+      return () => clearInterval(interval)
     }
   }, [isSpeaking, isListening])
 
-  // Speaking 상태: 입 모양 + 고개 끄덕임 + 눈썹/볼 변화
+  // Speaking 애니메이션
   useEffect(() => {
     if (isSpeaking) {
-      // 입 모양 변화 (3단계)
       const mouthInterval = setInterval(() => {
-        setMouthState(Math.floor(Math.random() * 3) as 0 | 1 | 2)
-        // 눈썹 미세 움직임
-        setEyebrowRaise(Math.random() * 3)
-        // 볼 홍조 변화
-        setCheekFlush(0.3 + Math.random() * 0.2)
-      }, 120)
+        // 자연스러운 입 움직임 (연속적)
+        setMouthOpenness(0.3 + Math.random() * 0.7)
+        setEyebrowOffset(Math.random() * 2)
+        setMicroExpression(Math.random())
+      }, 80)
 
-      // 고개 끄덕임
-      const nodInterval = setInterval(() => {
-        setNodPhase(prev => (prev + 1) % 4)
-      }, 400)
+      const headInterval = setInterval(() => {
+        setHeadPose({
+          rotateY: (Math.random() - 0.5) * 6,
+          rotateX: -2 + Math.random() * 4,
+          rotateZ: (Math.random() - 0.5) * 2
+        })
+      }, 300)
 
       return () => {
         clearInterval(mouthInterval)
-        clearInterval(nodInterval)
+        clearInterval(headInterval)
       }
     } else {
-      setMouthState(0)
-      setEyebrowRaise(0)
-      setCheekFlush(0.3)
-      setNodPhase(0)
+      setMouthOpenness(0)
+      setEyebrowOffset(0)
     }
   }, [isSpeaking])
 
-  // Listening 상태: 귀 기울이기 + 눈동자 이동
+  // Listening 애니메이션
   useEffect(() => {
     if (isListening) {
-      // 귀 기울이는 자세
-      setHeadTilt({ x: -5, y: 2, rotate: -3 })
+      setHeadPose({ rotateY: 8, rotateX: 3, rotateZ: -2 })
 
-      // 눈동자 미세 이동 (상대방 바라보는 느낌)
       const eyeInterval = setInterval(() => {
-        setEyeOffset({
-          x: (Math.random() - 0.5) * 4,
-          y: (Math.random() - 0.3) * 3
+        setPupilOffset({
+          x: -2 + Math.random() * 2,
+          y: Math.random() * 2
         })
-      }, 800)
+      }, 600)
 
       return () => clearInterval(eyeInterval)
-    } else {
-      setEyeOffset({ x: 0, y: 0 })
     }
   }, [isListening])
 
-  // 호흡에 따른 Y 오프셋 계산
-  const breathY = Math.sin(breathPhase * Math.PI / 180) * 2
+  const breathY = Math.sin(breathPhase * Math.PI / 180) * 1.5
+  const breathScale = 1 + Math.sin(breathPhase * Math.PI / 180) * 0.003
 
-  // 끄덕임에 따른 Y 오프셋
-  const nodY = isSpeaking ? [0, -3, 0, 1][nodPhase] : 0
+  // 눈 열림 정도 계산
+  const eyeOpenness = useMemo(() => {
+    switch(blinkState) {
+      case 0: return 1
+      case 1: return 0.5
+      case 2: return 0.05
+      case 3: return 0.7
+      default: return 1
+    }
+  }, [blinkState])
 
   return (
-    <div className="relative w-full max-w-sm mx-auto">
+    <div className="relative w-full max-w-md mx-auto">
       {/* 화상통화 프레임 */}
-      <div className="relative bg-gradient-to-b from-slate-100 to-slate-200 rounded-3xl overflow-hidden shadow-2xl border border-slate-300">
-        {/* 배경 그라데이션 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50" />
+      <div className="relative bg-gradient-to-b from-neutral-100 to-neutral-200 rounded-2xl overflow-hidden shadow-2xl">
+        {/* 배경 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100" />
 
-        {/* 조명 효과 */}
-        <div className="absolute top-0 left-1/4 w-1/2 h-32 bg-gradient-to-b from-white/40 to-transparent rounded-full blur-2xl" />
+        {/* 부드러운 조명 효과 */}
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-white/60 to-transparent" />
+        <div className="absolute top-10 left-1/4 w-32 h-32 bg-white/30 rounded-full blur-3xl" />
 
         {/* 아바타 컨테이너 */}
         <motion.div
-          className="relative aspect-[3/4] flex items-center justify-center pt-8"
+          className="relative aspect-[3/4]"
           animate={{
-            y: breathY + nodY,
-            rotateX: headTilt.x,
-            rotateY: headTilt.y,
-            rotateZ: headTilt.rotate,
+            y: breathY,
+            rotateY: headPose.rotateY,
+            rotateX: headPose.rotateX,
+            rotateZ: headPose.rotateZ,
+            scale: breathScale,
           }}
-          transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-          style={{ perspective: 1000 }}
+          transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+          style={{ transformStyle: 'preserve-3d', perspective: 800 }}
         >
-          <svg
-            viewBox="0 0 280 380"
-            className="w-full h-full"
-            style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))' }}
-          >
+          <svg viewBox="0 0 400 520" className="w-full h-full">
             <defs>
-              {/* 피부색 그라데이션 */}
-              <linearGradient id="skinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#F5D6C6" />
-                <stop offset="50%" stopColor="#E8C4B0" />
-                <stop offset="100%" stopColor="#D4A988" />
-              </linearGradient>
-
-              {/* 피부 하이라이트 */}
-              <radialGradient id="skinHighlight" cx="30%" cy="30%" r="50%">
-                <stop offset="0%" stopColor="#FFF5F0" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#F5D6C6" stopOpacity="0" />
+              {/* 피부 베이스 */}
+              <radialGradient id="skinBase" cx="50%" cy="35%" r="65%" fx="45%" fy="30%">
+                <stop offset="0%" stopColor="#FCEEE8" />
+                <stop offset="30%" stopColor="#F5DDD3" />
+                <stop offset="60%" stopColor="#E8CBBE" />
+                <stop offset="100%" stopColor="#D4B5A5" />
               </radialGradient>
 
-              {/* 머리카락 그라데이션 */}
-              <linearGradient id="hairGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#2D2D3A" />
-                <stop offset="50%" stopColor="#1A1A24" />
-                <stop offset="100%" stopColor="#0D0D12" />
-              </linearGradient>
-
-              {/* 머리카락 하이라이트 */}
-              <linearGradient id="hairHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4A4A5A" stopOpacity="0" />
-                <stop offset="50%" stopColor="#5A5A6A" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#4A4A5A" stopOpacity="0" />
-              </linearGradient>
-
-              {/* 눈동자 그라데이션 */}
-              <radialGradient id="irisGradient" cx="40%" cy="40%" r="50%">
-                <stop offset="0%" stopColor="#4A3728" />
-                <stop offset="70%" stopColor="#2D1F14" />
-                <stop offset="100%" stopColor="#1A120C" />
+              {/* 피부 서브서피스 스캐터링 효과 */}
+              <radialGradient id="skinSSS" cx="50%" cy="40%" r="50%">
+                <stop offset="0%" stopColor="#FFE4DC" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#FFE4DC" stopOpacity="0" />
               </radialGradient>
 
-              {/* 입술 그라데이션 */}
-              <linearGradient id="lipGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#D4868A" />
-                <stop offset="100%" stopColor="#B86B70" />
+              {/* 얼굴 음영 */}
+              <linearGradient id="faceShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#C9A090" stopOpacity="0" />
+                <stop offset="100%" stopColor="#B8927F" stopOpacity="0.3" />
               </linearGradient>
 
-              {/* 셔츠 그라데이션 */}
-              <linearGradient id="shirtGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#F8FAFC" />
-                <stop offset="100%" stopColor="#E2E8F0" />
+              {/* 턱 아래 그림자 */}
+              <linearGradient id="jawShadow" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stopColor="#C4A090" stopOpacity="0" />
+                <stop offset="70%" stopColor="#A8887A" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#8B7065" stopOpacity="0.5" />
               </linearGradient>
-
-              {/* 그림자 필터 */}
-              <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-                <feOffset dx="0" dy="2" />
-                <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" />
-                <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0" />
-                <feBlend in2="SourceGraphic" />
-              </filter>
 
               {/* 코 그림자 */}
-              <linearGradient id="noseShadow" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#C4A080" stopOpacity="0.3" />
-                <stop offset="50%" stopColor="#C4A080" stopOpacity="0" />
-                <stop offset="100%" stopColor="#C4A080" stopOpacity="0.2" />
+              <linearGradient id="noseShadowL" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stopColor="#C4A090" stopOpacity="0" />
+                <stop offset="100%" stopColor="#B08878" stopOpacity="0.35" />
               </linearGradient>
+              <linearGradient id="noseShadowR" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#C4A090" stopOpacity="0" />
+                <stop offset="100%" stopColor="#B08878" stopOpacity="0.25" />
+              </linearGradient>
+
+              {/* 눈 주변 음영 */}
+              <radialGradient id="eyeSocketShadow" cx="50%" cy="50%" r="50%">
+                <stop offset="60%" stopColor="#D4B8A8" stopOpacity="0" />
+                <stop offset="100%" stopColor="#C4A090" stopOpacity="0.3" />
+              </radialGradient>
+
+              {/* 홍채 */}
+              <radialGradient id="irisGradient" cx="35%" cy="35%" r="60%">
+                <stop offset="0%" stopColor="#6B4423" />
+                <stop offset="40%" stopColor="#4A2F15" />
+                <stop offset="70%" stopColor="#3D2510" />
+                <stop offset="100%" stopColor="#1A0F08" />
+              </radialGradient>
+
+              {/* 홍채 패턴 */}
+              <radialGradient id="irisPattern" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#8B5A2B" stopOpacity="0.3" />
+                <stop offset="50%" stopColor="#5C3D1E" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#3D2510" stopOpacity="0" />
+              </radialGradient>
+
+              {/* 공막 (흰자) */}
+              <radialGradient id="scleraGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="70%" stopColor="#F8F6F4" />
+                <stop offset="100%" stopColor="#EBE5E0" />
+              </radialGradient>
+
+              {/* 입술 */}
+              <linearGradient id="upperLip" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#C8888B" />
+                <stop offset="50%" stopColor="#B87578" />
+                <stop offset="100%" stopColor="#A86568" />
+              </linearGradient>
+              <linearGradient id="lowerLip" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#D49598" />
+                <stop offset="40%" stopColor="#C88588" />
+                <stop offset="100%" stopColor="#B87578" />
+              </linearGradient>
+
+              {/* 머리카락 */}
+              <linearGradient id="hairBase" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#1C1612" />
+                <stop offset="50%" stopColor="#0F0B08" />
+                <stop offset="100%" stopColor="#050302" />
+              </linearGradient>
+              <linearGradient id="hairHighlight" x1="30%" y1="0%" x2="70%" y2="100%">
+                <stop offset="0%" stopColor="#3D3028" stopOpacity="0" />
+                <stop offset="50%" stopColor="#4A3D30" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#3D3028" stopOpacity="0" />
+              </linearGradient>
+
+              {/* 옷 */}
+              <linearGradient id="shirtGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#FAFAFA" />
+                <stop offset="100%" stopColor="#E8E8E8" />
+              </linearGradient>
+
+              {/* 필터들 */}
+              <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1" />
+              </filter>
+              <filter id="skinTexture" x="0%" y="0%" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.5" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+              <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.15" />
+              </filter>
             </defs>
 
-            {/* === 몸체 (어깨/상체) === */}
-            <g transform="translate(0, 260)">
-              {/* 목 */}
-              <ellipse cx="140" cy="30" rx="28" ry="45" fill="url(#skinGradient)" />
-              <ellipse cx="140" cy="30" rx="28" ry="45" fill="url(#skinHighlight)" />
+            {/* ===== 목 ===== */}
+            <g>
+              <ellipse cx="200" cy="420" rx="45" ry="70" fill="url(#skinBase)" />
+              <ellipse cx="200" cy="420" rx="45" ry="70" fill="url(#jawShadow)" />
+            </g>
 
-              {/* 셔츠 */}
+            {/* ===== 상체/옷 ===== */}
+            <g>
               <path
-                d="M60 120
-                   Q60 80 90 65
-                   Q110 55 140 50
-                   Q170 55 190 65
-                   Q220 80 220 120
-                   L220 140 L60 140 Z"
+                d="M100 520 Q100 460 140 440 Q170 425 200 420 Q230 425 260 440 Q300 460 300 520 L300 550 L100 550 Z"
                 fill="url(#shirtGradient)"
               />
-
-              {/* 셔츠 칼라 */}
+              {/* 칼라 */}
               <path
-                d="M105 60 L140 85 L175 60 Q165 50 140 48 Q115 50 105 60"
-                fill="#F1F5F9"
-                stroke="#E2E8F0"
-                strokeWidth="1"
+                d="M155 440 L200 475 L245 440"
+                fill="none"
+                stroke="#E0E0E0"
+                strokeWidth="2"
               />
-
-              {/* 칼라 라인 */}
-              <path d="M140 48 L140 75" stroke="#CBD5E1" strokeWidth="1" />
+              <path d="M200 420 L200 465" stroke="#D8D8D8" strokeWidth="1" />
             </g>
 
-            {/* === 얼굴 === */}
-            <g filter="url(#softShadow)">
-              {/* 얼굴 윤곽 */}
-              <ellipse cx="140" cy="155" rx="72" ry="85" fill="url(#skinGradient)" />
-              <ellipse cx="140" cy="155" rx="72" ry="85" fill="url(#skinHighlight)" />
-
-              {/* 턱 라인 (더 자연스러운 형태) */}
+            {/* ===== 얼굴 베이스 ===== */}
+            <g filter="url(#shadow)">
+              {/* 얼굴 메인 형태 */}
               <path
-                d="M68 155 Q68 210 100 235 Q120 250 140 252 Q160 250 180 235 Q212 210 212 155"
-                fill="url(#skinGradient)"
+                d="M115 200
+                   Q105 170 110 140
+                   Q115 100 145 70
+                   Q175 45 200 42
+                   Q225 45 255 70
+                   Q285 100 290 140
+                   Q295 170 285 200
+                   Q285 260 265 300
+                   Q250 340 230 360
+                   Q210 378 200 380
+                   Q190 378 170 360
+                   Q150 340 135 300
+                   Q115 260 115 200"
+                fill="url(#skinBase)"
+              />
+
+              {/* SSS 효과 */}
+              <path
+                d="M115 200
+                   Q105 170 110 140
+                   Q115 100 145 70
+                   Q175 45 200 42
+                   Q225 45 255 70
+                   Q285 100 290 140
+                   Q295 170 285 200
+                   Q285 260 265 300
+                   Q250 340 230 360
+                   Q210 378 200 380
+                   Q190 378 170 360
+                   Q150 340 135 300
+                   Q115 260 115 200"
+                fill="url(#skinSSS)"
+              />
+
+              {/* 오른쪽 얼굴 음영 */}
+              <path
+                d="M200 42
+                   Q225 45 255 70
+                   Q285 100 290 140
+                   Q295 170 285 200
+                   Q285 260 265 300
+                   Q250 340 230 360
+                   Q210 378 200 380
+                   L200 42"
+                fill="url(#faceShadow)"
               />
             </g>
 
-            {/* === 귀 === */}
+            {/* ===== 귀 ===== */}
             <g>
               {/* 왼쪽 귀 */}
-              <ellipse cx="68" cy="160" rx="12" ry="22" fill="#E8C4B0" />
-              <ellipse cx="70" cy="160" rx="7" ry="14" fill="#D4A988" opacity="0.5" />
+              <ellipse cx="112" cy="210" rx="15" ry="28" fill="#E8CBBE" />
+              <ellipse cx="115" cy="210" rx="10" ry="20" fill="#D4B5A5" opacity="0.5" />
+              <path d="M108 195 Q115 200 112 215 Q108 225 110 230" stroke="#C4A090" strokeWidth="1.5" fill="none" opacity="0.5" />
 
               {/* 오른쪽 귀 */}
-              <ellipse cx="212" cy="160" rx="12" ry="22" fill="#E8C4B0" />
-              <ellipse cx="210" cy="160" rx="7" ry="14" fill="#D4A988" opacity="0.5" />
+              <ellipse cx="288" cy="210" rx="15" ry="28" fill="#E8CBBE" />
+              <ellipse cx="285" cy="210" rx="10" ry="20" fill="#D4B5A5" opacity="0.5" />
+              <path d="M292 195 Q285 200 288 215 Q292 225 290 230" stroke="#C4A090" strokeWidth="1.5" fill="none" opacity="0.5" />
             </g>
 
-            {/* === 머리카락 === */}
+            {/* ===== 머리카락 ===== */}
             <g>
-              {/* 메인 헤어 */}
+              {/* 메인 헤어 매스 */}
               <path
-                d="M68 130
-                   Q55 80 80 50
-                   Q100 25 140 20
-                   Q180 25 200 50
-                   Q225 80 212 130
-                   Q200 90 140 80
-                   Q80 90 68 130"
-                fill="url(#hairGradient)"
+                d="M108 160
+                   Q95 120 105 80
+                   Q115 45 150 25
+                   Q180 10 200 8
+                   Q220 10 250 25
+                   Q285 45 295 80
+                   Q305 120 292 160
+                   Q280 120 200 105
+                   Q120 120 108 160"
+                fill="url(#hairBase)"
               />
 
-              {/* 헤어 볼륨 상단 */}
-              <ellipse cx="140" cy="45" rx="60" ry="30" fill="url(#hairGradient)" />
+              {/* 헤어 볼륨 */}
+              <ellipse cx="200" cy="50" rx="80" ry="42" fill="url(#hairBase)" />
 
-              {/* 헤어 하이라이트 */}
+              {/* 하이라이트 */}
               <path
-                d="M85 60 Q110 45 140 42 Q170 45 195 60"
+                d="M130 55 Q160 35 200 32 Q240 35 270 55"
                 stroke="url(#hairHighlight)"
-                strokeWidth="8"
+                strokeWidth="15"
                 fill="none"
-                opacity="0.6"
+                opacity="0.5"
               />
 
               {/* 이마 라인 */}
               <path
-                d="M78 95 Q95 85 140 82 Q185 85 202 95"
-                fill="url(#hairGradient)"
+                d="M118 115 Q140 100 200 95 Q260 100 282 115"
+                fill="url(#hairBase)"
               />
 
-              {/* 옆머리 왼쪽 */}
+              {/* 왼쪽 옆머리 */}
               <path
-                d="M68 130 Q60 110 65 90 Q55 120 60 160 Q62 145 68 130"
-                fill="url(#hairGradient)"
+                d="M108 160 Q98 130 105 100 Q95 140 100 180 Q102 200 108 190 Q106 175 108 160"
+                fill="url(#hairBase)"
               />
 
-              {/* 옆머리 오른쪽 */}
+              {/* 오른쪽 옆머리 */}
               <path
-                d="M212 130 Q220 110 215 90 Q225 120 220 160 Q218 145 212 130"
-                fill="url(#hairGradient)"
+                d="M292 160 Q302 130 295 100 Q305 140 300 180 Q298 200 292 190 Q294 175 292 160"
+                fill="url(#hairBase)"
               />
+
+              {/* 앞머리 디테일 */}
+              <path d="M145 95 Q150 80 155 95" stroke="#1C1612" strokeWidth="4" fill="none" opacity="0.7" />
+              <path d="M165 92 Q172 75 178 92" stroke="#1C1612" strokeWidth="5" fill="none" opacity="0.7" />
+              <path d="M190 90 Q200 72 210 90" stroke="#1C1612" strokeWidth="6" fill="none" opacity="0.7" />
+              <path d="M222 92 Q228 75 235 92" stroke="#1C1612" strokeWidth="5" fill="none" opacity="0.7" />
+              <path d="M245 95 Q250 80 255 95" stroke="#1C1612" strokeWidth="4" fill="none" opacity="0.7" />
             </g>
 
-            {/* === 눈썹 === */}
+            {/* ===== 눈썹 ===== */}
             <g>
               <motion.path
-                d="M95 118 Q108 112 125 115"
-                stroke="#3D3028"
-                strokeWidth="3"
+                d={`M138 ${168 - eyebrowOffset} Q155 ${160 - eyebrowOffset} 178 ${165 - eyebrowOffset * 0.5}`}
+                stroke="#2D2318"
+                strokeWidth="3.5"
                 strokeLinecap="round"
                 fill="none"
-                animate={{
-                  d: `M95 ${118 - eyebrowRaise} Q108 ${112 - eyebrowRaise} 125 ${115 - eyebrowRaise * 0.5}`,
-                }}
-                transition={{ duration: 0.1 }}
+                animate={{ d: `M138 ${168 - eyebrowOffset} Q155 ${160 - eyebrowOffset} 178 ${165 - eyebrowOffset * 0.5}` }}
               />
               <motion.path
-                d="M155 115 Q172 112 185 118"
-                stroke="#3D3028"
-                strokeWidth="3"
+                d={`M222 ${165 - eyebrowOffset * 0.5} Q245 ${160 - eyebrowOffset} 262 ${168 - eyebrowOffset}`}
+                stroke="#2D2318"
+                strokeWidth="3.5"
                 strokeLinecap="round"
                 fill="none"
-                animate={{
-                  d: `M155 ${115 - eyebrowRaise * 0.5} Q172 ${112 - eyebrowRaise} 185 ${118 - eyebrowRaise}`,
-                }}
-                transition={{ duration: 0.1 }}
+                animate={{ d: `M222 ${165 - eyebrowOffset * 0.5} Q245 ${160 - eyebrowOffset} 262 ${168 - eyebrowOffset}` }}
               />
             </g>
 
-            {/* === 눈 === */}
+            {/* ===== 눈 ===== */}
             <g>
               {/* 왼쪽 눈 */}
-              <g transform="translate(110, 140)">
-                {/* 눈 흰자 */}
+              <g transform="translate(158, 195)">
+                {/* 눈두덩 음영 */}
+                <ellipse cx="0" cy="-5" rx="28" ry="20" fill="url(#eyeSocketShadow)" />
+
+                {/* 공막 (흰자) */}
                 <motion.ellipse
                   cx="0"
                   cy="0"
-                  rx="18"
-                  ry={blinkState ? 2 : 12}
-                  fill="white"
-                  animate={{ ry: blinkState ? 2 : 12 }}
-                  transition={{ duration: 0.08 }}
+                  rx="24"
+                  ry={18 * eyeOpenness}
+                  fill="url(#scleraGradient)"
+                  animate={{ ry: 18 * eyeOpenness }}
+                  transition={{ duration: 0.05 }}
                 />
 
-                {/* 눈동자 */}
-                <AnimatePresence>
-                  {!blinkState && (
-                    <motion.g
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      {/* 홍채 */}
-                      <motion.circle
-                        cx={eyeOffset.x}
-                        cy={eyeOffset.y}
-                        r="9"
-                        fill="url(#irisGradient)"
-                        animate={{ cx: eyeOffset.x, cy: eyeOffset.y }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      {/* 동공 */}
-                      <motion.circle
-                        cx={eyeOffset.x}
-                        cy={eyeOffset.y}
-                        r="4"
-                        fill="#0D0D0D"
-                        animate={{ cx: eyeOffset.x, cy: eyeOffset.y }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      {/* 하이라이트 */}
-                      <motion.circle
-                        cx={eyeOffset.x + 3}
-                        cy={eyeOffset.y - 3}
-                        r="3"
-                        fill="white"
-                        opacity="0.9"
-                        animate={{ cx: eyeOffset.x + 3, cy: eyeOffset.y - 3 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <motion.circle
-                        cx={eyeOffset.x - 2}
-                        cy={eyeOffset.y + 2}
-                        r="1.5"
-                        fill="white"
-                        opacity="0.5"
-                        animate={{ cx: eyeOffset.x - 2, cy: eyeOffset.y + 2 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </motion.g>
-                  )}
-                </AnimatePresence>
+                {/* 눈동자 영역 클리핑 */}
+                <clipPath id="eyeClipL">
+                  <motion.ellipse
+                    cx="0"
+                    cy="0"
+                    rx="24"
+                    ry={18 * eyeOpenness}
+                    animate={{ ry: 18 * eyeOpenness }}
+                    transition={{ duration: 0.05 }}
+                  />
+                </clipPath>
 
-                {/* 위 눈꺼풀 라인 */}
+                <g clipPath="url(#eyeClipL)">
+                  {/* 홍채 */}
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="13"
+                    fill="url(#irisGradient)"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+
+                  {/* 홍채 패턴 */}
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="13"
+                    fill="url(#irisPattern)"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+
+                  {/* 홍채 테두리 */}
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="12.5"
+                    fill="none"
+                    stroke="#1A0F08"
+                    strokeWidth="1"
+                    opacity="0.5"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+
+                  {/* 동공 */}
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="5"
+                    fill="#000000"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+
+                  {/* 하이라이트 */}
+                  <motion.circle
+                    cx={pupilOffset.x + 5}
+                    cy={pupilOffset.y - 5}
+                    r="4"
+                    fill="white"
+                    opacity="0.95"
+                    animate={{ cx: pupilOffset.x + 5, cy: pupilOffset.y - 5 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x - 3}
+                    cy={pupilOffset.y + 4}
+                    r="2"
+                    fill="white"
+                    opacity="0.4"
+                    animate={{ cx: pupilOffset.x - 3, cy: pupilOffset.y + 4 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </g>
+
+                {/* 위 눈꺼풀 */}
                 <motion.path
-                  d="M-18 0 Q0 -14 18 0"
-                  stroke="#8B7355"
-                  strokeWidth="1.5"
+                  d={`M-24 0 Q0 ${-20 * eyeOpenness} 24 0`}
+                  stroke="#6B5344"
+                  strokeWidth="2"
                   fill="none"
-                  animate={{ d: blinkState ? "M-18 0 Q0 0 18 0" : "M-18 0 Q0 -14 18 0" }}
-                  transition={{ duration: 0.08 }}
+                  animate={{ d: `M-24 0 Q0 ${-20 * eyeOpenness} 24 0` }}
+                  transition={{ duration: 0.05 }}
                 />
 
-                {/* 속눈썹 */}
+                {/* 쌍꺼풀 라인 */}
                 <motion.path
-                  d="M-16 -2 Q-18 -6 -20 -8 M-10 -6 Q-12 -11 -13 -14 M-2 -8 Q-2 -14 -1 -16 M6 -8 Q7 -14 9 -16 M14 -5 Q17 -10 20 -12"
-                  stroke="#2D2D3A"
+                  d={`M-20 ${-8 * eyeOpenness} Q0 ${-18 * eyeOpenness} 20 ${-8 * eyeOpenness}`}
+                  stroke="#C4A090"
                   strokeWidth="1"
                   fill="none"
-                  opacity={blinkState ? 0 : 0.7}
+                  opacity={eyeOpenness > 0.5 ? 0.4 : 0}
+                  animate={{ d: `M-20 ${-8 * eyeOpenness} Q0 ${-18 * eyeOpenness} 20 ${-8 * eyeOpenness}` }}
+                  transition={{ duration: 0.05 }}
                 />
+
+                {/* 아래 눈꺼풀 */}
+                <path d="M-22 2 Q0 8 22 2" stroke="#9B8070" strokeWidth="0.8" fill="none" opacity="0.4" />
+
+                {/* 속눈썹 */}
+                <motion.g opacity={eyeOpenness > 0.3 ? 1 : 0}>
+                  <path d="M-20 -3 Q-22 -10 -24 -14" stroke="#1A1512" strokeWidth="1.2" fill="none" />
+                  <path d="M-14 -8 Q-15 -16 -14 -20" stroke="#1A1512" strokeWidth="1.3" fill="none" />
+                  <path d="M-6 -11 Q-5 -20 -3 -24" stroke="#1A1512" strokeWidth="1.4" fill="none" />
+                  <path d="M2 -12 Q4 -21 7 -25" stroke="#1A1512" strokeWidth="1.4" fill="none" />
+                  <path d="M10 -10 Q14 -18 18 -22" stroke="#1A1512" strokeWidth="1.3" fill="none" />
+                  <path d="M18 -6 Q23 -12 26 -15" stroke="#1A1512" strokeWidth="1.2" fill="none" />
+                </motion.g>
               </g>
 
               {/* 오른쪽 눈 */}
-              <g transform="translate(170, 140)">
-                {/* 눈 흰자 */}
+              <g transform="translate(242, 195)">
+                <ellipse cx="0" cy="-5" rx="28" ry="20" fill="url(#eyeSocketShadow)" />
+
                 <motion.ellipse
                   cx="0"
                   cy="0"
-                  rx="18"
-                  ry={blinkState ? 2 : 12}
-                  fill="white"
-                  animate={{ ry: blinkState ? 2 : 12 }}
-                  transition={{ duration: 0.08 }}
+                  rx="24"
+                  ry={18 * eyeOpenness}
+                  fill="url(#scleraGradient)"
+                  animate={{ ry: 18 * eyeOpenness }}
+                  transition={{ duration: 0.05 }}
                 />
 
-                {/* 눈동자 */}
-                <AnimatePresence>
-                  {!blinkState && (
-                    <motion.g
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <motion.circle
-                        cx={eyeOffset.x}
-                        cy={eyeOffset.y}
-                        r="9"
-                        fill="url(#irisGradient)"
-                        animate={{ cx: eyeOffset.x, cy: eyeOffset.y }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <motion.circle
-                        cx={eyeOffset.x}
-                        cy={eyeOffset.y}
-                        r="4"
-                        fill="#0D0D0D"
-                        animate={{ cx: eyeOffset.x, cy: eyeOffset.y }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <motion.circle
-                        cx={eyeOffset.x + 3}
-                        cy={eyeOffset.y - 3}
-                        r="3"
-                        fill="white"
-                        opacity="0.9"
-                        animate={{ cx: eyeOffset.x + 3, cy: eyeOffset.y - 3 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                      <motion.circle
-                        cx={eyeOffset.x - 2}
-                        cy={eyeOffset.y + 2}
-                        r="1.5"
-                        fill="white"
-                        opacity="0.5"
-                        animate={{ cx: eyeOffset.x - 2, cy: eyeOffset.y + 2 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </motion.g>
-                  )}
-                </AnimatePresence>
+                <clipPath id="eyeClipR">
+                  <motion.ellipse
+                    cx="0"
+                    cy="0"
+                    rx="24"
+                    ry={18 * eyeOpenness}
+                    animate={{ ry: 18 * eyeOpenness }}
+                    transition={{ duration: 0.05 }}
+                  />
+                </clipPath>
 
-                {/* 위 눈꺼풀 라인 */}
+                <g clipPath="url(#eyeClipR)">
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="13"
+                    fill="url(#irisGradient)"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="13"
+                    fill="url(#irisPattern)"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="12.5"
+                    fill="none"
+                    stroke="#1A0F08"
+                    strokeWidth="1"
+                    opacity="0.5"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x}
+                    cy={pupilOffset.y}
+                    r="5"
+                    fill="#000000"
+                    animate={{ cx: pupilOffset.x, cy: pupilOffset.y }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x + 5}
+                    cy={pupilOffset.y - 5}
+                    r="4"
+                    fill="white"
+                    opacity="0.95"
+                    animate={{ cx: pupilOffset.x + 5, cy: pupilOffset.y - 5 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.circle
+                    cx={pupilOffset.x - 3}
+                    cy={pupilOffset.y + 4}
+                    r="2"
+                    fill="white"
+                    opacity="0.4"
+                    animate={{ cx: pupilOffset.x - 3, cy: pupilOffset.y + 4 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </g>
+
                 <motion.path
-                  d="M-18 0 Q0 -14 18 0"
-                  stroke="#8B7355"
-                  strokeWidth="1.5"
+                  d={`M-24 0 Q0 ${-20 * eyeOpenness} 24 0`}
+                  stroke="#6B5344"
+                  strokeWidth="2"
                   fill="none"
-                  animate={{ d: blinkState ? "M-18 0 Q0 0 18 0" : "M-18 0 Q0 -14 18 0" }}
-                  transition={{ duration: 0.08 }}
+                  animate={{ d: `M-24 0 Q0 ${-20 * eyeOpenness} 24 0` }}
+                  transition={{ duration: 0.05 }}
                 />
 
-                {/* 속눈썹 */}
                 <motion.path
-                  d="M16 -2 Q18 -6 20 -8 M10 -6 Q12 -11 13 -14 M2 -8 Q2 -14 1 -16 M-6 -8 Q-7 -14 -9 -16 M-14 -5 Q-17 -10 -20 -12"
-                  stroke="#2D2D3A"
+                  d={`M-20 ${-8 * eyeOpenness} Q0 ${-18 * eyeOpenness} 20 ${-8 * eyeOpenness}`}
+                  stroke="#C4A090"
                   strokeWidth="1"
                   fill="none"
-                  opacity={blinkState ? 0 : 0.7}
+                  opacity={eyeOpenness > 0.5 ? 0.4 : 0}
+                  animate={{ d: `M-20 ${-8 * eyeOpenness} Q0 ${-18 * eyeOpenness} 20 ${-8 * eyeOpenness}` }}
+                  transition={{ duration: 0.05 }}
                 />
+
+                <path d="M-22 2 Q0 8 22 2" stroke="#9B8070" strokeWidth="0.8" fill="none" opacity="0.4" />
+
+                <motion.g opacity={eyeOpenness > 0.3 ? 1 : 0}>
+                  <path d="M20 -3 Q22 -10 24 -14" stroke="#1A1512" strokeWidth="1.2" fill="none" />
+                  <path d="M14 -8 Q15 -16 14 -20" stroke="#1A1512" strokeWidth="1.3" fill="none" />
+                  <path d="M6 -11 Q5 -20 3 -24" stroke="#1A1512" strokeWidth="1.4" fill="none" />
+                  <path d="M-2 -12 Q-4 -21 -7 -25" stroke="#1A1512" strokeWidth="1.4" fill="none" />
+                  <path d="M-10 -10 Q-14 -18 -18 -22" stroke="#1A1512" strokeWidth="1.3" fill="none" />
+                  <path d="M-18 -6 Q-23 -12 -26 -15" stroke="#1A1512" strokeWidth="1.2" fill="none" />
+                </motion.g>
               </g>
             </g>
 
-            {/* === 코 === */}
+            {/* ===== 코 ===== */}
             <g>
-              {/* 코 브릿지 */}
+              {/* 코 브릿지 왼쪽 음영 */}
               <path
-                d="M140 130 L140 175"
-                stroke="url(#noseShadow)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.3"
+                d="M192 170 Q188 210 185 245 Q183 255 188 260"
+                fill="url(#noseShadowL)"
+                opacity="0.6"
+              />
+              {/* 코 브릿지 오른쪽 하이라이트 */}
+              <path
+                d="M208 170 Q212 210 215 245 Q217 255 212 260"
+                fill="url(#noseShadowR)"
+                opacity="0.4"
               />
 
               {/* 코끝 */}
-              <ellipse cx="140" cy="180" rx="10" ry="6" fill="#D4A988" opacity="0.4" />
+              <ellipse cx="200" cy="262" rx="14" ry="10" fill="#E0C0AC" />
 
               {/* 콧볼 */}
-              <ellipse cx="130" cy="182" rx="6" ry="4" fill="#C4956A" opacity="0.3" />
-              <ellipse cx="150" cy="182" rx="6" ry="4" fill="#C4956A" opacity="0.3" />
+              <ellipse cx="186" cy="268" rx="10" ry="7" fill="#D8B8A4" />
+              <ellipse cx="214" cy="268" rx="10" ry="7" fill="#D8B8A4" />
+
+              {/* 콧구멍 */}
+              <ellipse cx="190" cy="268" rx="4" ry="3" fill="#8B6B5B" opacity="0.5" />
+              <ellipse cx="210" cy="268" rx="4" ry="3" fill="#8B6B5B" opacity="0.5" />
 
               {/* 코 하이라이트 */}
-              <ellipse cx="140" cy="165" rx="3" ry="8" fill="white" opacity="0.2" />
+              <ellipse cx="200" cy="240" rx="4" ry="15" fill="white" opacity="0.15" />
             </g>
 
-            {/* === 볼 (홍조) === */}
-            <motion.ellipse
-              cx="88"
-              cy="175"
-              rx="18"
-              ry="10"
-              fill="#FFB5B5"
-              animate={{ opacity: cheekFlush }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.ellipse
-              cx="192"
-              cy="175"
-              rx="18"
-              ry="10"
-              fill="#FFB5B5"
-              animate={{ opacity: cheekFlush }}
-              transition={{ duration: 0.2 }}
-            />
+            {/* ===== 볼 ===== */}
+            <g>
+              <motion.ellipse
+                cx="140"
+                cy="255"
+                rx="25"
+                ry="15"
+                fill="#FFBCBC"
+                opacity={0.2 + microExpression * 0.15}
+                animate={{ opacity: 0.2 + microExpression * 0.15 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.ellipse
+                cx="260"
+                cy="255"
+                rx="25"
+                ry="15"
+                fill="#FFBCBC"
+                opacity={0.2 + microExpression * 0.15}
+                animate={{ opacity: 0.2 + microExpression * 0.15 }}
+                transition={{ duration: 0.2 }}
+              />
+            </g>
 
-            {/* === 입 === */}
-            <g transform="translate(140, 210)">
-              <AnimatePresence mode="wait">
-                {mouthState === 0 && (
-                  <motion.g
-                    key="closed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+            {/* ===== 입 ===== */}
+            <g transform="translate(200, 310)">
+              <motion.g
+                animate={{ scaleY: 1 + mouthOpenness * 0.3 }}
+                style={{ originY: '0%' }}
+              >
+                {/* 윗입술 */}
+                <motion.path
+                  d={`M-28 0
+                      Q-20 ${-4 - mouthOpenness * 2} -8 ${-3 - mouthOpenness * 3}
+                      Q0 ${-6 - mouthOpenness * 2} 8 ${-3 - mouthOpenness * 3}
+                      Q20 ${-4 - mouthOpenness * 2} 28 0
+                      Q15 ${4 + mouthOpenness * 8} 0 ${5 + mouthOpenness * 10}
+                      Q-15 ${4 + mouthOpenness * 8} -28 0`}
+                  fill="url(#upperLip)"
+                  animate={{
+                    d: `M-28 0
+                        Q-20 ${-4 - mouthOpenness * 2} -8 ${-3 - mouthOpenness * 3}
+                        Q0 ${-6 - mouthOpenness * 2} 8 ${-3 - mouthOpenness * 3}
+                        Q20 ${-4 - mouthOpenness * 2} 28 0
+                        Q15 ${4 + mouthOpenness * 8} 0 ${5 + mouthOpenness * 10}
+                        Q-15 ${4 + mouthOpenness * 8} -28 0`
+                  }}
+                  transition={{ duration: 0.05 }}
+                />
+
+                {/* 입술 중앙선 (큐피드 보우) */}
+                <path
+                  d="M-8 -2 Q0 -6 8 -2"
+                  stroke="#9B6568"
+                  strokeWidth="1"
+                  fill="none"
+                  opacity="0.5"
+                />
+
+                {/* 입 안쪽 (열렸을 때) */}
+                {mouthOpenness > 0.1 && (
+                  <motion.ellipse
+                    cx="0"
+                    cy={8 + mouthOpenness * 12}
+                    rx={15 + mouthOpenness * 8}
+                    ry={mouthOpenness * 15}
+                    fill="#4A2020"
+                    animate={{
+                      cy: 8 + mouthOpenness * 12,
+                      rx: 15 + mouthOpenness * 8,
+                      ry: mouthOpenness * 15
+                    }}
                     transition={{ duration: 0.05 }}
-                  >
-                    {/* 닫힌 입 - 미소 */}
-                    <path
-                      d="M-22 0 Q-10 8 0 10 Q10 8 22 0"
-                      fill="url(#lipGradient)"
-                    />
-                    {/* 입술 라인 */}
-                    <path
-                      d="M-20 2 Q0 6 20 2"
-                      stroke="#A85A5F"
-                      strokeWidth="1"
-                      fill="none"
-                    />
-                    {/* 입술 하이라이트 */}
-                    <ellipse cx="0" cy="3" rx="8" ry="2" fill="white" opacity="0.2" />
-                  </motion.g>
+                  />
                 )}
 
-                {mouthState === 1 && (
-                  <motion.g
-                    key="half"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                {/* 치아 (열렸을 때) */}
+                {mouthOpenness > 0.2 && (
+                  <motion.rect
+                    x={-12 - mouthOpenness * 3}
+                    y={3 + mouthOpenness * 4}
+                    width={24 + mouthOpenness * 6}
+                    height={mouthOpenness * 10}
+                    rx="2"
+                    fill="#F5F5F0"
+                    animate={{
+                      x: -12 - mouthOpenness * 3,
+                      y: 3 + mouthOpenness * 4,
+                      width: 24 + mouthOpenness * 6,
+                      height: mouthOpenness * 10
+                    }}
                     transition={{ duration: 0.05 }}
-                  >
-                    {/* 반 열린 입 */}
-                    <ellipse cx="0" cy="5" rx="15" ry="8" fill="#4A2C2C" />
-                    {/* 윗입술 */}
-                    <path
-                      d="M-18 0 Q-8 -3 0 -2 Q8 -3 18 0 Q10 4 0 5 Q-10 4 -18 0"
-                      fill="url(#lipGradient)"
-                    />
-                    {/* 아랫입술 */}
-                    <path
-                      d="M-15 10 Q0 16 15 10 Q10 8 0 8 Q-10 8 -15 10"
-                      fill="#C47075"
-                    />
-                    {/* 치아 */}
-                    <rect x="-10" y="1" width="20" height="6" rx="2" fill="#F8F8F8" />
-                  </motion.g>
+                  />
                 )}
 
-                {mouthState === 2 && (
-                  <motion.g
-                    key="open"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.05 }}
-                  >
-                    {/* 크게 열린 입 */}
-                    <ellipse cx="0" cy="8" rx="18" ry="14" fill="#3D2020" />
-                    {/* 윗입술 */}
-                    <path
-                      d="M-22 0 Q-10 -5 0 -4 Q10 -5 22 0 Q12 6 0 7 Q-12 6 -22 0"
-                      fill="url(#lipGradient)"
-                    />
-                    {/* 아랫입술 */}
-                    <path
-                      d="M-18 18 Q0 26 18 18 Q12 14 0 13 Q-12 14 -18 18"
-                      fill="#C47075"
-                    />
-                    {/* 치아 */}
-                    <rect x="-12" y="2" width="24" height="8" rx="3" fill="#F8F8F8" />
-                    {/* 혀 */}
-                    <ellipse cx="0" cy="16" rx="10" ry="6" fill="#D46A6A" />
-                  </motion.g>
-                )}
-              </AnimatePresence>
+                {/* 아랫입술 */}
+                <motion.path
+                  d={`M-26 ${6 + mouthOpenness * 15}
+                      Q0 ${16 + mouthOpenness * 20} 26 ${6 + mouthOpenness * 15}
+                      Q15 ${4 + mouthOpenness * 12} 0 ${5 + mouthOpenness * 10}
+                      Q-15 ${4 + mouthOpenness * 12} -26 ${6 + mouthOpenness * 15}`}
+                  fill="url(#lowerLip)"
+                  animate={{
+                    d: `M-26 ${6 + mouthOpenness * 15}
+                        Q0 ${16 + mouthOpenness * 20} 26 ${6 + mouthOpenness * 15}
+                        Q15 ${4 + mouthOpenness * 12} 0 ${5 + mouthOpenness * 10}
+                        Q-15 ${4 + mouthOpenness * 12} -26 ${6 + mouthOpenness * 15}`
+                  }}
+                  transition={{ duration: 0.05 }}
+                />
+
+                {/* 입술 하이라이트 */}
+                <ellipse cx="0" cy={10 + mouthOpenness * 10} rx="10" ry="3" fill="white" opacity="0.15" />
+              </motion.g>
+            </g>
+
+            {/* ===== 얼굴 하이라이트 ===== */}
+            <g>
+              {/* 이마 하이라이트 */}
+              <ellipse cx="200" cy="130" rx="40" ry="20" fill="white" opacity="0.08" />
+              {/* 코 옆 하이라이트 */}
+              <ellipse cx="165" cy="235" rx="15" ry="25" fill="white" opacity="0.05" />
+              <ellipse cx="235" cy="235" rx="15" ry="25" fill="white" opacity="0.05" />
             </g>
           </svg>
         </motion.div>
 
-        {/* 화상통화 UI */}
-        <div className="absolute top-4 left-4 flex items-center gap-2">
-          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
-          <span className="text-xs text-slate-500 font-medium tracking-wide">LIVE</span>
+        {/* UI 오버레이 */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-[10px] text-slate-500 font-medium tracking-wider">LIVE</span>
         </div>
 
-        {/* 연결 상태 표시 */}
-        <div className="absolute top-4 right-4">
-          <div className="flex items-center gap-1">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className={`w-1 rounded-full bg-emerald-500 ${
-                  i < 3 ? 'h-2' : 'h-3'
-                } ${i < 2 ? 'h-1.5' : ''} ${i === 0 ? 'h-1' : ''}`}
-                style={{ height: `${(i + 1) * 3 + 2}px` }}
-              />
-            ))}
-          </div>
+        <div className="absolute top-3 right-3 flex items-center gap-0.5">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="w-0.5 bg-green-500 rounded-full" style={{ height: i * 3 + 2 }} />
+          ))}
         </div>
 
-        {/* 듣는 중 오디오 인디케이터 */}
-        {isListening && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-end gap-1 h-6">
-            {[...Array(7)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-1 bg-blue-500 rounded-full"
-                animate={{
-                  height: [6, 16 + Math.random() * 8, 6],
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 0.6,
-                  delay: i * 0.08,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* 말하는 중 인디케이터 */}
-        {isSpeaking && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-full">
+        {/* 상태 인디케이터 */}
+        {(isListening || isSpeaking) && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
               <div className="flex items-end gap-0.5 h-4">
-                {[...Array(4)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="w-1 bg-white rounded-full"
-                    animate={{
-                      height: [4, 12 + Math.random() * 4, 4],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 0.4,
-                      delay: i * 0.1,
-                      ease: "easeInOut",
-                    }}
+                    className={`w-0.5 rounded-full ${isListening ? 'bg-blue-400' : 'bg-white'}`}
+                    animate={{ height: [3, 12 + Math.random() * 6, 3] }}
+                    transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.08 }}
                   />
                 ))}
               </div>
-              <span className="text-xs text-white font-medium">말하는 중</span>
+              <span className="text-[11px] text-white/90">
+                {isSpeaking ? '말하는 중' : '듣고 있어요'}
+              </span>
             </div>
           </div>
         )}
       </div>
 
-      {/* 코치 이름 */}
-      <div className="text-center mt-4">
-        <p className="text-lg font-semibold text-[var(--gl-text)]">{coachName}</p>
+      {/* 이름 */}
+      <div className="text-center mt-3">
+        <p className="font-semibold text-[var(--gl-text)]">{coachName}</p>
         <p className="text-sm text-[var(--gl-text-muted)]">
-          {isSpeaking ? '이야기하고 있어요' : isListening ? '듣고 있어요' : 'AI 코치'}
+          {isSpeaking ? '이야기하고 있어요' : isListening ? '경청 중' : 'AI 코치'}
         </p>
       </div>
     </div>
