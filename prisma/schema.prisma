@@ -1,0 +1,264 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ========================================
+// 사용자
+// ========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("student") // student, parent, coach
+  avatarUrl String?
+
+  // 게이미피케이션
+  xp           Int       @default(0)
+  level        Int       @default(1)
+  streakDays   Int       @default(0)
+  lastActiveAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  quests        Quest[]
+  sessions      LessonSession[]
+  checkins      Checkin[]
+  badges        UserBadge[]
+  statSnapshots StatSnapshot[]
+  answers       Answer[]
+  rewardEvents  RewardEvent[]
+  reportEntries ReportEntry[]
+}
+
+// ========================================
+// 월드 시스템
+// ========================================
+
+// 성장 월드 (6개)
+model World {
+  id          String @id @default(cuid())
+  key         String @unique // cognition, selfDirected, habit, attitude, expression, character
+  title       String
+  subtitle    String
+  description String
+  colorHex    String
+  icon        String
+  order       Int
+
+  coach       Coach?
+  lessonNodes LessonNode[]
+  questions   Question[]
+  sessions    LessonSession[]
+  statSnapshots StatSnapshot[]
+  reportEntries ReportEntry[]
+}
+
+// 코치 (월드당 1명)
+model Coach {
+  id         String @id @default(cuid())
+  worldId    String @unique
+  name       String
+  tagline    String
+  avatarSeed String
+
+  world     World           @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  questions Question[]
+  sessions  LessonSession[]
+}
+
+// 레슨 노드 (월드 내 진행 단계)
+model LessonNode {
+  id       String  @id @default(cuid())
+  worldId  String
+  order    Int
+  title    String
+  subtitle String?
+  isLocked Boolean @default(true)
+  xpReward Int     @default(20)
+
+  world    World           @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  sessions LessonSession[]
+
+  @@unique([worldId, order])
+}
+
+// 질문 템플릿
+model Question {
+  id          String  @id @default(cuid())
+  worldId     String
+  coachId     String
+  prompt      String
+  type        String  @default("text") // text, choice, scale
+  optionsJson String? // JSON: 선택지 배열
+  order       Int
+
+  world   World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  coach   Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  answers Answer[]
+}
+
+// ========================================
+// 레슨 세션 & 답변
+// ========================================
+
+// 레슨 세션 (사용자가 레슨을 진행한 기록)
+model LessonSession {
+  id           String    @id @default(cuid())
+  userId       String
+  worldId      String
+  coachId      String
+  lessonNodeId String
+
+  status       String    @default("in_progress") // in_progress, completed, abandoned
+  startedAt    DateTime  @default(now())
+  finishedAt   DateTime?
+  xpEarned     Int       @default(0)
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  world      World        @relation(fields: [worldId], references: [id])
+  coach      Coach        @relation(fields: [coachId], references: [id])
+  lessonNode LessonNode   @relation(fields: [lessonNodeId], references: [id])
+  answers    Answer[]
+  report     ReportEntry?
+}
+
+// 답변
+model Answer {
+  id         String   @id @default(cuid())
+  sessionId  String
+  questionId String
+  userId     String
+  rawText    String
+  createdAt  DateTime @default(now())
+
+  session  LessonSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question      @relation(fields: [questionId], references: [id])
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ========================================
+// 보상 & 리포트
+// ========================================
+
+// 보상 이벤트 기록
+model RewardEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // xp, streak, badge, unlock, levelUp
+  value     Int      @default(0)
+  metaJson  String?  // JSON: 추가 정보
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 리포트 엔트리 (세션 완료 후 생성)
+model ReportEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  worldKey  String
+  sessionId String   @unique
+  worldId   String
+
+  title    String
+  summary  String
+  evidence String? // 주요 답변 발췌
+  keywords String? // JSON: 키워드 배열
+
+  createdAt DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LessonSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  world   World         @relation(fields: [worldId], references: [id])
+}
+
+// ========================================
+// 성장 지표
+// ========================================
+
+// 성장 지표 스냅샷 (월드별)
+model StatSnapshot {
+  id        String   @id @default(cuid())
+  userId    String
+  worldId   String?
+  worldKey  String   // cognition, selfDirected, etc.
+
+  level0to4       Float @default(0) // 0~4 레벨
+  confidence0to1  Float @default(0) // 0~1 신뢰도
+  evidenceSnippet String? // 근거 문장
+
+  updatedAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  world World? @relation(fields: [worldId], references: [id])
+
+  @@unique([userId, worldKey])
+}
+
+// ========================================
+// 기존 모델 (하위 호환)
+// ========================================
+
+// 퀘스트 (오늘의 미션) - 레거시, 점진적 마이그레이션
+model Quest {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  category    String
+  xpReward    Int       @default(10)
+  status      String    @default("pending")
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 체크인 기록
+model Checkin {
+  id        String   @id @default(cuid())
+  userId    String
+  mood      Int      @default(3)
+  energy    Int      @default(3)
+  note      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 배지 정의
+model Badge {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  iconUrl     String?
+  category    String
+  requirement String
+
+  users UserBadge[]
+}
+
+// 사용자-배지 연결
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}

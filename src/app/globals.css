@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* ========================================
+   길로그 디자인 토큰 (Gillog Design Tokens)
+   듀오링고 복제 X - 길로그 고유 스타일
+   ======================================== */
+
+:root {
+  /* 메인 컬러 - 따뜻한 성장/코칭 느낌 */
+  --gl-primary: #6366f1;        /* 인디고 - 메인 액션 */
+  --gl-primary-dark: #4f46e5;
+  --gl-primary-light: #a5b4fc;
+
+  --gl-accent: #f59e0b;         /* 앰버 - 보상/하이라이트 */
+  --gl-accent-dark: #d97706;
+  --gl-accent-light: #fcd34d;
+
+  --gl-success: #10b981;        /* 에메랄드 - 완료/성공 */
+  --gl-success-dark: #059669;
+  --gl-success-light: #6ee7b7;
+
+  --gl-warning: #f97316;        /* 오렌지 - 주의/스트릭 */
+  --gl-error: #ef4444;          /* 레드 - 에러 */
+
+  /* 월드별 컬러 */
+  --gl-world-cognition: #8b5cf6;     /* 보라 - 인지 */
+  --gl-world-selfdirected: #06b6d4;  /* 시안 - 자기주도 */
+  --gl-world-habit: #22c55e;         /* 그린 - 습관 */
+  --gl-world-attitude: #f59e0b;      /* 앰버 - 태도 */
+  --gl-world-expression: #ec4899;    /* 핑크 - 표현 */
+  --gl-world-character: #6366f1;     /* 인디고 - 인성 */
+
+  /* 뉴트럴 */
+  --gl-bg: #fafafa;
+  --gl-bg-card: #ffffff;
+  --gl-bg-dark: #1f2937;
+  --gl-text: #1f2937;
+  --gl-text-muted: #6b7280;
+  --gl-text-light: #9ca3af;
+  --gl-border: #e5e7eb;
+
+  /* 간격 */
+  --gl-space-xs: 0.25rem;
+  --gl-space-sm: 0.5rem;
+  --gl-space-md: 1rem;
+  --gl-space-lg: 1.5rem;
+  --gl-space-xl: 2rem;
+  --gl-space-2xl: 3rem;
+
+  /* 라운드 */
+  --gl-radius-sm: 0.5rem;
+  --gl-radius-md: 0.75rem;
+  --gl-radius-lg: 1rem;
+  --gl-radius-xl: 1.5rem;
+  --gl-radius-full: 9999px;
+
+  /* 그림자 */
+  --gl-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --gl-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --gl-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --gl-shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+
+  /* 타이포 */
+  --gl-font-display: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  --gl-font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 다크모드 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gl-bg: #111827;
+    --gl-bg-card: #1f2937;
+    --gl-text: #f9fafb;
+    --gl-text-muted: #9ca3af;
+    --gl-border: #374151;
+  }
+}
+
+/* 기본 바디 스타일 */
+body {
+  background: var(--gl-bg);
+  color: var(--gl-text);
+  font-family: var(--gl-font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 게임 UI 기본 - 풀스크린/모바일 퍼스트 */
+.gl-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.gl-container {
+  width: 100%;
+  max-width: 28rem; /* 448px - 모바일 최적화 */
+  margin: 0 auto;
+  padding: 0 var(--gl-space-md);
+}
+
+/* 하단 고정 CTA 영역 */
+.gl-bottom-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--gl-space-md);
+  background: linear-gradient(to top, var(--gl-bg) 80%, transparent);
+  padding-top: var(--gl-space-xl);
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 포커스 스타일 - 접근성 */
+*:focus-visible {
+  outline: 2px solid var(--gl-primary);
+  outline-offset: 2px;
+}
+
+/* 선택 비활성화 (게임 UI) */
+.gl-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
