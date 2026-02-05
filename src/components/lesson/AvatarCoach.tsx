@@ -869,9 +869,7 @@ export function AvatarCoach({
       {/* 이름 */}
       <div className="text-center mt-3">
         <p className="font-semibold text-[var(--gl-text)]">{coachName}</p>
-        <p className="text-sm text-[var(--gl-text-muted)]">
-          {isSpeaking ? '이야기하고 있어요' : isListening ? '경청 중' : 'AI 코치'}
-        </p>
+        <p className="text-sm text-[var(--gl-text-muted)]">AI 코치</p>
       </div>
     </div>
   )

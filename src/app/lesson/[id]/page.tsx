@@ -2,16 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Loader2, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { ChatBubble } from '@/components/lesson/ChatBubble'
 import { QuestionInput } from '@/components/lesson/QuestionInput'
 import { RewardAnimation } from '@/components/lesson/RewardAnimation'
 import { StepProgress, ProgressBar } from '@/components/ui/ProgressBar'
 import { AvatarCoach } from '@/components/lesson/AvatarCoach'
 
-// 테스트용 사용자 ID (나중에 인증으로 대체)
 const TEST_USER_ID = 'cf6c1304a8ab9217fbd59aa1e'
 
 interface Question {
@@ -45,17 +43,58 @@ interface World {
   icon: string
 }
 
-interface ChatMessage {
-  id: string
-  text: string
-  isCoach: boolean
-  questionId?: string
+// ICF/KCA 기반 코칭 피드백 생성
+function generateCoachingResponse(
+  userAnswer: string,
+  previousAnswers: string[],
+  questionContext: string
+): string {
+  const answerLength = userAnswer.length
+  const keywords = extractKeywords(userAnswer)
+
+  // 짧은 답변 (20자 미만) - 더 쉬운 질문으로
+  if (answerLength < 20) {
+    const shortResponses = [
+      `${keywords[0] || '그것'}에 대해 조금 더 이야기해줄 수 있어?`,
+      `음, 그렇구나. 그때 어떤 기분이 들었어?`,
+      `${keywords[0] || '그 순간'}이 떠오르는구나. 왜 그런 것 같아?`,
+    ]
+    return shortResponses[Math.floor(Math.random() * shortResponses.length)]
+  }
+
+  // 중간 길이 답변 (20-80자)
+  if (answerLength < 80) {
+    const midResponses = [
+      `${keywords[0] || '그것'}이 중요했구나. 그래서 어떻게 했어?`,
+      `그 마음이 느껴져. 그때 무슨 생각이 들었어?`,
+      `${keywords[0] || '그 경험'}을 통해 뭘 알게 됐어?`,
+      `그렇구나. 지금은 어떻게 느껴져?`,
+    ]
+    return midResponses[Math.floor(Math.random() * midResponses.length)]
+  }
+
+  // 긴 답변 (80자 이상) - 깊게 파고들기
+  const deepResponses = [
+    `${keywords[0] || '그것'}이 네게 정말 의미 있었구나. 그중에서 가장 기억에 남는 건 뭐야?`,
+    `많이 생각해봤구나. 그래서 앞으로는 어떻게 하고 싶어?`,
+    `솔직하게 나눠줘서 고마워. 그 경험이 너를 어떻게 바꿨어?`,
+  ]
+  return deepResponses[Math.floor(Math.random() * deepResponses.length)]
+}
+
+// 사용자 답변에서 키워드 추출
+function extractKeywords(text: string): string[] {
+  const words = text.split(/[\s,\.!?]+/).filter(w => w.length > 1)
+  // 의미있는 단어 우선
+  const meaningfulWords = words.filter(w =>
+    !['그래서', '그런데', '하지만', '그리고', '나는', '저는', '것', '거', '수'].includes(w)
+  )
+  return meaningfulWords.slice(0, 3)
 }
 
 export default function LessonPage() {
   const params = useParams()
   const router = useRouter()
-  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -65,16 +104,17 @@ export default function LessonPage() {
   const [world, setWorld] = useState<World | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [coachMessage, setCoachMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [previousAnswers, setPreviousAnswers] = useState<string[]>([])
   const [rewards, setRewards] = useState<{
     xp: number
     totalXp: number
     leveledUp: boolean
     newLevel: number
   } | null>(null)
-  const [energy] = useState(48) // 레슨 시작 시 번개 2개 소모됨 (50 - 2 = 48)
+  const [energy] = useState(48)
 
   const lessonId = params.id as string
 
@@ -84,8 +124,6 @@ export default function LessonPage() {
       try {
         setLoading(true)
 
-        // lessonId가 "1"처럼 단순 숫자면 첫 번째 레슨 노드 가져오기
-        // 실제 ID면 그대로 사용
         const response = await fetch('/api/lesson/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,28 +145,12 @@ export default function LessonPage() {
         setWorld(data.world)
         setQuestions(data.questions)
 
-        // 코치 인사 메시지 추가
+        // 코치 인사 + 첫 질문 (한 번에)
         setTimeout(() => {
-          setMessages([
-            {
-              id: 'greeting',
-              text: `안녕! 나는 ${data.coach.name}야. ${data.coach.tagline}`,
-              isCoach: true
-            }
-          ])
-
-          // 첫 질문 추가
-          setTimeout(() => {
-            if (data.questions.length > 0) {
-              setMessages(prev => [...prev, {
-                id: `q-${data.questions[0].id}`,
-                text: data.questions[0].prompt,
-                isCoach: true,
-                questionId: data.questions[0].id
-              }])
-            }
-            setLoading(false)
-          }, 800)
+          if (data.questions.length > 0) {
+            setCoachMessage(data.questions[0].prompt)
+          }
+          setLoading(false)
         }, 500)
 
       } catch (err) {
@@ -140,28 +162,15 @@ export default function LessonPage() {
     startLesson()
   }, [lessonId])
 
-  // 스크롤 to bottom
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
   // 답변 제출
   const handleAnswer = async (answer: string) => {
     if (!sessionId || currentQuestionIndex >= questions.length) return
 
     const currentQuestion = questions[currentQuestionIndex]
-
-    // 사용자 답변 추가
-    setMessages(prev => [...prev, {
-      id: `a-${currentQuestion.id}`,
-      text: answer,
-      isCoach: false
-    }])
-
+    setPreviousAnswers(prev => [...prev, answer])
     setIsTyping(true)
 
     try {
-      // 답변 저장
       await fetch('/api/lesson/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,33 +182,27 @@ export default function LessonPage() {
         })
       })
 
-      // 다음 질문 또는 완료
       const nextIndex = currentQuestionIndex + 1
 
+      // 코칭 피드백 생성 후 다음 질문
       setTimeout(() => {
-        setIsTyping(false)
-
         if (nextIndex < questions.length) {
-          // 코치 피드백 + 다음 질문
-          const feedback = getCoachFeedback(answer)
-          setMessages(prev => [...prev, {
-            id: `fb-${currentQuestion.id}`,
-            text: feedback,
-            isCoach: true
-          }])
+          // ICF 코칭 원칙에 따른 피드백 + 다음 질문
+          const feedback = generateCoachingResponse(answer, previousAnswers, currentQuestion.prompt)
+          setCoachMessage(feedback)
 
+          // 피드백 후 다음 질문으로
           setTimeout(() => {
-            setMessages(prev => [...prev, {
-              id: `q-${questions[nextIndex].id}`,
-              text: questions[nextIndex].prompt,
-              isCoach: true,
-              questionId: questions[nextIndex].id
-            }])
+            setCoachMessage(questions[nextIndex].prompt)
             setCurrentQuestionIndex(nextIndex)
-          }, 1000)
+            setIsTyping(false)
+          }, 2500)
         } else {
           // 레슨 완료
-          completeLesson()
+          setCoachMessage('오늘 솔직하게 나눠줘서 고마워. 네 이야기가 소중해.')
+          setTimeout(() => {
+            completeLesson()
+          }, 2000)
         }
       }, 1000)
 
@@ -213,12 +216,6 @@ export default function LessonPage() {
   const completeLesson = async () => {
     if (!sessionId) return
 
-    setMessages(prev => [...prev, {
-      id: 'complete',
-      text: '정말 잘했어! 오늘 네가 나눈 이야기들이 소중한 성장의 씨앗이 될 거야.',
-      isCoach: true
-    }])
-
     try {
       const response = await fetch('/api/lesson/complete', {
         method: 'POST',
@@ -231,29 +228,14 @@ export default function LessonPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setTimeout(() => {
-          setRewards(data.rewards)
-          setIsCompleted(true)
-        }, 1500)
+        setRewards(data.rewards)
+        setIsCompleted(true)
       }
     } catch (err) {
       console.error('Complete error:', err)
     }
   }
 
-  // 코치 피드백 생성 (간단 버전)
-  const getCoachFeedback = (answer: string): string => {
-    const feedbacks = [
-      '그렇구나, 솔직하게 이야기해줘서 고마워.',
-      '좋은 생각이야! 계속 이야기해볼까?',
-      '네 마음을 잘 표현했어.',
-      '흥미로운 생각이네! 더 알려줄래?',
-      '정말 잘하고 있어. 다음 질문도 해볼게.'
-    ]
-    return feedbacks[Math.floor(Math.random() * feedbacks.length)]
-  }
-
-  // 현재 질문
   const currentQuestion = questions[currentQuestionIndex]
   const currentOptions = currentQuestion?.optionsJson
     ? JSON.parse(currentQuestion.optionsJson)
@@ -325,7 +307,6 @@ export default function LessonPage() {
             <span className="text-2xl">{world?.icon || '📚'}</span>
           </div>
 
-          {/* 진행률 */}
           <StepProgress
             current={currentQuestionIndex + 1}
             total={questions.length}
@@ -340,33 +321,34 @@ export default function LessonPage() {
           {/* AI 아바타 코치 */}
           <AvatarCoach
             coachName={coach?.name || '코치'}
-            isListening={!isTyping && !isCompleted && currentQuestionIndex < questions.length}
+            isListening={!isTyping && !isCompleted}
             isSpeaking={isTyping}
           />
 
-          {/* 코치 말풍선 */}
-          {messages.length > 0 && (
-            <div className="mt-6 space-y-3">
-              {messages.slice(-2).map((msg) => (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-2xl max-w-[85%] ${
-                    msg.isCoach
-                      ? 'bg-[var(--gl-bg-card)] border border-[var(--gl-border)] mr-auto'
-                      : 'bg-[var(--gl-primary)] text-white ml-auto'
-                  }`}
+          {/* 코치 말풍선 - 하나만 표시 */}
+          <AnimatePresence mode="wait">
+            {coachMessage && (
+              <motion.div
+                key={coachMessage}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="mt-6"
+              >
+                <div
+                  className="relative bg-white rounded-2xl p-5 shadow-lg border border-[var(--gl-border)] max-w-[90%] mx-auto"
                 >
-                  <p className={msg.isCoach ? 'text-[var(--gl-text)]' : 'text-white'}>
-                    {msg.text}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                  {/* 말풍선 꼬리 */}
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-l border-t border-[var(--gl-border)] rotate-45" />
 
-          <div ref={chatEndRef} />
+                  <p className="text-[var(--gl-text)] text-center text-lg leading-relaxed">
+                    {coachMessage}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
