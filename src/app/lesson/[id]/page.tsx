@@ -23,7 +23,7 @@ export default function LessonPage() {
       })
   }, [])
 
-  const coachMessage = "안녕 여기서는 인지 학습 코칭을 시작할거야 일단 스스로 생각할 때 인지능력과 학습능력이 10점 만점에 몇점이라고 생각해?"
+  const coachMessage = "안녕! 여기서는 인지 학습 코칭을 시작할 거야.\n\n인지 능력은 생각하고, 이해하고, 기억하고, 문제를 해결하는 힘이야.\n\n먼저, 스스로 생각했을 때 인지 능력과 학습 능력이 10점 만점에 몇 점 정도라고 느껴?"
 
   return (
     <main className="min-h-screen bg-slate-900 overflow-hidden">
@@ -143,7 +143,7 @@ export default function LessonPage() {
                 />
 
                 {/* 텍스트 */}
-                <p className="text-slate-700 text-base leading-relaxed font-medium text-center">
+                <p className="text-slate-700 text-base leading-relaxed font-medium text-center whitespace-pre-line">
                   {coachMessage}
                 </p>
 
