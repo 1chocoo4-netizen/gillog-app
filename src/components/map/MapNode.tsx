@@ -13,7 +13,6 @@ interface MapNodeProps {
 export function MapNode({ node, isActive, onClick }: MapNodeProps) {
   const world = WORLD_TOKENS[node.worldKey]
   const isCompleted = node.status === 'completed'
-  const isLocked = node.status === 'locked'
 
   // 노드 크기 (더 크게)
   const size = isActive ? 88 : 72
@@ -21,15 +20,13 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
   return (
     <motion.button
       onClick={onClick}
-      disabled={isLocked}
       className={`
         relative flex items-center justify-center
-        rounded-full transition-all
-        ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+        rounded-full transition-all cursor-pointer
       `}
       style={{ width: size, height: size }}
-      whileHover={!isLocked ? { scale: 1.08 } : undefined}
-      whileTap={!isLocked ? { scale: 0.95 } : undefined}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.15, ease: 'easeOut' }}
     >
       {/* 배경 글로우 (Active 노드만) */}
@@ -85,7 +82,7 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
         {isCompleted ? (
           <Check className="w-5 h-5 text-white/60" />
         ) : (
-          <span className={`${isActive ? 'text-2xl' : 'text-xl'} ${isLocked ? 'opacity-40 grayscale' : ''}`}>
+          <span className={`${isActive ? 'text-2xl' : 'text-xl'}`}>
             {world.icon}
           </span>
         )}

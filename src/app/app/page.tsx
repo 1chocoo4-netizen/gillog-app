@@ -15,9 +15,9 @@ export default function AppHomePage() {
   const [energy] = useState(50)
 
   const handleNodeClick = (node: MapNode) => {
-    if (node.status === 'active') {
-      router.push(`/lesson/${node.id}`)
-    }
+    // 해당 월드를 선택하고 레슨 페이지로 이동
+    setSelectedWorld(node.worldKey)
+    router.push(`/lesson/${node.id}`)
   }
 
   return (

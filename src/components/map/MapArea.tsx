@@ -90,7 +90,8 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
       <div className="relative z-10 pt-4">
         {nodes.map((node, i) => {
           const pos = nodePositions[i]
-          const isActive = node.status === 'active'
+          // selectedWorld와 일치하는 노드가 활성화
+          const isActive = node.worldKey === selectedWorld
 
           return (
             <motion.div
