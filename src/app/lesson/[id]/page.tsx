@@ -12,25 +12,30 @@ export default function LessonPage() {
   const [energy] = useState(48)
   const [animationData, setAnimationData] = useState<object | null>(null)
   const [showBubble, setShowBubble] = useState(false)
+  const [showInput, setShowInput] = useState(false)
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
 
   useEffect(() => {
     fetch('/lottie/Talking Character.json')
       .then(res => res.json())
       .then(data => {
         setAnimationData(data)
-        // 캐릭터 등장 후 말풍선 표시
         setTimeout(() => setShowBubble(true), 800)
+        setTimeout(() => setShowInput(true), 1500)
       })
   }, [])
 
   const coachMessage = "안녕! 여기서는 인지 학습 코칭을 시작할 거야.\n인지 능력은 생각하고, 이해하고, 기억하고, 문제를 해결하는 힘이야.\n먼저, 스스로 생각했을 때 인지 능력과 학습 능력이 10점 만점에 몇 점 정도라고 느껴?"
 
+  const handleNumberSelect = (num: number) => {
+    setSelectedNumber(num)
+  }
+
   return (
-    <main className="min-h-screen bg-slate-900 overflow-hidden">
+    <main className="min-h-screen bg-slate-900 overflow-hidden flex flex-col">
       {/* 상단 HUD - 에너지 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          {/* 로고/타이틀 */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
@@ -38,7 +43,6 @@ export default function LessonPage() {
             <span className="text-white font-semibold">길로그</span>
           </div>
 
-          {/* 에너지 게이지 */}
           <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
             <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
             <div className="flex items-center gap-1">
@@ -58,7 +62,7 @@ export default function LessonPage() {
 
       {/* 메인 콘텐츠 영역 */}
       <div
-        className="pt-16 min-h-screen flex flex-col items-center justify-center relative"
+        className="flex-1 pt-20 pb-48 px-4 flex flex-col items-center relative overflow-y-auto"
         style={{
           background: `
             linear-gradient(180deg,
@@ -71,7 +75,7 @@ export default function LessonPage() {
       >
         {/* 배경 글로우 */}
         <div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] pointer-events-none"
+          className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] pointer-events-none"
           style={{
             background: 'radial-gradient(circle, rgba(167, 139, 250, 0.15), transparent 70%)',
           }}
@@ -79,10 +83,10 @@ export default function LessonPage() {
 
         {/* AI 코치 캐릭터 */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.5, y: 50 }}
+          initial={{ opacity: 0, scale: 0.5, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="relative z-10 w-64 h-64"
+          className="relative z-10 w-48 h-48"
         >
           {animationData && (
             <Lottie
@@ -99,9 +103,8 @@ export default function LessonPage() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative z-20 mx-4 mt-6 max-w-sm"
+            className="relative z-20 mx-4 mt-4 max-w-sm"
           >
-            {/* 말풍선 본체 */}
             <div className="relative">
               {/* 글로우 효과 */}
               <div
@@ -113,7 +116,7 @@ export default function LessonPage() {
 
               {/* 메인 버블 */}
               <div
-                className="relative rounded-3xl p-6 backdrop-blur-sm"
+                className="relative rounded-3xl p-5 backdrop-blur-sm"
                 style={{
                   background: 'linear-gradient(145deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9))',
                   boxShadow: `
@@ -124,54 +127,24 @@ export default function LessonPage() {
                   `,
                 }}
               >
-                {/* 하이라이트 라인 */}
-                <div
-                  className="absolute top-0 left-6 right-6 h-px"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
-                  }}
-                />
-
                 {/* 말풍선 꼬리 */}
                 <div
                   className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9))',
                     clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-                    filter: 'drop-shadow(0 -2px 2px rgba(139, 92, 246, 0.1))',
                   }}
                 />
 
-                {/* 텍스트 */}
-                <p className="text-slate-700 text-base leading-relaxed font-medium text-center whitespace-pre-line">
+                <p className="text-slate-700 text-[15px] leading-relaxed font-medium text-center whitespace-pre-line">
                   {coachMessage}
                 </p>
 
                 {/* 반짝이 효과 */}
                 <motion.div
                   className="absolute top-3 right-4 w-2 h-2 rounded-full bg-violet-300"
-                  animate={{
-                    opacity: [0.3, 1, 0.3],
-                    scale: [0.8, 1.2, 0.8],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                />
-                <motion.div
-                  className="absolute bottom-4 left-5 w-1.5 h-1.5 rounded-full bg-purple-300"
-                  animate={{
-                    opacity: [0.5, 1, 0.5],
-                    scale: [1, 1.3, 1],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                    delay: 0.5,
-                  }}
+                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
               </div>
             </div>
@@ -179,43 +152,52 @@ export default function LessonPage() {
         )}
       </div>
 
-      {/* 하단 탭바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
-        <div className="flex justify-around py-2">
-          <TabItem href="/app" icon="🗺️" label="맵" />
-          <TabItem href="/checkin" icon="✅" label="체크인" />
-          <TabItem href="/dashboard" icon="📊" label="리포트" />
-          <TabItem href="/profile" icon="👤" label="프로필" />
-        </div>
-        <div className="h-safe-area-inset-bottom" />
-      </nav>
-    </main>
-  )
-}
+      {/* 하단 숫자 선택 영역 */}
+      {showInput && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-6"
+        >
+          <p className="text-white/60 text-sm text-center mb-4">점수를 선택해주세요</p>
 
-function TabItem({
-  href,
-  icon,
-  label,
-  active = false
-}: {
-  href: string
-  icon: string
-  label: string
-  active?: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      className={`
-        flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors
-        ${active ? 'text-white' : 'text-white/40 hover:text-white/60'}
-      `}
-    >
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-medium ${active ? 'text-white' : 'text-white/40'}`}>
-        {label}
-      </span>
-    </Link>
+          {/* 숫자 버튼들 */}
+          <div className="flex justify-center gap-2 flex-wrap max-w-md mx-auto">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+              <motion.button
+                key={num}
+                onClick={() => handleNumberSelect(num)}
+                className={`
+                  w-12 h-12 rounded-full font-bold text-lg transition-all
+                  ${selectedNumber === num
+                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/30'
+                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                  }
+                `}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {num}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* 확인 버튼 */}
+          {selectedNumber && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 w-full max-w-md mx-auto block py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold text-lg shadow-lg shadow-violet-500/30"
+              whileTap={{ scale: 0.98 }}
+            >
+              확인
+            </motion.button>
+          )}
+
+          <div className="h-safe-area-inset-bottom" />
+        </motion.div>
+      )}
+    </main>
   )
 }
