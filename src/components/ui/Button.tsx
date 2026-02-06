@@ -1,9 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { forwardRef, ButtonHTMLAttributes } from 'react'
+import { motion, HTMLMotionProps } from 'framer-motion'
+import { forwardRef } from 'react'
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
   variant?: 'primary' | 'secondary' | 'success' | 'ghost' | 'world'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   worldColor?: string

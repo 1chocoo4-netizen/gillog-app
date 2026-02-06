@@ -1,7 +1,7 @@
 // Prisma 7.x seed script with better-sqlite3 adapter
 import Database from 'better-sqlite3'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
-import { PrismaClient } from '../src/generated/prisma/client.ts'
+import { PrismaClient } from '../src/generated/prisma/client.js'
 
 const sqlite = new Database('./prisma/dev.db')
 const adapter = new PrismaBetterSqlite3(sqlite)

@@ -142,7 +142,7 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
   // easeOut 트랜지션
   const textTransition = {
     duration: 0.6,
-    ease: [0.25, 0.1, 0.25, 1], // easeOut
+    ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number], // easeOut
   }
 
   return (
