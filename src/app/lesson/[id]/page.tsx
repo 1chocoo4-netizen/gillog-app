@@ -14,6 +14,8 @@ export default function LessonPage() {
   const [showBubble, setShowBubble] = useState(false)
   const [showInput, setShowInput] = useState(false)
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [textInput, setTextInput] = useState('')
 
   useEffect(() => {
     fetch('/lottie/Talking Character.json')
@@ -152,7 +154,7 @@ export default function LessonPage() {
         )}
       </div>
 
-      {/* 하단 숫자 선택 영역 */}
+      {/* 하단 입력 영역 */}
       {showInput && (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -160,39 +162,92 @@ export default function LessonPage() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-6"
         >
-          <p className="text-white/60 text-sm text-center mb-4">점수를 선택해주세요</p>
+          {!isConfirmed ? (
+            <>
+              <p className="text-white/60 text-sm text-center mb-4">점수를 선택해주세요</p>
 
-          {/* 숫자 버튼들 */}
-          <div className="flex justify-center gap-2 flex-wrap max-w-md mx-auto">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-              <motion.button
-                key={num}
-                onClick={() => handleNumberSelect(num)}
-                className={`
-                  w-12 h-12 rounded-full font-bold text-lg transition-all
-                  ${selectedNumber === num
-                    ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/30'
-                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                  }
-                `}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {num}
-              </motion.button>
-            ))}
-          </div>
+              {/* 숫자 버튼들 - 2줄로 */}
+              <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                {/* 1-5 */}
+                <div className="flex justify-center gap-3">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <motion.button
+                      key={num}
+                      onClick={() => handleNumberSelect(num)}
+                      className={`
+                        w-12 h-12 rounded-full font-bold text-lg transition-all
+                        ${selectedNumber === num
+                          ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/30'
+                          : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                        }
+                      `}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {num}
+                    </motion.button>
+                  ))}
+                </div>
+                {/* 6-10 */}
+                <div className="flex justify-center gap-3">
+                  {[6, 7, 8, 9, 10].map((num) => (
+                    <motion.button
+                      key={num}
+                      onClick={() => handleNumberSelect(num)}
+                      className={`
+                        w-12 h-12 rounded-full font-bold text-lg transition-all
+                        ${selectedNumber === num
+                          ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/30'
+                          : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                        }
+                      `}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {num}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
 
-          {/* 확인 버튼 */}
-          {selectedNumber && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
+              {/* 확인 버튼 */}
+              {selectedNumber && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setIsConfirmed(true)}
+                  className="mt-6 w-full max-w-xs mx-auto block py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold text-lg shadow-lg shadow-violet-500/30"
+                  whileTap={{ scale: 0.98 }}
+                >
+                  확인
+                </motion.button>
+              )}
+            </>
+          ) : (
+            /* 텍스트 입력 영역 */
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 w-full max-w-md mx-auto block py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold text-lg shadow-lg shadow-violet-500/30"
-              whileTap={{ scale: 0.98 }}
+              className="max-w-md mx-auto"
             >
-              확인
-            </motion.button>
+              <div className="relative">
+                <textarea
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder="생각을 자유롭게 적어주세요..."
+                  className="w-full bg-white/10 text-white placeholder-white/40 rounded-2xl px-4 py-3 pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/50 border border-white/10"
+                  rows={3}
+                />
+                <button
+                  className="absolute right-3 bottom-3 w-10 h-10 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-lg"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+            </motion.div>
           )}
 
           <div className="h-safe-area-inset-bottom" />
