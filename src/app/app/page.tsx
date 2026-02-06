@@ -12,7 +12,7 @@ import { WorldKey, MapNode } from '@/components/map/WorldTokens'
 export default function AppHomePage() {
   const router = useRouter()
   const [selectedWorld, setSelectedWorld] = useState<WorldKey>('cognition')
-  const [energy] = useState(50)
+  const [energy, setEnergy] = useState(50)
 
   const handleNodeClick = (node: MapNode) => {
     // 해당 월드만 선택 (페이지 이동 없음)
@@ -20,8 +20,11 @@ export default function AppHomePage() {
   }
 
   const handleNodeEnter = (node: MapNode) => {
-    // 입장하기 클릭 시 레슨 페이지로 이동
-    router.push(`/lesson/${node.id}`)
+    // 에너지가 충분한 경우에만 입장
+    if (energy >= 2) {
+      setEnergy(prev => prev - 2)
+      router.push(`/lesson/${node.id}`)
+    }
   }
 
   return (
