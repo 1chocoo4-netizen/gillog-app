@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { WORLD_TOKENS, MapNode as MapNodeType } from './WorldTokens'
-import { Brain, Check, Star } from 'lucide-react'
+import { Brain, Star } from 'lucide-react'
 
 interface MapNodeProps {
   node: MapNodeType
@@ -12,7 +12,6 @@ interface MapNodeProps {
 
 export function MapNode({ node, isActive, onClick }: MapNodeProps) {
   const world = WORLD_TOKENS[node.worldKey]
-  const isCompleted = node.status === 'completed'
 
   // 노드 크기 (더 크게)
   const size = isActive ? 110 : 90
@@ -52,11 +51,9 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
       <div
         className={`
           absolute inset-0 rounded-full border-[3px]
-          ${isCompleted
-            ? 'border-white/30 bg-white/10'
-            : isActive
-              ? 'border-white bg-white/20'
-              : 'border-white/20 bg-white/5'
+          ${isActive
+            ? 'border-white bg-white/20'
+            : 'border-white/20 bg-white/5'
           }
         `}
         style={{
@@ -72,16 +69,12 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
           ${isActive ? 'w-20 h-20' : 'w-16 h-16'}
         `}
         style={{
-          backgroundColor: isCompleted
-            ? 'rgba(255,255,255,0.15)'
-            : isActive
-              ? world.color
-              : 'rgba(255,255,255,0.08)',
+          backgroundColor: isActive
+            ? world.color
+            : 'rgba(255,255,255,0.08)',
         }}
       >
-        {isCompleted ? (
-          <Check className="w-5 h-5 text-white/60" />
-        ) : node.worldKey === 'cognition' ? (
+        {node.worldKey === 'cognition' ? (
           <Brain className={`${isActive ? 'w-10 h-10' : 'w-8 h-8'} text-white`} />
         ) : (
           <span className={`${isActive ? 'text-3xl' : 'text-2xl'}`}>
