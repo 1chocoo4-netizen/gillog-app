@@ -12,43 +12,44 @@ interface MapPathProps {
 }
 
 export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapPathProps) {
-  // 곡선 경로 계산 (부드러운 커브)
-  const midY = (startY + endY) / 2
-  const curveOffset = (index % 2 === 0 ? 1 : -1) * 20
+  // 두 점 사이에 점들 생성
+  const dotCount = 6
+  const dots = []
 
-  const pathD = `
-    M ${startX} ${startY}
-    Q ${startX + curveOffset} ${midY}, ${endX} ${endY}
-  `
+  for (let i = 1; i <= dotCount; i++) {
+    const t = i / (dotCount + 1)
+    // 곡선 보간 (quadratic bezier 근사)
+    const curveOffset = (index % 2 === 0 ? 1 : -1) * 15
+    const midX = (startX + endX) / 2 + curveOffset
+
+    // Quadratic bezier 공식
+    const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * midX + t * t * endX
+    const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * ((startY + endY) / 2) + t * t * endY
+
+    dots.push({ x, y, delay: i * 0.05 })
+  }
 
   return (
     <svg
       className="absolute top-0 left-0 w-full h-full pointer-events-none"
       style={{ overflow: 'visible' }}
     >
-      <defs>
-        <linearGradient id={`pathGradient-${index}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={isCompleted ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)'} />
-          <stop offset="100%" stopColor={isCompleted ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'} />
-        </linearGradient>
-      </defs>
-
-      {/* 점 경로 */}
-      <motion.path
-        d={pathD}
-        fill="none"
-        stroke={`url(#pathGradient-${index})`}
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeDasharray="1 12"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{
-          duration: 0.5,
-          delay: index * 0.05,
-          ease: 'easeOut',
-        }}
-      />
+      {dots.map((dot, i) => (
+        <motion.circle
+          key={i}
+          cx={dot.x}
+          cy={dot.y}
+          r={3}
+          fill={isCompleted ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)'}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.3,
+            delay: index * 0.1 + dot.delay,
+            ease: 'easeOut',
+          }}
+        />
+      ))}
     </svg>
   )
 }
