@@ -79,7 +79,7 @@ function SceneText({ sceneId }: { sceneId: number }) {
     case 5:
       return (
         <>
-          그리고 나의 <span className="text-gray-900 bg-white/20 px-1 rounded">성장</span>을
+          그리고 나의 <span className="text-green-400">성장</span>을
           <br />
           지켜봅니다.
         </>
