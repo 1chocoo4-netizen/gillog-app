@@ -17,11 +17,11 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
   // 6개 노드 생성 (월드당 1개)
   const nodes = useMemo(() => generateDummyNodes(), [])
 
-  // 노드 위치 계산 (가운데 모아서 작은 지그재그)
+  // 노드 위치 계산 (양쪽으로 살짝 펼침)
   const getNodePosition = (index: number) => {
     const baseX = 50 // 중앙 기준
-    const offsetX = (index % 2 === 0 ? -3 : 3) // 더 좁은 지그재그
-    const y = 60 + index * 90 // 세로 간격
+    const offsetX = (index % 2 === 0 ? -8 : 8) // 양쪽으로 펼침
+    const y = 80 + index * 110 // 세로 간격
 
     return {
       x: baseX + offsetX,
@@ -65,8 +65,9 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
         }}
       />
 
-      {/* 경로 SVG */}
-      <div className="absolute inset-0">
+      {/* 노드들과 경로 */}
+      <div className="relative z-10">
+        {/* 경로 - 노드 사이 점선 */}
         {nodes.slice(0, -1).map((node, i) => {
           const start = nodePositions[i]
           const end = nodePositions[i + 1]
@@ -75,19 +76,14 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
           return (
             <MapPath
               key={`path-${node.id}`}
-              startX={start.x * containerRef.current?.clientWidth! / 100 || start.x * 3.5}
+              startX={start.x}
               startY={start.y}
-              endX={end.x * containerRef.current?.clientWidth! / 100 || end.x * 3.5}
+              endX={end.x}
               endY={end.y}
-              isCompleted={node.status === 'completed'}
               index={i}
             />
           )
         })}
-      </div>
-
-      {/* 노드들 */}
-      <div className="relative z-10 pt-4">
         {nodes.map((node, i) => {
           const pos = nodePositions[i]
           // selectedWorld와 일치하는 노드가 활성화

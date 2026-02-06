@@ -3,44 +3,39 @@
 import { motion } from 'framer-motion'
 
 interface MapPathProps {
-  startX: number
-  startY: number
-  endX: number
-  endY: number
-  isCompleted: boolean
+  startX: number  // 퍼센트 (0-100)
+  startY: number  // 픽셀
+  endX: number    // 퍼센트 (0-100)
+  endY: number    // 픽셀
   index: number
 }
 
-export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapPathProps) {
-  // 두 점 사이에 점들 생성
-  const dotCount = 6
+export function MapPath({ startX, startY, endX, endY, index }: MapPathProps) {
+  // 두 노드 사이에 점들 생성
+  const dotCount = 5
   const dots = []
 
   for (let i = 1; i <= dotCount; i++) {
     const t = i / (dotCount + 1)
-    // 곡선 보간 (quadratic bezier 근사)
-    const curveOffset = (index % 2 === 0 ? 1 : -1) * 8
-    const midX = (startX + endX) / 2 + curveOffset
 
-    // Quadratic bezier 공식
-    const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * midX + t * t * endX
-    const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * ((startY + endY) / 2) + t * t * endY
+    // 직선 보간
+    const x = startX + (endX - startX) * t
+    const y = startY + (endY - startY) * t
 
     dots.push({ x, y, delay: i * 0.05 })
   }
 
   return (
-    <svg
-      className="absolute top-0 left-0 w-full h-full pointer-events-none"
-      style={{ overflow: 'visible' }}
-    >
+    <>
       {dots.map((dot, i) => (
-        <motion.circle
-          key={i}
-          cx={dot.x}
-          cy={dot.y}
-          r={3}
-          fill={isCompleted ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)'}
+        <motion.div
+          key={`dot-${index}-${i}`}
+          className="absolute w-2 h-2 rounded-full bg-white/25 pointer-events-none"
+          style={{
+            left: `${dot.x}%`,
+            top: dot.y,
+            transform: 'translate(-50%, -50%)',
+          }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -50,6 +45,6 @@ export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapP
           }}
         />
       ))}
-    </svg>
+    </>
   )
 }
