@@ -67,9 +67,9 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
     }
   }, [])
 
-  // Lottie 데이터 로드
+  // Lottie 데이터 로드 (기존 우주 애니메이션 사용)
   useEffect(() => {
-    fetch('/intro/space.json')
+    fetch('/intro/intro.lottie/Space.json')
       .then(res => res.json())
       .then(data => setLottieData(data))
       .catch(() => setLottieError(true))
