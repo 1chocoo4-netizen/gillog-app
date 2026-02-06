@@ -19,7 +19,7 @@ export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapP
   for (let i = 1; i <= dotCount; i++) {
     const t = i / (dotCount + 1)
     // 곡선 보간 (quadratic bezier 근사)
-    const curveOffset = (index % 2 === 0 ? 1 : -1) * 15
+    const curveOffset = (index % 2 === 0 ? 1 : -1) * 8
     const midX = (startX + endX) / 2 + curveOffset
 
     // Quadratic bezier 공식

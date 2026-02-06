@@ -14,19 +14,14 @@ interface MapAreaProps {
 export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 더미 노드 생성 및 선택된 월드 필터링
-  const allNodes = useMemo(() => generateDummyNodes(), [])
+  // 6개 노드 생성 (월드당 1개)
+  const nodes = useMemo(() => generateDummyNodes(), [])
 
-  // 선택된 월드의 노드들만 표시
-  const nodes = useMemo(() => {
-    return allNodes.filter(node => node.worldKey === selectedWorld)
-  }, [allNodes, selectedWorld])
-
-  // 노드 위치 계산 (가운데 모아서 지그재그)
-  const getNodePosition = (index: number, total: number) => {
+  // 노드 위치 계산 (가운데 모아서 작은 지그재그)
+  const getNodePosition = (index: number) => {
     const baseX = 50 // 중앙 기준
-    const offsetX = (index % 2 === 0 ? -8 : 8) // 좁은 지그재그
-    const y = 50 + index * 100 // 세로 간격
+    const offsetX = (index % 2 === 0 ? -3 : 3) // 더 좁은 지그재그
+    const y = 60 + index * 90 // 세로 간격
 
     return {
       x: baseX + offsetX,
@@ -34,7 +29,7 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
     }
   }
 
-  const nodePositions = nodes.map((_, i) => getNodePosition(i, nodes.length))
+  const nodePositions = nodes.map((_, i) => getNodePosition(i))
 
   return (
     <div

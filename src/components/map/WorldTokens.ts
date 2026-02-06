@@ -74,25 +74,18 @@ export interface MapNode {
 
 export function generateDummyNodes(): MapNode[] {
   const nodes: MapNode[] = []
-  let order = 0
 
-  WORLD_ORDER.forEach((worldKey, worldIndex) => {
-    // 각 월드당 5개 노드
-    for (let i = 0; i < 5; i++) {
-      order++
-      const isFirst = worldIndex === 0 && i === 0
-      const isSecond = worldIndex === 0 && i === 1
-
-      nodes.push({
-        id: `node-${order}`,
-        worldKey,
-        type: i === 4 ? 'checkpoint' : 'lesson',
-        status: isFirst ? 'completed' : isSecond ? 'active' : 'locked',
-        title: `${WORLD_TOKENS[worldKey].label} ${i + 1}`,
-        xp: 20 + i * 5,
-        order,
-      })
-    }
+  // 각 월드당 1개 노드, 총 6개
+  WORLD_ORDER.forEach((worldKey, index) => {
+    nodes.push({
+      id: `node-${index + 1}`,
+      worldKey,
+      type: 'lesson',
+      status: index === 0 ? 'completed' : index === 1 ? 'active' : 'locked',
+      title: WORLD_TOKENS[worldKey].label,
+      xp: 30 + index * 10,
+      order: index + 1,
+    })
   })
 
   return nodes
