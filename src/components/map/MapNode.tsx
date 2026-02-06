@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { WORLD_TOKENS, MapNode as MapNodeType } from './WorldTokens'
-import { Lock, Check, Star } from 'lucide-react'
+import { Check, Star } from 'lucide-react'
 
 interface MapNodeProps {
   node: MapNodeType
@@ -84,12 +84,10 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
       >
         {isCompleted ? (
           <Check className="w-5 h-5 text-white/60" />
-        ) : isLocked ? (
-          <Lock className="w-4 h-4 text-white/30" />
-        ) : isActive ? (
-          <span className="text-xl">{world.icon}</span>
         ) : (
-          <div className="w-2 h-2 rounded-full bg-white/30" />
+          <span className={`${isActive ? 'text-xl' : 'text-base'} ${isLocked ? 'opacity-40 grayscale' : ''}`}>
+            {world.icon}
+          </span>
         )}
       </div>
 

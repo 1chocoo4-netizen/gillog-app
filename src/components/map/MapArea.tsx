@@ -22,11 +22,11 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
     return allNodes.filter(node => node.worldKey === selectedWorld)
   }, [allNodes, selectedWorld])
 
-  // 노드 위치 계산 (지그재그 패턴)
+  // 노드 위치 계산 (가운데 모아서 지그재그)
   const getNodePosition = (index: number, total: number) => {
     const baseX = 50 // 중앙 기준
-    const offsetX = (index % 2 === 0 ? -15 : 15) + (Math.random() - 0.5) * 10
-    const y = 60 + index * 120 // 세로 간격
+    const offsetX = (index % 2 === 0 ? -8 : 8) // 좁은 지그재그
+    const y = 50 + index * 100 // 세로 간격
 
     return {
       x: baseX + offsetX,

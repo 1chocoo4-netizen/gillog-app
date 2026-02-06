@@ -12,9 +12,9 @@ interface MapPathProps {
 }
 
 export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapPathProps) {
-  // 곡선 경로 계산 (S자 커브)
+  // 곡선 경로 계산 (부드러운 커브)
   const midY = (startY + endY) / 2
-  const curveOffset = (index % 2 === 0 ? 1 : -1) * 40
+  const curveOffset = (index % 2 === 0 ? 1 : -1) * 20
 
   const pathD = `
     M ${startX} ${startY}
@@ -33,14 +33,14 @@ export function MapPath({ startX, startY, endX, endY, isCompleted, index }: MapP
         </linearGradient>
       </defs>
 
-      {/* 점선 경로 */}
+      {/* 점 경로 */}
       <motion.path
         d={pathD}
         fill="none"
         stroke={`url(#pathGradient-${index})`}
-        strokeWidth="3"
+        strokeWidth="4"
         strokeLinecap="round"
-        strokeDasharray="8 8"
+        strokeDasharray="1 12"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 1 }}
         transition={{
