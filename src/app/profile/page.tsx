@@ -1,40 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
-import { QuestBanner } from '@/components/map/QuestBanner'
-import { MapArea } from '@/components/map/MapArea'
-import { WorldKey, MapNode } from '@/components/map/WorldTokens'
 import { AuthGuard } from '@/components/AuthGuard'
 import { getUserEnergy } from '@/lib/auth'
 
-function AppHomeContent() {
-  const router = useRouter()
-  const [selectedWorld, setSelectedWorld] = useState<WorldKey>('cognition')
+function ProfileContent() {
   const [energy, setEnergy] = useState(50)
 
-  // 사용자별 에너지 불러오기
   useEffect(() => {
     setEnergy(getUserEnergy())
   }, [])
 
-  const handleNodeClick = (node: MapNode) => {
-    // 해당 월드만 선택 (페이지 이동 없음)
-    setSelectedWorld(node.worldKey)
-  }
-
-  const handleNodeEnter = (node: MapNode) => {
-    // 모든 월드는 선택 화면으로 이동
-    router.push(`/world/${node.worldKey}`)
-  }
-
   return (
     <main className="min-h-screen bg-slate-900">
-      {/* 상단 HUD - 에너지 */}
+      {/* 상단 HUD */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
           {/* 로고/타이틀 */}
@@ -64,32 +47,21 @@ function AppHomeContent() {
             </div>
           </div>
         </div>
-
-        {/* 월드 선택 배너 */}
-        <QuestBanner
-          selectedWorld={selectedWorld}
-          onWorldChange={setSelectedWorld}
-        />
       </header>
 
-      {/* 메인 맵 영역 */}
-      <div className="pt-32">
-        <MapArea
-          selectedWorld={selectedWorld}
-          onNodeClick={handleNodeClick}
-          onNodeEnter={handleNodeEnter}
-        />
+      {/* 메인 영역 - 비어있음 */}
+      <div className="pt-20 pb-20">
+        {/* 프로필 콘텐츠가 여기에 들어갈 수 있음 */}
       </div>
 
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/app" icon="🗺️" label="월드" active />
+          <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/checkin" icon="⚡" label="실행" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
-          <TabItem href="/profile" icon="👤" label="프로필" />
+          <TabItem href="/profile" icon="👤" label="프로필" active />
         </div>
-        {/* iOS 홈 인디케이터 영역 */}
         <div className="h-safe-area-inset-bottom" />
       </nav>
     </main>
@@ -132,10 +104,10 @@ function TabItem({
   )
 }
 
-export default function AppHomePage() {
+export default function ProfilePage() {
   return (
     <AuthGuard>
-      <AppHomeContent />
+      <ProfileContent />
     </AuthGuard>
   )
 }

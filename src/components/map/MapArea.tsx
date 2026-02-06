@@ -35,7 +35,7 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
   return (
     <div
       ref={containerRef}
-      className="relative w-full min-h-screen pb-32"
+      className="relative w-full min-h-screen pb-80"
       style={{
         background: `
           linear-gradient(180deg,
