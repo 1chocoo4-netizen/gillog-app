@@ -15,8 +15,8 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
   const isCompleted = node.status === 'completed'
   const isLocked = node.status === 'locked'
 
-  // 노드 크기
-  const size = isActive ? 72 : 56
+  // 노드 크기 (더 크게)
+  const size = isActive ? 88 : 72
 
   return (
     <motion.button
@@ -72,7 +72,7 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
       <div
         className={`
           relative z-10 flex items-center justify-center rounded-full
-          ${isActive ? 'w-14 h-14' : 'w-10 h-10'}
+          ${isActive ? 'w-16 h-16' : 'w-12 h-12'}
         `}
         style={{
           backgroundColor: isCompleted
@@ -85,7 +85,7 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
         {isCompleted ? (
           <Check className="w-5 h-5 text-white/60" />
         ) : (
-          <span className={`${isActive ? 'text-xl' : 'text-base'} ${isLocked ? 'opacity-40 grayscale' : ''}`}>
+          <span className={`${isActive ? 'text-2xl' : 'text-xl'} ${isLocked ? 'opacity-40 grayscale' : ''}`}>
             {world.icon}
           </span>
         )}
