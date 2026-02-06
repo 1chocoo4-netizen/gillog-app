@@ -9,9 +9,10 @@ import { generateDummyNodes, WORLD_TOKENS, WorldKey, MapNode as MapNodeType } fr
 interface MapAreaProps {
   selectedWorld: WorldKey
   onNodeClick: (node: MapNodeType) => void
+  onNodeEnter: (node: MapNodeType) => void
 }
 
-export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
+export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // 6개 노드 생성 (월드당 1개)
@@ -110,6 +111,7 @@ export function MapArea({ selectedWorld, onNodeClick }: MapAreaProps) {
                 node={node}
                 isActive={isActive}
                 onClick={() => onNodeClick(node)}
+                onEnter={() => onNodeEnter(node)}
               />
             </motion.div>
           )

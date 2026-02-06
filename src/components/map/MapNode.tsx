@@ -8,9 +8,10 @@ interface MapNodeProps {
   node: MapNodeType
   isActive: boolean
   onClick?: () => void
+  onEnter?: () => void
 }
 
-export function MapNode({ node, isActive, onClick }: MapNodeProps) {
+export function MapNode({ node, isActive, onClick, onEnter }: MapNodeProps) {
   const world = WORLD_TOKENS[node.worldKey]
 
   // 노드 크기 (더 크게)
@@ -73,11 +74,19 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
             ? world.color
             : 'rgba(255,255,255,0.08)',
         }}
+        onClick={(e) => {
+          if (isActive && onEnter) {
+            e.stopPropagation()
+            onEnter()
+          }
+        }}
       >
-        {node.worldKey === 'cognition' ? (
-          <Brain className={`${isActive ? 'w-10 h-10' : 'w-8 h-8'} text-white`} />
+        {isActive ? (
+          <span className="text-white text-sm font-bold">입장하기</span>
+        ) : node.worldKey === 'cognition' ? (
+          <Brain className="w-8 h-8 text-white" />
         ) : (
-          <span className={`${isActive ? 'text-3xl' : 'text-2xl'}`}>
+          <span className="text-2xl">
             {world.icon}
           </span>
         )}
