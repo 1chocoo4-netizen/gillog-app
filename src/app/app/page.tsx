@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap } from 'lucide-react'
 import Link from 'next/link'
@@ -10,14 +9,12 @@ import { MapArea } from '@/components/map/MapArea'
 import { WorldKey, MapNode } from '@/components/map/WorldTokens'
 
 export default function AppHomePage() {
-  const router = useRouter()
   const [selectedWorld, setSelectedWorld] = useState<WorldKey>('cognition')
   const [energy] = useState(50)
 
   const handleNodeClick = (node: MapNode) => {
-    // 해당 월드를 선택하고 레슨 페이지로 이동
+    // 해당 월드만 선택 (페이지 이동 없음)
     setSelectedWorld(node.worldKey)
-    router.push(`/lesson/${node.id}`)
   }
 
   return (
