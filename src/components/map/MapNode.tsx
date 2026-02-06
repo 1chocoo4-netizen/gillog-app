@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { WORLD_TOKENS, MapNode as MapNodeType } from './WorldTokens'
-import { Check, Star } from 'lucide-react'
+import { Brain, Check, Star } from 'lucide-react'
 
 interface MapNodeProps {
   node: MapNodeType
@@ -81,6 +81,8 @@ export function MapNode({ node, isActive, onClick }: MapNodeProps) {
       >
         {isCompleted ? (
           <Check className="w-5 h-5 text-white/60" />
+        ) : node.worldKey === 'cognition' ? (
+          <Brain className={`${isActive ? 'w-10 h-10' : 'w-8 h-8'} text-white`} />
         ) : (
           <span className={`${isActive ? 'text-3xl' : 'text-2xl'}`}>
             {world.icon}
