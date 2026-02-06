@@ -17,31 +17,31 @@ const SCENES = [
     id: 1,
     start: 0,
     end: 2,
-    text: '당신은 지구 위 80억명 중 한 명뿐이라 소중합니다.',
+    text: '당신은 지구 위 80억명 중 한 명뿐이라\n소중합니다.',
   },
   {
     id: 2,
     start: 2,
     end: 5,
-    text: '소중한 당신에겐 가능성과 잠재력이 있습니다.',
+    text: '소중한 당신에겐 가능성과 잠재력이\n있습니다.',
   },
   {
     id: 3,
     start: 5,
     end: 7.5,
-    text: '가능성과 잠재력이 있는 당신은 창의적입니다.',
+    text: '가능성과 잠재력이 있는 당신은\n창의적입니다.',
   },
   {
     id: 4,
     start: 7.5,
     end: 10,
-    text: '지금부터, 나의 길을 저장하고 추적합니다.',
+    text: '지금부터, 나의 길을\n저장하고 추적합니다.',
   },
   {
     id: 5,
     start: 10,
     end: 12,
-    text: '그리고 나의 성장을 지켜봅니다.',
+    text: '그리고 나의 성장을\n지켜봅니다.',
   },
 ]
 
@@ -265,7 +265,7 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={textTransition}
-            className="absolute bottom-[35%] text-white text-xl md:text-2xl font-medium text-center leading-relaxed max-w-md px-4"
+            className="absolute bottom-[35%] text-white text-xl md:text-2xl font-medium text-center leading-relaxed max-w-md px-4 whitespace-pre-line"
           >
             {currentScene.text}
           </motion.p>
