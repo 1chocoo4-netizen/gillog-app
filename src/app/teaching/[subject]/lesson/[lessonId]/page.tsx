@@ -16,10 +16,6 @@ function LessonContent() {
   const worldKey = params.subject as string
   const lessonId = params.lessonId as string
 
-  // lessonId 형식: humanities-ch1 → subjectKey: humanities, chapterNumber: 1
-  const [subjectKey, chapterPart] = lessonId.split('-ch')
-  const chapterNumber = parseInt(chapterPart) || 1
-
   const [energy, setEnergy] = useState(50)
   const [currentStep, setCurrentStep] = useState(0)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
@@ -29,7 +25,21 @@ function LessonContent() {
   const [isComplete, setIsComplete] = useState(false)
   const [showCharacter, setShowCharacter] = useState(false)
 
+  // lessonId 형식: humanities-ch1 → subjectKey: humanities, chapterNumber: 1
+  // 안전하게 파싱
+  let subjectKey = 'humanities'
+  let chapterNumber = 1
+
+  if (lessonId && lessonId.includes('-ch')) {
+    const parts = lessonId.split('-ch')
+    subjectKey = parts[0] || 'humanities'
+    chapterNumber = parseInt(parts[1]) || 1
+  }
+
   const lessonData = getLessonData(subjectKey, chapterNumber)
+
+  // 디버깅 로그
+  console.log('Lesson params:', { worldKey, lessonId, subjectKey, chapterNumber, hasData: !!lessonData })
 
   useEffect(() => {
     setEnergy(getUserEnergy())
