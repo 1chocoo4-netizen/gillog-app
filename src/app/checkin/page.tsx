@@ -21,6 +21,8 @@ const GROWTH_AREAS = [
 interface ExecutionItem {
   id: string
   areaKey: string
+  subjectKey?: string  // 과목 키 (humanities 등)
+  lessonTitle?: string // 레슨 제목
   text: string
   completed: boolean
   createdAt: string
@@ -194,6 +196,11 @@ function ExecutionContent() {
                           <p className="text-white text-sm leading-relaxed">
                             {item.text}
                           </p>
+                          {item.lessonTitle && (
+                            <p className="text-violet-400 text-xs mt-1">
+                              📚 {item.lessonTitle}
+                            </p>
+                          )}
                           <div className="flex items-center gap-3 mt-2">
                             <p className="text-white/30 text-xs">
                               완료 시 +5 ⚡

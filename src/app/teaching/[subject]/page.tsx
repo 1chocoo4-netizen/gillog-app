@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { getContentsByWorldAndChapter } from '@/lib/teaching/content'
+import { LESSON_DATA } from '@/lib/teaching/lessonContent'
 import { AuthGuard } from '@/components/AuthGuard'
 import { getUserEnergy, getUserProgressKey } from '@/lib/auth'
 
@@ -61,7 +62,23 @@ function WorldTeachingContent() {
     )
   }
 
-  const handleChapterClick = (chapterKey: string) => {
+  // 새 레슨 시스템이 있는지 확인
+  const hasNewLesson = (chapterKey: string, chapterIndex: number) => {
+    const lessons = LESSON_DATA[chapterKey]
+    if (lessons && lessons.length > 0) return true
+    // humanities 과목의 첫 번째 챕터는 새 레슨 시스템 사용
+    if (worldKey === 'cognition' && chapterKey === 'humanities' && chapterIndex === 0) return true
+    return false
+  }
+
+  const handleChapterClick = (chapterKey: string, chapterIndex: number) => {
+    // 새 레슨 시스템 체크 (인문 1챕터)
+    if (hasNewLesson(chapterKey, chapterIndex)) {
+      router.push(`/teaching/${chapterKey}/lesson/ch1`)
+      return
+    }
+
+    // 기존 콘텐츠 시스템
     const nextContent = getNextContent(chapterKey)
     if (nextContent) {
       router.push(`/teaching/${worldKey}/${nextContent.id}`)
@@ -123,7 +140,9 @@ function WorldTeachingContent() {
           {worldConfig.chapters.map((chapter, index) => {
             const chapterProgress = getChapterProgress(chapter.key)
             const isComplete = chapterProgress.completed >= chapterProgress.total && chapterProgress.total > 0
-            const hasContent = chapterProgress.total > 0
+            const hasOldContent = chapterProgress.total > 0
+            const hasNewLessonContent = hasNewLesson(chapter.key, index)
+            const hasContent = hasOldContent || hasNewLessonContent
 
             return (
               <motion.button
@@ -131,8 +150,8 @@ function WorldTeachingContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => handleChapterClick(chapter.key)}
-                disabled={!hasContent}
+                onClick={() => handleChapterClick(chapter.key, index)}
+                disabled={!hasContent && !hasNewLesson(chapter.key, index)}
                 className={`relative p-4 rounded-2xl border transition-all ${
                   !hasContent
                     ? 'bg-white/5 border-white/10 opacity-50'
