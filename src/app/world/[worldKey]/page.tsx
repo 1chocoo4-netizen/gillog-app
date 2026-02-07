@@ -35,7 +35,7 @@ function WorldContent() {
       const newEnergy = energy - 2
       setEnergy(newEnergy)
       localStorage.setItem('gillog-energy', String(newEnergy))
-      router.push(`/lesson/${worldKey}-1`)
+      router.push(`/world/${worldKey}/coaching`)
     }
   }
 

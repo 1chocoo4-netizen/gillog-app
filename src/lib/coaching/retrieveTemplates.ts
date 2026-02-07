@@ -45,6 +45,7 @@ function extractTopics(text: string): string[] {
 
 // 숫자 응답 감지 (점수 응답)
 function detectNumberResponse(text: string): number | null {
+  if (!text) return null
   const match = text.match(/(\d+)점?/)
   if (match) {
     const num = parseInt(match[1])

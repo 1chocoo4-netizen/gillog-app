@@ -10,7 +10,7 @@ const GROWTH_AREAS = [
   { key: 'selfDirected', label: '자기주도', icon: '🎯' },
   { key: 'habit', label: '습관', icon: '🔄' },
   { key: 'attitude', label: '태도', icon: '💪' },
-  { key: 'expression', label: '표현', icon: '💬' },
+  { key: 'relationship', label: '관계', icon: '🤝' },
   { key: 'character', label: '인성', icon: '❤️' },
 ]
 
@@ -26,7 +26,7 @@ const DEFAULT_LEVEL_DATA: LevelData = {
     selfDirected: 0,
     habit: 0,
     attitude: 0,
-    expression: 0,
+    relationship: 0,
     character: 0,
   }
 }

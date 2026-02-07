@@ -27,8 +27,8 @@
   --gl-world-selfdirected: #06b6d4;  /* 시안 - 자기주도 */
   --gl-world-habit: #22c55e;         /* 그린 - 습관 */
   --gl-world-attitude: #f59e0b;      /* 앰버 - 태도 */
-  --gl-world-expression: #ec4899;    /* 핑크 - 표현 */
-  --gl-world-character: #6366f1;     /* 인디고 - 인성 */
+  --gl-world-relationship: #ec4899;  /* 핑크 - 관계 */
+  --gl-world-character: #fb923c;     /* 오렌지 - 인성 */
 
   /* 뉴트럴 */
   --gl-bg: #fafafa;

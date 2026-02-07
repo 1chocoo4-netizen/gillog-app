@@ -331,7 +331,16 @@ function getRecentTurns(sessionId: string, limit: number = 10): ConversationTurn
 export async function POST(request: NextRequest): Promise<NextResponse<ChatResponse>> {
   try {
     const body: ChatRequest = await request.json()
-    const { sessionId, message, worldKey = 'cognition', worldLabel = '인지', isFirstTurn = false } = body
+    const { sessionId, message = '', worldKey = 'cognition', worldLabel = '인지', isFirstTurn = false } = body
+
+    // 메시지가 없으면 에러
+    if (!message) {
+      return NextResponse.json({
+        text: '메시지를 입력해줘!',
+        state: 'STATE' as CoachingState,
+        isComplete: false
+      })
+    }
 
     // 세션 가져오기 또는 생성
     let session = sessions.get(sessionId)

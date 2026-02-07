@@ -1,6 +1,6 @@
 // 월드별 티칭 시스템 타입 정의
 
-export type WorldKey = 'cognition' | 'selfDirected' | 'habit' | 'attitude' | 'expression' | 'character'
+export type WorldKey = 'cognition' | 'selfDirected' | 'habit' | 'attitude' | 'relationship' | 'character'
 
 export interface WorldChapter {
   key: string
@@ -90,21 +90,21 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
       { key: 'gratitude', label: '감사', icon: '💝', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
     ]
   },
-  expression: {
-    key: 'expression',
-    label: '표현',
-    icon: '💬',
-    description: '생각과 감정을 효과적으로 전달하는 힘',
+  relationship: {
+    key: 'relationship',
+    label: '관계',
+    icon: '🤝',
+    description: '사람들과 건강한 관계를 맺고 유지하는 힘',
     color: 'from-pink-500 to-rose-600',
     chapters: [
-      { key: 'speaking', label: '말하기', icon: '🗣️', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
-      { key: 'writing', label: '글쓰기', icon: '✍️', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
+      { key: 'communication', label: '소통', icon: '💬', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
+      { key: 'empathy', label: '공감', icon: '💗', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
       { key: 'listening', label: '경청', icon: '👂', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
-      { key: 'nonverbal', label: '비언어 표현', icon: '🤝', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
-      { key: 'presentation', label: '발표력', icon: '🎤', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
-      { key: 'persuasion', label: '설득력', icon: '💡', color: 'from-cyan-500 to-blue-600', gradient: 'from-cyan-500/20 to-blue-500/20' },
-      { key: 'emotion', label: '감정 표현', icon: '💕', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
-      { key: 'feedback', label: '피드백', icon: '💬', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
+      { key: 'boundaries', label: '경계 설정', icon: '🚧', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
+      { key: 'trust', label: '신뢰', icon: '🤞', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
+      { key: 'conflict', label: '갈등 해결', icon: '🕊️', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
+      { key: 'support', label: '지지하기', icon: '🫂', color: 'from-cyan-500 to-blue-600', gradient: 'from-cyan-500/20 to-blue-500/20' },
+      { key: 'networking', label: '네트워킹', icon: '🌐', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
     ]
   },
   character: {

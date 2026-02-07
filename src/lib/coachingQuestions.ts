@@ -640,7 +640,7 @@ export function getSessionGreeting(worldKey: string): string {
     selfDirected: '안녕! 여기서는 자기주도 학습 코칭을 시작할 거야.\n스스로 목표를 세우고 실천하는 힘을 키워볼 거야.',
     habit: '안녕! 여기서는 습관 형성 코칭을 시작할 거야.\n좋은 습관이 좋은 결과를 만들어.',
     attitude: '안녕! 여기서는 태도 코칭을 시작할 거야.\n어떤 마음가짐으로 세상을 바라보는지가 중요해.',
-    expression: '안녕! 여기서는 표현력 코칭을 시작할 거야.\n네 생각과 감정을 잘 전달하는 방법을 배워볼 거야.',
+    relationship: '안녕! 여기서는 관계 코칭을 시작할 거야.\n사람들과 건강한 관계를 맺는 방법을 배워볼 거야.',
     character: '안녕! 여기서는 인성 코칭을 시작할 거야.\n좋은 사람이 되는 건 평생의 여정이야.',
   }
   return greetings[worldKey] || greetings.cognition

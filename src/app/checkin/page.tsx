@@ -2,88 +2,181 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Zap, Check, Bell, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Zap, Check, Bell, X, Plus, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge, updateLevelProgress } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { getUserEnergy, addUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { saveExecutionRecord } from '@/lib/executionHistory'
 
 // 6개 성장 영역
 const GROWTH_AREAS = [
-  { key: 'cognition', label: '인지', icon: '🧠' },
-  { key: 'selfDirected', label: '자기주도', icon: '🎯' },
-  { key: 'habit', label: '습관', icon: '🔄' },
-  { key: 'attitude', label: '태도', icon: '💪' },
-  { key: 'expression', label: '표현', icon: '💬' },
-  { key: 'character', label: '인성', icon: '❤️' },
+  { key: 'cognition', label: '인지', icon: '🧠', color: '#8b5cf6' },
+  { key: 'selfDirected', label: '자기주도', icon: '🎯', color: '#06b6d4' },
+  { key: 'habit', label: '습관', icon: '🔄', color: '#22c55e' },
+  { key: 'attitude', label: '태도', icon: '💪', color: '#f59e0b' },
+  { key: 'relationship', label: '관계', icon: '🤝', color: '#ec4899' },
+  { key: 'character', label: '인성', icon: '❤️', color: '#fb923c' },
 ]
+
+// 월드별 레슨 목록
+const WORLD_LESSONS: Record<string, { key: string; title: string }[]> = {
+  cognition: [
+    { key: 'focus', title: '집중력 향상' },
+    { key: 'memory', title: '기억력 강화' },
+    { key: 'thinking', title: '비판적 사고' },
+    { key: 'learning', title: '효과적인 학습법' },
+    { key: 'reading', title: '독해력 향상' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+  selfDirected: [
+    { key: 'goal', title: '목표 설정' },
+    { key: 'planning', title: '계획 세우기' },
+    { key: 'time', title: '시간 관리' },
+    { key: 'motivation', title: '동기 부여' },
+    { key: 'decision', title: '의사결정' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+  habit: [
+    { key: 'morning', title: '아침 루틴' },
+    { key: 'study', title: '공부 습관' },
+    { key: 'exercise', title: '운동 습관' },
+    { key: 'sleep', title: '수면 관리' },
+    { key: 'routine', title: '일상 루틴' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+  attitude: [
+    { key: 'positive', title: '긍정적 마인드' },
+    { key: 'resilience', title: '회복탄력성' },
+    { key: 'growth', title: '성장 마인드셋' },
+    { key: 'stress', title: '스트레스 관리' },
+    { key: 'emotion', title: '감정 조절' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+  relationship: [
+    { key: 'communication', title: '소통하기' },
+    { key: 'empathy', title: '공감하기' },
+    { key: 'conflict', title: '갈등 해결' },
+    { key: 'teamwork', title: '협업하기' },
+    { key: 'listening', title: '경청하기' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+  character: [
+    { key: 'honesty', title: '정직함' },
+    { key: 'responsibility', title: '책임감' },
+    { key: 'respect', title: '존중하기' },
+    { key: 'sharing', title: '나눔과 배려' },
+    { key: 'service', title: '봉사하기' },
+    { key: 'custom', title: '직접 입력' },
+  ],
+}
 
 interface ExecutionItem {
   id: string
   areaKey: string
-  subjectKey?: string  // 과목 키 (humanities 등)
-  lessonTitle?: string // 레슨 제목
+  subjectKey?: string
+  lessonTitle?: string
   text: string
   completed: boolean
   createdAt: string
-  alarmTime?: string  // HH:MM 형식
+  alarmTime?: string
 }
 
+type AddStep = 'closed' | 'world' | 'lesson' | 'text'
+
 function ExecutionContent() {
+  const router = useRouter()
   const [energy, setEnergy] = useState(50)
   const [items, setItems] = useState<ExecutionItem[]>([])
   const [showReward, setShowReward] = useState(false)
-  const [alarmModal, setAlarmModal] = useState<string | null>(null)  // 알람 설정 중인 아이템 ID
+  const [alarmModal, setAlarmModal] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState('09:00')
+
+  // 투두 추가 관련 상태
+  const [addStep, setAddStep] = useState<AddStep>('closed')
+  const [selectedWorld, setSelectedWorld] = useState<string | null>(null)
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
+  const [todoText, setTodoText] = useState('')
 
   // 사용자별 데이터 불러오기
   useEffect(() => {
     setEnergy(getUserEnergy())
-
-    // 사용자 키 또는 게스트 키 사용
     const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-
-    console.log('Loading executions from:', execKey)
-
     const savedItems = localStorage.getItem(execKey)
-    console.log('Found items:', savedItems)
-
     if (savedItems) {
       try {
-        const parsed = JSON.parse(savedItems)
-        console.log('Parsed items:', parsed)
-        setItems(parsed)
+        setItems(JSON.parse(savedItems))
       } catch {
         setItems([])
       }
     }
   }, [])
 
+  // 아이템 저장
+  function saveItems(newItems: ExecutionItem[]) {
+    setItems(newItems)
+    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
+    localStorage.setItem(execKey, JSON.stringify(newItems))
+  }
+
   // 체크 완료 처리
   function handleComplete(itemId: string) {
     const item = items.find(i => i.id === itemId)
     if (!item || item.completed) return
 
-    // 아이템 완료 표시
     const updatedItems = items.map(i =>
       i.id === itemId ? { ...i, completed: true } : i
     )
-    setItems(updatedItems)
+    saveItems(updatedItems)
 
-    // 사용자별 실행 목록 저장
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    localStorage.setItem(execKey, JSON.stringify(updatedItems))
-
-    // 에너지 +5 (사용자별)
     const newEnergy = addUserEnergy(5)
     setEnergy(newEnergy)
 
-    // 레벨 진행도 업데이트
     updateLevelProgress(item.areaKey, 1)
 
-    // 보상 표시
+    saveExecutionRecord({
+      worldKey: item.areaKey,
+      areaKey: item.areaKey,
+      subjectKey: item.subjectKey,
+      lessonTitle: item.lessonTitle,
+      executionText: item.text,
+      energy: 5,
+    })
+
     setShowReward(true)
-    setTimeout(() => setShowReward(false), 2000)
+    setTimeout(() => {
+      setShowReward(false)
+      router.push('/dashboard')
+    }, 1500)
+  }
+
+  // 투두 추가 완료
+  function handleAddTodo() {
+    if (!selectedWorld || !todoText.trim()) return
+
+    const world = GROWTH_AREAS.find(w => w.key === selectedWorld)
+    const lesson = selectedLesson !== 'custom'
+      ? WORLD_LESSONS[selectedWorld]?.find(l => l.key === selectedLesson)
+      : null
+
+    const newItem: ExecutionItem = {
+      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      areaKey: selectedWorld,
+      subjectKey: selectedLesson || undefined,
+      lessonTitle: lesson?.title || (selectedLesson === 'custom' ? '직접 입력' : undefined),
+      text: todoText.trim(),
+      completed: false,
+      createdAt: new Date().toISOString(),
+    }
+
+    saveItems([...items, newItem])
+
+    // 초기화
+    setAddStep('closed')
+    setSelectedWorld(null)
+    setSelectedLesson(null)
+    setTodoText('')
   }
 
   // 알람 설정
@@ -91,13 +184,9 @@ function ExecutionContent() {
     const updatedItems = items.map(i =>
       i.id === itemId ? { ...i, alarmTime: selectedTime } : i
     )
-    setItems(updatedItems)
-
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    localStorage.setItem(execKey, JSON.stringify(updatedItems))
+    saveItems(updatedItems)
     setAlarmModal(null)
 
-    // 브라우저 알림 권한 요청
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission()
     }
@@ -108,16 +197,13 @@ function ExecutionContent() {
     const updatedItems = items.map(i =>
       i.id === itemId ? { ...i, alarmTime: undefined } : i
     )
-    setItems(updatedItems)
-
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    localStorage.setItem(execKey, JSON.stringify(updatedItems))
+    saveItems(updatedItems)
   }
 
-  // 알람 모달 열기
-  function openAlarmModal(itemId: string, currentTime?: string) {
-    setSelectedTime(currentTime || '09:00')
-    setAlarmModal(itemId)
+  // 아이템 삭제
+  function handleDeleteItem(itemId: string) {
+    const updatedItems = items.filter(i => i.id !== itemId)
+    saveItems(updatedItems)
   }
 
   // 영역별로 아이템 그룹화
@@ -126,7 +212,6 @@ function ExecutionContent() {
     items: items.filter(item => item.areaKey === area.key)
   }))
 
-  // 미완료 아이템이 있는 영역만 표시
   const activeAreas = groupedItems.filter(area =>
     area.items.some(item => !item.completed)
   )
@@ -158,23 +243,27 @@ function ExecutionContent() {
       </header>
 
       {/* 메인 영역 */}
-      <div className="pt-20 pb-24 px-4">
+      <div className="pt-20 pb-32 px-4">
         {activeAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <p className="text-white/40 text-sm mb-2">실행 항목이 없습니다</p>
-            <p className="text-white/30 text-xs">코칭 세션을 완료하면 실행 항목이 추가됩니다</p>
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-4xl mb-4">
+              ⚡
+            </div>
+            <p className="text-white/60 text-sm mb-2">실행 항목이 없습니다</p>
+            <p className="text-white/40 text-xs mb-6">아래 + 버튼을 눌러 직접 추가해보세요!</p>
           </div>
         ) : (
           <div className="space-y-6 max-w-lg mx-auto">
             {activeAreas.map(area => (
               <div key={area.key}>
-                {/* 영역 헤더 */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{area.icon}</span>
                   <h2 className="text-white font-semibold">{area.label}</h2>
+                  <span className="text-white/30 text-xs ml-auto">
+                    {area.items.filter(i => !i.completed).length}개
+                  </span>
                 </div>
 
-                {/* 체크리스트 */}
                 <div className="space-y-2">
                   {area.items.filter(item => !item.completed).map(item => (
                     <motion.div
@@ -186,10 +275,11 @@ function ExecutionContent() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleComplete(item.id)}
-                          className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-violet-500 flex items-center justify-center hover:bg-violet-500/20 transition-colors mt-0.5"
+                          className="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center hover:bg-white/10 transition-colors mt-0.5"
+                          style={{ borderColor: area.color }}
                         >
                           {item.completed && (
-                            <Check className="w-4 h-4 text-violet-500" />
+                            <Check className="w-4 h-4" style={{ color: area.color }} />
                           )}
                         </button>
                         <div className="flex-1">
@@ -197,7 +287,7 @@ function ExecutionContent() {
                             {item.text}
                           </p>
                           {item.lessonTitle && (
-                            <p className="text-violet-400 text-xs mt-1">
+                            <p className="text-xs mt-1" style={{ color: area.color }}>
                               📚 {item.lessonTitle}
                             </p>
                           )}
@@ -205,10 +295,12 @@ function ExecutionContent() {
                             <p className="text-white/30 text-xs">
                               완료 시 +5 ⚡
                             </p>
-                            {/* 알람 표시/설정 */}
                             {item.alarmTime ? (
                               <button
-                                onClick={() => openAlarmModal(item.id, item.alarmTime)}
+                                onClick={() => {
+                                  setSelectedTime(item.alarmTime || '09:00')
+                                  setAlarmModal(item.id)
+                                }}
                                 className="flex items-center gap-1 text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full"
                               >
                                 <Bell className="w-3 h-3" />
@@ -216,13 +308,22 @@ function ExecutionContent() {
                               </button>
                             ) : (
                               <button
-                                onClick={() => openAlarmModal(item.id)}
+                                onClick={() => {
+                                  setSelectedTime('09:00')
+                                  setAlarmModal(item.id)
+                                }}
                                 className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60"
                               >
                                 <Bell className="w-3 h-3" />
-                                알람 설정
+                                알람
                               </button>
                             )}
+                            <button
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="text-xs text-red-400/60 hover:text-red-400"
+                            >
+                              삭제
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -234,6 +335,143 @@ function ExecutionContent() {
           </div>
         )}
       </div>
+
+      {/* 플로팅 추가 버튼 */}
+      <button
+        onClick={() => setAddStep('world')}
+        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40"
+      >
+        <Plus className="w-7 h-7" />
+      </button>
+
+      {/* 투두 추가 모달 */}
+      <AnimatePresence>
+        {addStep !== 'closed' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAddStep('closed')}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-hidden"
+            >
+              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10">
+                {/* 헤더 */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-white font-bold text-lg">
+                    {addStep === 'world' && '🌍 월드 선택'}
+                    {addStep === 'lesson' && '📚 레슨 선택'}
+                    {addStep === 'text' && '✍️ 실행 내용'}
+                  </h3>
+                  <button
+                    onClick={() => setAddStep('closed')}
+                    className="text-white/50 hover:text-white"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Step 1: 월드 선택 */}
+                {addStep === 'world' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {GROWTH_AREAS.map(area => (
+                      <button
+                        key={area.key}
+                        onClick={() => {
+                          setSelectedWorld(area.key)
+                          setAddStep('lesson')
+                        }}
+                        className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left"
+                      >
+                        <span className="text-2xl mb-2 block">{area.icon}</span>
+                        <span className="text-white font-medium">{area.label}</span>
+                        <p className="text-white/40 text-xs mt-1">
+                          {WORLD_LESSONS[area.key]?.length - 1}개 레슨
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Step 2: 레슨 선택 */}
+                {addStep === 'lesson' && selectedWorld && (
+                  <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                    <button
+                      onClick={() => setAddStep('world')}
+                      className="text-white/50 text-sm mb-2 flex items-center gap-1"
+                    >
+                      ← {GROWTH_AREAS.find(w => w.key === selectedWorld)?.icon} {GROWTH_AREAS.find(w => w.key === selectedWorld)?.label}
+                    </button>
+                    {WORLD_LESSONS[selectedWorld]?.map(lesson => (
+                      <button
+                        key={lesson.key}
+                        onClick={() => {
+                          setSelectedLesson(lesson.key)
+                          setAddStep('text')
+                        }}
+                        className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left flex items-center justify-between"
+                      >
+                        <span className="text-white">{lesson.title}</span>
+                        <ChevronRight className="w-5 h-5 text-white/30" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Step 3: 텍스트 입력 */}
+                {addStep === 'text' && selectedWorld && (
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => setAddStep('lesson')}
+                      className="text-white/50 text-sm mb-2 flex items-center gap-1"
+                    >
+                      ← {GROWTH_AREAS.find(w => w.key === selectedWorld)?.icon} {
+                        selectedLesson !== 'custom'
+                          ? WORLD_LESSONS[selectedWorld]?.find(l => l.key === selectedLesson)?.title
+                          : '직접 입력'
+                      }
+                    </button>
+
+                    <div>
+                      <label className="text-white/60 text-sm mb-2 block">
+                        오늘 실행할 내용을 적어주세요
+                      </label>
+                      <textarea
+                        value={todoText}
+                        onChange={e => setTodoText(e.target.value)}
+                        placeholder="예: 오늘 수학 문제집 10문제 풀기"
+                        rows={3}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="bg-white/5 rounded-xl p-3">
+                      <p className="text-white/50 text-xs">
+                        ⚡ 실행 완료 시 에너지 +5, 레벨 진행도가 올라갑니다
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleAddTodo}
+                      disabled={!todoText.trim()}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50"
+                    >
+                      투두 추가하기
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* 알람 설정 모달 */}
       <AnimatePresence>
@@ -266,10 +504,6 @@ function ExecutionContent() {
                   </button>
                 </div>
 
-                <p className="text-white/60 text-sm mb-4">
-                  실행할 시간을 설정하세요
-                </p>
-
                 <input
                   type="time"
                   value={selectedTime}
@@ -286,7 +520,7 @@ function ExecutionContent() {
                       }}
                       className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-semibold"
                     >
-                      알람 삭제
+                      삭제
                     </button>
                   )}
                   <button
@@ -321,7 +555,7 @@ function ExecutionContent() {
       </AnimatePresence>
 
       {/* 하단 탭바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/checkin" icon="⚡" label="실행" active />

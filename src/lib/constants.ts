@@ -44,14 +44,14 @@ export const WORLDS = {
     icon: '✨',
     order: 4,
   },
-  expression: {
-    key: 'expression',
-    title: '표현',
-    subtitle: '생각을 나누기',
-    description: '자신의 생각과 감정을 명확하게 전달하는 능력',
-    color: 'var(--gl-world-expression)',
+  relationship: {
+    key: 'relationship',
+    title: '관계',
+    subtitle: '함께 연결하기',
+    description: '사람들과 건강한 관계를 맺고 유지하는 능력',
+    color: 'var(--gl-world-relationship)',
     colorHex: '#ec4899',
-    icon: '💬',
+    icon: '🤝',
     order: 5,
   },
   character: {
@@ -149,10 +149,10 @@ export const DEFAULT_COACHES = {
     tagline: '어떤 상황에서도 빛나는 너',
     avatarSeed: 'seoyeon-attitude',
   },
-  expression: {
+  relationship: {
     name: '도윤 코치',
-    tagline: '네 이야기를 들려줘',
-    avatarSeed: 'doyoon-expression',
+    tagline: '함께하면 더 따뜻해',
+    avatarSeed: 'doyoon-relationship',
   },
   character: {
     name: '예준 코치',

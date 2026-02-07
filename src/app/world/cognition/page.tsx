@@ -27,7 +27,7 @@ export default function CognitionWorldPage() {
       const newEnergy = energy - 2
       setEnergy(newEnergy)
       localStorage.setItem('gillog-energy', String(newEnergy))
-      router.push('/lesson/cognition-1')
+      router.push('/world/cognition/coaching')
     }
   }
 

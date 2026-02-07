@@ -32,10 +32,10 @@ export const WORLD_TOKENS = {
     bgGlow: 'rgba(251, 191, 36, 0.3)',
     order: 4,
   },
-  expression: {
-    key: 'expression',
-    label: '표현',
-    icon: '💬',
+  relationship: {
+    key: 'relationship',
+    label: '관계',
+    icon: '🤝',
     color: '#F472B6', // pink
     bgGlow: 'rgba(244, 114, 182, 0.3)',
     order: 5,
@@ -57,7 +57,7 @@ export const WORLD_ORDER: WorldKey[] = [
   'selfDirected',
   'habit',
   'attitude',
-  'expression',
+  'relationship',
   'character',
 ]
 
