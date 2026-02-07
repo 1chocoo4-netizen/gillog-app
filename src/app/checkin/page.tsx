@@ -40,15 +40,21 @@ function ExecutionContent() {
   useEffect(() => {
     setEnergy(getUserEnergy())
 
-    const execKey = getUserProgressKey('executions')
-    if (execKey) {
-      const savedItems = localStorage.getItem(execKey)
-      if (savedItems) {
-        try {
-          setItems(JSON.parse(savedItems))
-        } catch {
-          setItems([])
-        }
+    // 사용자 키 또는 게스트 키 사용
+    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
+
+    console.log('Loading executions from:', execKey)
+
+    const savedItems = localStorage.getItem(execKey)
+    console.log('Found items:', savedItems)
+
+    if (savedItems) {
+      try {
+        const parsed = JSON.parse(savedItems)
+        console.log('Parsed items:', parsed)
+        setItems(parsed)
+      } catch {
+        setItems([])
       }
     }
   }, [])
@@ -65,10 +71,8 @@ function ExecutionContent() {
     setItems(updatedItems)
 
     // 사용자별 실행 목록 저장
-    const execKey = getUserProgressKey('executions')
-    if (execKey) {
-      localStorage.setItem(execKey, JSON.stringify(updatedItems))
-    }
+    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
+    localStorage.setItem(execKey, JSON.stringify(updatedItems))
 
     // 에너지 +5 (사용자별)
     const newEnergy = addUserEnergy(5)
@@ -89,10 +93,8 @@ function ExecutionContent() {
     )
     setItems(updatedItems)
 
-    const execKey = getUserProgressKey('executions')
-    if (execKey) {
-      localStorage.setItem(execKey, JSON.stringify(updatedItems))
-    }
+    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
+    localStorage.setItem(execKey, JSON.stringify(updatedItems))
     setAlarmModal(null)
 
     // 브라우저 알림 권한 요청
@@ -108,10 +110,8 @@ function ExecutionContent() {
     )
     setItems(updatedItems)
 
-    const execKey = getUserProgressKey('executions')
-    if (execKey) {
-      localStorage.setItem(execKey, JSON.stringify(updatedItems))
-    }
+    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
+    localStorage.setItem(execKey, JSON.stringify(updatedItems))
   }
 
   // 알람 모달 열기

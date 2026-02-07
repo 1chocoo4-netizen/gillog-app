@@ -94,30 +94,49 @@ function LessonContent() {
 
     // 사용자별 실행 항목 저장
     const execKey = getUserProgressKey('executions')
-    if (!execKey) return
 
-    const existingItems = localStorage.getItem(execKey)
+    // execKey가 없으면 기본 키 사용
+    const storageKey = execKey || 'gillog-executions-guest'
+
+    console.log('Saving execution item:', { storageKey, actionText })
+
+    const existingItems = localStorage.getItem(storageKey)
     const items = existingItems ? JSON.parse(existingItems) : []
 
     const newItem = {
       id: `exec-${Date.now()}`,
       areaKey: 'cognition',
       subjectKey: subjectKey,
-      lessonTitle: lessonData.title,
+      lessonTitle: lessonData?.title || '인문 레슨',
       text: actionText,
       completed: false,
       createdAt: new Date().toISOString(),
     }
 
     items.push(newItem)
-    localStorage.setItem(execKey, JSON.stringify(items))
+    localStorage.setItem(storageKey, JSON.stringify(items))
+
+    console.log('Saved items:', items)
 
     // 에너지 보상
     const newEnergy = addUserEnergy(5)
     setEnergy(newEnergy)
 
-    // 완료 처리
-    setIsComplete(true)
+    // 레슨 진행도 저장
+    const progressKey = getUserProgressKey('lesson-progress')
+    if (progressKey && lessonData) {
+      const existingProgress = localStorage.getItem(progressKey)
+      const progress = existingProgress ? JSON.parse(existingProgress) : []
+      progress.push({
+        subjectKey,
+        lessonId: lessonData.id,
+        completedAt: new Date().toISOString(),
+      })
+      localStorage.setItem(progressKey, JSON.stringify(progress))
+    }
+
+    // 바로 실행 관리 페이지로 이동
+    router.push('/checkin')
   }
 
   const handleComplete = () => {
