@@ -74,7 +74,7 @@ function WorldTeachingContent() {
   const handleChapterClick = (chapterKey: string, chapterIndex: number) => {
     // 새 레슨 시스템 체크 (인문 1챕터)
     if (hasNewLesson(chapterKey, chapterIndex)) {
-      router.push(`/teaching/${chapterKey}/lesson/ch1`)
+      router.push(`/teaching/${worldKey}/lesson/${chapterKey}-ch1`)
       return
     }
 

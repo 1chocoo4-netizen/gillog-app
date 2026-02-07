@@ -13,9 +13,12 @@ import { getLessonData, LessonStep } from '@/lib/teaching/lessonContent'
 function LessonContent() {
   const params = useParams()
   const router = useRouter()
-  const subjectKey = params.subject as string
+  const worldKey = params.subject as string
   const lessonId = params.lessonId as string
-  const chapterNumber = parseInt(lessonId.replace('ch', ''))
+
+  // lessonId 형식: humanities-ch1 → subjectKey: humanities, chapterNumber: 1
+  const [subjectKey, chapterPart] = lessonId.split('-ch')
+  const chapterNumber = parseInt(chapterPart) || 1
 
   const [energy, setEnergy] = useState(50)
   const [currentStep, setCurrentStep] = useState(0)
@@ -132,7 +135,7 @@ function LessonContent() {
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href={`/teaching/${subjectKey}`} className="text-white/70 hover:text-white">
+          <Link href={`/teaching/${worldKey}`} className="text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </Link>
 
