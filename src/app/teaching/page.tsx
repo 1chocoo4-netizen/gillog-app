@@ -7,6 +7,7 @@ import { Zap, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { SUBJECTS, SubjectKey } from '@/lib/teaching/types'
+import { LESSON_DATA } from '@/lib/teaching/lessonContent'
 import { AuthGuard } from '@/components/AuthGuard'
 import { getUserEnergy, getUserProgressKey } from '@/lib/auth'
 
@@ -50,7 +51,15 @@ function TeachingContent() {
   }, [])
 
   const handleSubjectClick = (subjectKey: SubjectKey) => {
-    router.push(`/teaching/${subjectKey}`)
+    // 새 듀오링고 스타일 레슨이 있는지 확인
+    const lessons = LESSON_DATA[subjectKey]
+    if (lessons && lessons.length > 0) {
+      // 새 레슨 시스템으로 이동
+      router.push(`/teaching/cognition/lesson/${subjectKey}-ch1`)
+      return
+    }
+    // 기존 시스템 (현재는 모두 cognition 월드 안의 과목들)
+    router.push(`/teaching/cognition`)
   }
 
   return (
