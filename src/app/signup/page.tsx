@@ -7,13 +7,18 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { MapArea } from '@/components/map/MapArea'
 import { WorldKey } from '@/components/map/WorldTokens'
-import { login, isLoggedIn, User } from '@/lib/auth'
+import { login, isLoggedIn } from '@/lib/auth'
 
 export default function SignupPage() {
   const router = useRouter()
   const [selectedWorld] = useState<WorldKey>('cognition')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    passwordConfirm: '',
     name: '',
     gender: '' as 'male' | 'female' | 'other' | '',
     age: '',
@@ -23,7 +28,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (isLoggedIn()) {
-      router.push('/app')
+      router.push('/checkin')
     }
   }, [router])
 
@@ -32,24 +37,64 @@ export default function SignupPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
-    if (!formData.name || !formData.gender || !formData.age || !formData.email || !formData.phone) {
-      alert('모든 항목을 입력해주세요.')
+    if (!formData.username || !formData.password || !formData.name || !formData.gender || !formData.age || !formData.email || !formData.phone) {
+      setError('모든 항목을 입력해주세요.')
       return
     }
 
-    const user: User = {
-      name: formData.name,
-      gender: formData.gender as 'male' | 'female' | 'other',
-      age: parseInt(formData.age, 10),
-      email: formData.email,
-      phone: formData.phone
+    if (formData.password !== formData.passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.')
+      return
     }
 
-    login(user)
-    router.push('/app')
+    if (formData.password.length < 4) {
+      setError('비밀번호는 4자 이상이어야 합니다.')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          name: formData.name,
+          gender: formData.gender,
+          age: parseInt(formData.age, 10),
+          email: formData.email,
+          phone: formData.phone,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || '회원가입에 실패했습니다.')
+        return
+      }
+
+      // 회원가입 성공 시 자동 로그인
+      login({
+        username: data.user.username,
+        name: data.user.name,
+        gender: data.user.gender,
+        age: data.user.age,
+        email: data.user.email,
+        phone: data.user.phone,
+      })
+      router.push('/checkin')
+    } catch {
+      setError('서버 연결에 실패했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -90,7 +135,55 @@ export default function SignupPage() {
           <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
             <h1 className="text-2xl font-bold text-white text-center mb-6">회원가입</h1>
 
+            {error && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm text-center">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* 아이디 */}
+              <div>
+                <label className="block text-white/70 text-sm mb-2">아이디</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="아이디를 입력하세요"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+
+              {/* 비밀번호 */}
+              <div>
+                <label className="block text-white/70 text-sm mb-2">비밀번호</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="비밀번호를 입력하세요"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+
+              {/* 비밀번호 확인 */}
+              <div>
+                <label className="block text-white/70 text-sm mb-2">비밀번호 확인</label>
+                <input
+                  type="password"
+                  name="passwordConfirm"
+                  value={formData.passwordConfirm}
+                  onChange={handleChange}
+                  placeholder="비밀번호를 다시 입력하세요"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+
               {/* 이름 */}
               <div>
                 <label className="block text-white/70 text-sm mb-2">이름</label>
@@ -168,9 +261,10 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:opacity-90 transition-opacity mt-6"
+                disabled={loading}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:opacity-90 transition-opacity mt-6 disabled:opacity-50"
               >
-                가입하기
+                {loading ? '가입 중...' : '가입하기'}
               </button>
             </form>
 

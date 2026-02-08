@@ -1,6 +1,7 @@
 // 인증 관리 유틸리티
 
 export interface User {
+  username: string
   name: string
   gender: 'male' | 'female' | 'other'
   age: number
@@ -31,7 +32,7 @@ export function getCurrentUser(): User | null {
 export function login(user: User): void {
   localStorage.setItem('gillog-user', JSON.stringify(user))
   // 신규 사용자면 초기 에너지 설정
-  const energyKey = `gillog-energy-${user.email}`
+  const energyKey = `gillog-energy-${user.username}`
   if (!localStorage.getItem(energyKey)) {
     localStorage.setItem(energyKey, '50')
   }
@@ -46,7 +47,7 @@ export function logout(): void {
 function getEnergyKey(): string | null {
   const user = getCurrentUser()
   if (!user) return null
-  return `gillog-energy-${user.email}`
+  return `gillog-energy-${user.username}`
 }
 
 // 현재 사용자의 에너지 가져오기
@@ -86,5 +87,5 @@ export function useUserEnergy(amount: number): boolean {
 export function getUserProgressKey(type: string): string | null {
   const user = getCurrentUser()
   if (!user) return null
-  return `gillog-${type}-${user.email}`
+  return `gillog-${type}-${user.username}`
 }

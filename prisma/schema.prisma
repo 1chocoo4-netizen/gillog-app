@@ -14,11 +14,13 @@ datasource db {
 // 사용자
 // ========================================
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      String   @default("student") // student, parent, coach
-  avatarUrl String?
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  email        String   @unique
+  name         String
+  role         String   @default("student") // student, parent, coach
+  avatarUrl    String?
 
   // 게이미피케이션
   xp           Int       @default(0)

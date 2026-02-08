@@ -6,32 +6,55 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { MapArea } from '@/components/map/MapArea'
 import { WorldKey } from '@/components/map/WorldTokens'
-import { isLoggedIn } from '@/lib/auth'
+import { isLoggedIn, login } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [selectedWorld] = useState<WorldKey>('cognition')
 
   useEffect(() => {
-    // 이미 로그인되어 있으면 앱으로 이동
     if (isLoggedIn()) {
-      router.push('/app')
+      router.push('/checkin')
     }
   }, [router])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 간단히 이메일로 기존 사용자 확인 (실제로는 서버 인증 필요)
-    const savedUser = localStorage.getItem('gillog-user')
-    if (savedUser) {
-      const user = JSON.parse(savedUser)
-      if (user.email === email) {
-        router.push('/app')
+    setError('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || '로그인에 실패했습니다.')
         return
       }
+
+      login({
+        username: data.user.username,
+        name: data.user.name,
+        email: data.user.email,
+        gender: 'other',
+        age: 0,
+        phone: '',
+      })
+      router.push('/checkin')
+    } catch {
+      setError('서버 연결에 실패했습니다.')
+    } finally {
+      setLoading(false)
     }
-    alert('등록된 계정이 없습니다. 회원가입을 해주세요.')
   }
 
   return (
@@ -45,7 +68,7 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* 상단 헤더 (레벨/게이지 없음) */}
+      {/* 상단 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-center px-4 py-3">
           <div className="flex items-center gap-2">
@@ -67,14 +90,32 @@ export default function LoginPage() {
           <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
             <h1 className="text-2xl font-bold text-white text-center mb-6">로그인</h1>
 
+            {error && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm text-center">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-white/70 text-sm mb-2">이메일</label>
+                <label className="block text-white/70 text-sm mb-2">아이디</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="이메일을 입력하세요"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="아이디를 입력하세요"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/70 text-sm mb-2">비밀번호</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="비밀번호를 입력하세요"
                   required
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
@@ -82,9 +123,10 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:opacity-90 transition-opacity"
+                disabled={loading}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                로그인
+                {loading ? '로그인 중...' : '로그인'}
               </button>
             </form>
 

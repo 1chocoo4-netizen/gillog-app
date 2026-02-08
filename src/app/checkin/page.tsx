@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Check, Bell, X, Plus, ChevronRight } from 'lucide-react'
+import { Zap, Check, Bell, X, Plus, ChevronRight, Sparkles, ArrowLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge, updateLevelProgress } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -78,12 +78,13 @@ interface ExecutionItem {
   subjectKey?: string
   lessonTitle?: string
   text: string
+  aiRecord?: string
   completed: boolean
   createdAt: string
   alarmTime?: string
 }
 
-type AddStep = 'closed' | 'world' | 'lesson' | 'text'
+type AddStep = 'closed' | 'write' | 'selectWorld'
 
 function ExecutionContent() {
   const router = useRouter()
@@ -95,9 +96,14 @@ function ExecutionContent() {
 
   // 투두 추가 관련 상태
   const [addStep, setAddStep] = useState<AddStep>('closed')
-  const [selectedWorld, setSelectedWorld] = useState<string | null>(null)
-  const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
-  const [todoText, setTodoText] = useState('')
+  const [selectedWorlds, setSelectedWorlds] = useState<string[]>([])
+  const [learnedText, setLearnedText] = useState('')
+  const [feltText, setFeltText] = useState('')
+  const [actionText, setActionText] = useState('')
+
+  // AI 기록 모드
+  const [aiMode, setAiMode] = useState(false)
+  const [aiRecordText, setAiRecordText] = useState('')
 
   // 사용자별 데이터 불러오기
   useEffect(() => {
@@ -153,30 +159,33 @@ function ExecutionContent() {
 
   // 투두 추가 완료
   function handleAddTodo() {
-    if (!selectedWorld || !todoText.trim()) return
+    if (selectedWorlds.length === 0 || !actionText.trim()) return
 
-    const world = GROWTH_AREAS.find(w => w.key === selectedWorld)
-    const lesson = selectedLesson !== 'custom'
-      ? WORLD_LESSONS[selectedWorld]?.find(l => l.key === selectedLesson)
-      : null
+    const combinedParts: string[] = []
+    if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
+    if (feltText.trim()) combinedParts.push(`💭 느낀 것: ${feltText.trim()}`)
+    combinedParts.push(`🎯 실행: ${actionText.trim()}`)
+    const combinedText = combinedParts.join('\n')
 
-    const newItem: ExecutionItem = {
-      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      areaKey: selectedWorld,
-      subjectKey: selectedLesson || undefined,
-      lessonTitle: lesson?.title || (selectedLesson === 'custom' ? '직접 입력' : undefined),
-      text: todoText.trim(),
+    const newItems: ExecutionItem[] = selectedWorlds.map(worldKey => ({
+      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${worldKey}`,
+      areaKey: worldKey,
+      text: combinedText,
+      aiRecord: aiRecordText.trim() || undefined,
       completed: false,
       createdAt: new Date().toISOString(),
-    }
+    }))
 
-    saveItems([...items, newItem])
+    saveItems([...items, ...newItems])
 
     // 초기화
     setAddStep('closed')
-    setSelectedWorld(null)
-    setSelectedLesson(null)
-    setTodoText('')
+    setSelectedWorlds([])
+    setLearnedText('')
+    setFeltText('')
+    setActionText('')
+    setAiRecordText('')
+    setAiMode(false)
   }
 
   // 알람 설정
@@ -283,9 +292,14 @@ function ExecutionContent() {
                           )}
                         </button>
                         <div className="flex-1">
-                          <p className="text-white text-sm leading-relaxed">
+                          <p className="text-white text-sm leading-relaxed whitespace-pre-line">
                             {item.text}
                           </p>
+                          {item.aiRecord && (
+                            <p className="text-cyan-400/70 text-xs mt-1.5 whitespace-pre-line">
+                              ✨ {item.aiRecord}
+                            </p>
+                          )}
                           {item.lessonTitle && (
                             <p className="text-xs mt-1" style={{ color: area.color }}>
                               📚 {item.lessonTitle}
@@ -338,7 +352,7 @@ function ExecutionContent() {
 
       {/* 플로팅 추가 버튼 */}
       <button
-        onClick={() => setAddStep('world')}
+        onClick={() => setAddStep('write')}
         className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40"
       >
         <Plus className="w-7 h-7" />
@@ -361,109 +375,205 @@ function ExecutionContent() {
               exit={{ opacity: 0, y: 100 }}
               className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-hidden"
             >
-              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10">
+              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 max-h-[80vh] overflow-y-auto">
                 {/* 헤더 */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-white font-bold text-lg">
-                    {addStep === 'world' && '🌍 월드 선택'}
-                    {addStep === 'lesson' && '📚 레슨 선택'}
-                    {addStep === 'text' && '✍️ 실행 내용'}
+                    {addStep === 'write' && !aiMode && '✍️ 실행 계획 작성'}
+                    {addStep === 'write' && aiMode && '✨ AI 기록 남기기'}
+                    {addStep === 'selectWorld' && '🌍 월드 선택'}
                   </h3>
-                  <button
-                    onClick={() => setAddStep('closed')}
-                    className="text-white/50 hover:text-white"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {addStep === 'write' && !aiMode && (
+                      <button
+                        onClick={() => setAiMode(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:from-cyan-500/30 hover:to-violet-500/30 transition-all"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        AI 기록
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setAddStep('closed'); setAiMode(false) }}
+                      className="text-white/50 hover:text-white"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Step 1: 월드 선택 */}
-                {addStep === 'world' && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {GROWTH_AREAS.map(area => (
-                      <button
-                        key={area.key}
-                        onClick={() => {
-                          setSelectedWorld(area.key)
-                          setAddStep('lesson')
-                        }}
-                        className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left"
-                      >
-                        <span className="text-2xl mb-2 block">{area.icon}</span>
-                        <span className="text-white font-medium">{area.label}</span>
-                        <p className="text-white/40 text-xs mt-1">
-                          {WORLD_LESSONS[area.key]?.length - 1}개 레슨
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Step 2: 레슨 선택 */}
-                {addStep === 'lesson' && selectedWorld && (
-                  <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                    <button
-                      onClick={() => setAddStep('world')}
-                      className="text-white/50 text-sm mb-2 flex items-center gap-1"
-                    >
-                      ← {GROWTH_AREAS.find(w => w.key === selectedWorld)?.icon} {GROWTH_AREAS.find(w => w.key === selectedWorld)?.label}
-                    </button>
-                    {WORLD_LESSONS[selectedWorld]?.map(lesson => (
-                      <button
-                        key={lesson.key}
-                        onClick={() => {
-                          setSelectedLesson(lesson.key)
-                          setAddStep('text')
-                        }}
-                        className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left flex items-center justify-between"
-                      >
-                        <span className="text-white">{lesson.title}</span>
-                        <ChevronRight className="w-5 h-5 text-white/30" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Step 3: 텍스트 입력 */}
-                {addStep === 'text' && selectedWorld && (
+                {/* Step 1-A: AI 기록 모드 - 단일 메모장 */}
+                {addStep === 'write' && aiMode && (
                   <div className="space-y-4">
                     <button
-                      onClick={() => setAddStep('lesson')}
-                      className="text-white/50 text-sm mb-2 flex items-center gap-1"
+                      onClick={() => setAiMode(false)}
+                      className="text-white/50 text-sm flex items-center gap-1"
                     >
-                      ← {GROWTH_AREAS.find(w => w.key === selectedWorld)?.icon} {
-                        selectedLesson !== 'custom'
-                          ? WORLD_LESSONS[selectedWorld]?.find(l => l.key === selectedLesson)?.title
-                          : '직접 입력'
-                      }
+                      <ArrowLeft className="w-4 h-4" />
+                      돌아가기
                     </button>
 
+                    <div className="bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/20 rounded-xl p-3">
+                      <p className="text-white/60 text-xs">
+                        자유롭게 기록하세요. 배운점/느낀점/실행할점과 함께 저장됩니다.
+                      </p>
+                    </div>
+
+                    <textarea
+                      value={aiRecordText}
+                      onChange={e => setAiRecordText(e.target.value)}
+                      placeholder="AI 코칭에서 나눈 이야기, 떠오르는 생각 등을 자유롭게 적어주세요..."
+                      rows={6}
+                      className="w-full bg-white/5 border border-cyan-500/20 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 resize-none text-sm"
+                      autoFocus
+                    />
+
+                    <button
+                      onClick={() => setAiMode(false)}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      기록 완료
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 1-B: 직접 작성 모드 */}
+                {addStep === 'write' && !aiMode && (
+                  <div className="space-y-4">
                     <div>
-                      <label className="text-white/60 text-sm mb-2 block">
-                        오늘 실행할 내용을 적어주세요
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">📖</span>
+                        배운 것
                       </label>
                       <textarea
-                        value={todoText}
-                        onChange={e => setTodoText(e.target.value)}
-                        placeholder="예: 오늘 수학 문제집 10문제 풀기"
-                        rows={3}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none"
+                        value={learnedText}
+                        onChange={e => setLearnedText(e.target.value)}
+                        placeholder="오늘 배운 내용을 적어주세요"
+                        rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50 resize-none text-sm"
                         autoFocus
                       />
                     </div>
 
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-xs">💭</span>
+                        느낀 것
+                      </label>
+                      <textarea
+                        value={feltText}
+                        onChange={e => setFeltText(e.target.value)}
+                        placeholder="느낀 점이나 깨달은 것을 적어주세요"
+                        rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-amber-500/50 resize-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🎯</span>
+                        실행할 것
+                        <span className="text-red-400 text-xs">*필수</span>
+                      </label>
+                      <textarea
+                        value={actionText}
+                        onChange={e => setActionText(e.target.value)}
+                        placeholder="실행할 구체적인 행동을 적어주세요"
+                        rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none text-sm"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => setAddStep('selectWorld')}
+                      disabled={!actionText.trim()}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      다음: 월드 선택
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 2: 월드 다중 선택 */}
+                {addStep === 'selectWorld' && (
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => setAddStep('write')}
+                      className="text-white/50 text-sm mb-2 flex items-center gap-1"
+                    >
+                      ← 돌아가기
+                    </button>
+
+                    <p className="text-white/60 text-sm">
+                      이 실행 계획을 어떤 월드에 추가할까요? (복수 선택 가능)
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {GROWTH_AREAS.map(area => {
+                        const isSelected = selectedWorlds.includes(area.key)
+                        return (
+                          <button
+                            key={area.key}
+                            onClick={() => {
+                              setSelectedWorlds(prev =>
+                                isSelected
+                                  ? prev.filter(k => k !== area.key)
+                                  : [...prev, area.key]
+                              )
+                            }}
+                            className={`p-4 rounded-xl border transition-all text-left ${
+                              isSelected
+                                ? 'bg-white/10 border-2'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                            }`}
+                            style={isSelected ? { borderColor: area.color } : undefined}
+                          >
+                            <span className="text-2xl mb-2 block">{area.icon}</span>
+                            <span className="text-white font-medium">{area.label}</span>
+                            {isSelected && (
+                              <span className="block mt-1 text-xs" style={{ color: area.color }}>
+                                ✓ 선택됨
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* 미리보기 */}
+                    {(learnedText.trim() || feltText.trim() || aiRecordText.trim()) && (
+                      <div className="bg-white/5 rounded-xl p-3 space-y-1">
+                        <p className="text-white/40 text-xs font-medium mb-2">미리보기</p>
+                        {learnedText.trim() && (
+                          <p className="text-white/70 text-xs">📖 배운 것: {learnedText.trim()}</p>
+                        )}
+                        {feltText.trim() && (
+                          <p className="text-white/70 text-xs">💭 느낀 것: {feltText.trim()}</p>
+                        )}
+                        <p className="text-white/70 text-xs">🎯 실행: {actionText.trim()}</p>
+                        {aiRecordText.trim() && (
+                          <p className="text-cyan-400/70 text-xs">✨ AI 기록: {aiRecordText.trim()}</p>
+                        )}
+                      </div>
+                    )}
+
                     <div className="bg-white/5 rounded-xl p-3">
                       <p className="text-white/50 text-xs">
-                        ⚡ 실행 완료 시 에너지 +5, 레벨 진행도가 올라갑니다
+                        ⚡ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)
                       </p>
                     </div>
 
                     <button
                       onClick={handleAddTodo}
-                      disabled={!todoText.trim()}
+                      disabled={selectedWorlds.length === 0}
                       className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50"
                     >
-                      투두 추가하기
+                      {selectedWorlds.length > 0
+                        ? `${selectedWorlds.length}개 월드에 투두 추가하기`
+                        : '월드를 선택해주세요'
+                      }
                     </button>
                   </div>
                 )}
@@ -557,8 +667,8 @@ function ExecutionContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/checkin" icon="⚡" label="실행" active />
+          <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
           <TabItem href="/profile" icon="👤" label="프로필" />
         </div>

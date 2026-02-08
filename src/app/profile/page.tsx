@@ -1,34 +1,49 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap } from 'lucide-react'
+import { Zap, LogOut, User, Mail, Phone, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy } from '@/lib/auth'
+import { getCurrentUser, getUserEnergy, logout } from '@/lib/auth'
+import type { User as UserType } from '@/lib/auth'
 
 function ProfileContent() {
+  const router = useRouter()
   const [energy, setEnergy] = useState(50)
+  const [user, setUser] = useState<UserType | null>(null)
 
   useEffect(() => {
     setEnergy(getUserEnergy())
+    setUser(getCurrentUser())
   }, [])
+
+  const handleLogout = () => {
+    if (confirm('정말 로그아웃 하시겠습니까?')) {
+      logout()
+      router.push('/login')
+    }
+  }
+
+  const genderLabel = (g: string) => {
+    if (g === 'male') return '남성'
+    if (g === 'female') return '여성'
+    return '기타'
+  }
 
   return (
     <main className="min-h-screen bg-slate-900">
       {/* 상단 HUD */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          {/* 로고/타이틀 */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
             <span className="text-white font-semibold">길로그</span>
           </div>
-
-          {/* 레벨 + 에너지 */}
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
@@ -49,22 +64,72 @@ function ProfileContent() {
         </div>
       </header>
 
-      {/* 메인 영역 - 비어있음 */}
-      <div className="pt-20 pb-20">
-        {/* 프로필 콘텐츠가 여기에 들어갈 수 있음 */}
+      {/* 프로필 콘텐츠 */}
+      <div className="pt-20 pb-24 px-4">
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-sm mx-auto space-y-5"
+          >
+            {/* 아바타 + 이름 */}
+            <div className="flex flex-col items-center gap-3 py-6">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white text-3xl font-bold">
+                  {user.name.charAt(0)}
+                </span>
+              </div>
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-white">{user.name}</h2>
+                <p className="text-white/50 text-sm">@{user.username}</p>
+              </div>
+            </div>
+
+            {/* 내 정보 카드 */}
+            <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-5 border border-white/10 space-y-4">
+              <h3 className="text-white font-semibold text-sm mb-3">내 정보</h3>
+
+              <InfoRow icon={<User className="w-4 h-4" />} label="성별" value={genderLabel(user.gender)} />
+              <InfoRow icon={<Calendar className="w-4 h-4" />} label="나이" value={`${user.age}세`} />
+              <InfoRow icon={<Mail className="w-4 h-4" />} label="이메일" value={user.email} />
+              <InfoRow icon={<Phone className="w-4 h-4" />} label="전화번호" value={user.phone} />
+            </div>
+
+            {/* 로그아웃 버튼 */}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-medium hover:bg-red-500/20 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              로그아웃
+            </button>
+          </motion.div>
+        )}
       </div>
 
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
           <TabItem href="/profile" icon="👤" label="프로필" active />
         </div>
         <div className="h-safe-area-inset-bottom" />
       </nav>
     </main>
+  )
+}
+
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2 text-white/50">
+        {icon}
+        <span className="text-sm">{label}</span>
+      </div>
+      <span className="text-white text-sm">{value}</span>
+    </div>
   )
 }
 
