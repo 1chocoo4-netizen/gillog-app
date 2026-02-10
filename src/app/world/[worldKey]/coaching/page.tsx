@@ -6,8 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Zap, X } from 'lucide-react'
 import { AuthGuard } from '@/components/AuthGuard'
-import { updateLevelProgress } from '@/components/LevelBadge'
-import { getUserEnergy, addUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 // 월드별 코치 아바타
 const COACH_AVATARS: Record<string, { avatar: string; style: string }> = {
@@ -38,7 +37,7 @@ function CoachingChat() {
   const [isTyping, setIsTyping] = useState(false)
   const [phase, setPhase] = useState<Phase>('explore')
   const [phaseTurn, setPhaseTurn] = useState(0) // 현재 단계 내 턴 수
-  const [energy, setEnergy] = useState(50)
+  const { energy, addEnergy, executions, saveExecutions, updateLevelProgress } = useUserData()
 
   // 투두 입력 모달
   const [showTodoModal, setShowTodoModal] = useState(false)
@@ -51,8 +50,6 @@ function CoachingChat() {
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
-
-    setEnergy(getUserEnergy())
 
     // 다양한 인사말
     const greetings = [
@@ -222,11 +219,8 @@ function CoachingChat() {
   function handleSaveTodo() {
     if (!todoText.trim()) return
 
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    const saved = localStorage.getItem(execKey)
-    const items = saved ? JSON.parse(saved) : []
-
-    items.push({
+    const newItems = [...executions]
+    newItems.push({
       id: `coach-${Date.now()}`,
       areaKey: worldKey,
       lessonTitle: '코칭',
@@ -235,9 +229,9 @@ function CoachingChat() {
       createdAt: new Date().toISOString(),
     })
 
-    localStorage.setItem(execKey, JSON.stringify(items))
+    saveExecutions(newItems)
     updateLevelProgress(worldKey, 1)
-    addUserEnergy(5)
+    addEnergy(5)
 
     setShowTodoModal(false)
     router.push('/checkin')
@@ -248,7 +242,7 @@ function CoachingChat() {
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href={`/world/${worldKey}`} className="p-2 -ml-2 text-white/60 hover:text-white">
+          <Link href="/coaching" className="p-2 -ml-2 text-white/60 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${coach.style} flex items-center justify-center text-xl shadow-lg`}>
@@ -377,10 +371,10 @@ function CoachingChat() {
       {/* 하단 네비게이션 */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <NavItem href="/app" icon="🗺️" label="월드" />
           <NavItem href="/checkin" icon="⚡" label="실행" />
+          <NavItem href="/coaching" icon="💬" label="코칭" />
+          <NavItem href="/app" icon="🗺️" label="월드" />
           <NavItem href="/dashboard" icon="📊" label="리포트" />
-          <NavItem href="/profile" icon="👤" label="프로필" />
         </div>
       </nav>
     </main>

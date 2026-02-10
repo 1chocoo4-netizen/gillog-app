@@ -7,33 +7,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ========================================
-// 사용자
+// NextAuth 모델
 // ========================================
-model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  passwordHash String
-  email        String   @unique
-  name         String
-  role         String   @default("student") // student, parent, coach
-  avatarUrl    String?
 
-  // 게이미피케이션
-  xp           Int       @default(0)
-  level        Int       @default(1)
-  streakDays   Int       @default(0)
-  lastActiveAt DateTime?
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
+  // Relations - NextAuth
+  accounts Account[]
+  sessions Session[]
+
+  // Relations - App
+  userData      UserData?
   quests        Quest[]
-  sessions      LessonSession[]
+  lessonSessions LessonSession[]
   checkins      Checkin[]
   badges        UserBadge[]
   statSnapshots StatSnapshot[]
@@ -42,14 +40,75 @@ model User {
   reportEntries ReportEntry[]
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ========================================
+// 사용자 데이터 (localStorage 대체 - 핵심)
+// ========================================
+
+model UserData {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  energy       Int    @default(50)
+  levelData    Json   @default("{\"level\":1,\"progress\":{\"cognition\":0,\"selfDirected\":0,\"habit\":0,\"attitude\":0,\"relationship\":0,\"character\":0}}")
+  executions   Json   @default("[]")
+  history      Json   @default("[]")
+  bucketList   Json   @default("[]")
+  monthlyGoals Json   @default("{}")
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // ========================================
 // 월드 시스템
 // ========================================
 
-// 성장 월드 (6개)
 model World {
   id          String @id @default(cuid())
-  key         String @unique // cognition, selfDirected, habit, attitude, expression, character
+  key         String @unique
   title       String
   subtitle    String
   description String
@@ -57,15 +116,14 @@ model World {
   icon        String
   order       Int
 
-  coach       Coach?
-  lessonNodes LessonNode[]
-  questions   Question[]
-  sessions    LessonSession[]
+  coach         Coach?
+  lessonNodes   LessonNode[]
+  questions     Question[]
+  sessions      LessonSession[]
   statSnapshots StatSnapshot[]
   reportEntries ReportEntry[]
 }
 
-// 코치 (월드당 1명)
 model Coach {
   id         String @id @default(cuid())
   worldId    String @unique
@@ -78,7 +136,6 @@ model Coach {
   sessions  LessonSession[]
 }
 
-// 레슨 노드 (월드 내 진행 단계)
 model LessonNode {
   id       String  @id @default(cuid())
   worldId  String
@@ -94,14 +151,13 @@ model LessonNode {
   @@unique([worldId, order])
 }
 
-// 질문 템플릿
 model Question {
   id          String  @id @default(cuid())
   worldId     String
   coachId     String
   prompt      String
-  type        String  @default("text") // text, choice, scale
-  optionsJson String? // JSON: 선택지 배열
+  type        String  @default("text")
+  optionsJson String?
   order       Int
 
   world   World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
@@ -113,7 +169,6 @@ model Question {
 // 레슨 세션 & 답변
 // ========================================
 
-// 레슨 세션 (사용자가 레슨을 진행한 기록)
 model LessonSession {
   id           String    @id @default(cuid())
   userId       String
@@ -121,20 +176,19 @@ model LessonSession {
   coachId      String
   lessonNodeId String
 
-  status       String    @default("in_progress") // in_progress, completed, abandoned
-  startedAt    DateTime  @default(now())
-  finishedAt   DateTime?
-  xpEarned     Int       @default(0)
+  status     String    @default("in_progress")
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  xpEarned   Int       @default(0)
 
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  world      World        @relation(fields: [worldId], references: [id])
-  coach      Coach        @relation(fields: [coachId], references: [id])
-  lessonNode LessonNode   @relation(fields: [lessonNodeId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  world      World      @relation(fields: [worldId], references: [id])
+  coach      Coach      @relation(fields: [coachId], references: [id])
+  lessonNode LessonNode @relation(fields: [lessonNodeId], references: [id])
   answers    Answer[]
   report     ReportEntry?
 }
 
-// 답변
 model Answer {
   id         String   @id @default(cuid())
   sessionId  String
@@ -152,30 +206,28 @@ model Answer {
 // 보상 & 리포트
 // ========================================
 
-// 보상 이벤트 기록
 model RewardEvent {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // xp, streak, badge, unlock, levelUp
+  type      String
   value     Int      @default(0)
-  metaJson  String?  // JSON: 추가 정보
+  metaJson  String?
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// 리포트 엔트리 (세션 완료 후 생성)
 model ReportEntry {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   userId    String
   worldKey  String
-  sessionId String   @unique
+  sessionId String @unique
   worldId   String
 
   title    String
   summary  String
-  evidence String? // 주요 답변 발췌
-  keywords String? // JSON: 키워드 배열
+  evidence String?
+  keywords String?
 
   createdAt DateTime @default(now())
 
@@ -188,16 +240,15 @@ model ReportEntry {
 // 성장 지표
 // ========================================
 
-// 성장 지표 스냅샷 (월드별)
 model StatSnapshot {
-  id        String   @id @default(cuid())
-  userId    String
-  worldId   String?
-  worldKey  String   // cognition, selfDirected, etc.
+  id       String  @id @default(cuid())
+  userId   String
+  worldId  String?
+  worldKey String
 
-  level0to4       Float @default(0) // 0~4 레벨
-  confidence0to1  Float @default(0) // 0~1 신뢰도
-  evidenceSnippet String? // 근거 문장
+  level0to4       Float   @default(0)
+  confidence0to1  Float   @default(0)
+  evidenceSnippet String?
 
   updatedAt DateTime @default(now())
 
@@ -211,7 +262,6 @@ model StatSnapshot {
 // 기존 모델 (하위 호환)
 // ========================================
 
-// 퀘스트 (오늘의 미션) - 레거시, 점진적 마이그레이션
 model Quest {
   id          String    @id @default(cuid())
   userId      String
@@ -228,7 +278,6 @@ model Quest {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// 체크인 기록
 model Checkin {
   id        String   @id @default(cuid())
   userId    String
@@ -240,7 +289,6 @@ model Checkin {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// 배지 정의
 model Badge {
   id          String @id @default(cuid())
   name        String @unique
@@ -252,7 +300,6 @@ model Badge {
   users UserBadge[]
 }
 
-// 사용자-배지 연결
 model UserBadge {
   id       String   @id @default(cuid())
   userId   String

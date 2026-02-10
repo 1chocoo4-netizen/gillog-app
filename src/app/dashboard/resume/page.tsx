@@ -2,24 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronRight, Sparkles, FileText, Copy, Check, FileSignature } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Sparkles, FileText, Copy, Check, FileSignature, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthGuard } from '@/components/AuthGuard'
 import {
   ISO_30414_CRITERIA,
   JOB_CATEGORIES,
-  mapWorldToISO,
-  convertToFormalStyle,
   type JobCategory,
-  type ISOCriteriaKey,
   type ResumeReportRequest,
 } from '@/lib/resumeTemplates'
+import { useUserData } from '@/lib/UserDataProvider'
 import {
-  getAllExecutionRecords,
   calculateOverallStats,
-  WORLD_LABELS,
-  WORLD_ICONS,
-  WORLD_COLORS,
   type ExecutionRecord,
 } from '@/lib/executionHistory'
 
@@ -27,6 +21,7 @@ type Step = 'job' | 'details' | 'generating' | 'result'
 
 function ResumeContent() {
   const router = useRouter()
+  const { history } = useUserData()
 
   const [step, setStep] = useState<Step>('job')
   const [request, setRequest] = useState<ResumeReportRequest>({
@@ -38,197 +33,97 @@ function ResumeContent() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isFormalStyle, setIsFormalStyle] = useState(false)
+  const [formalReport, setFormalReport] = useState<string>('')
+  const [isFormalLoading, setIsFormalLoading] = useState(false)
+  const [formalPrompt, setFormalPrompt] = useState<string>('')
 
   useEffect(() => {
-    const allRecords = getAllExecutionRecords()
-    setRecords(allRecords)
-    setStats(calculateOverallStats())
-  }, [])
+    setRecords(history)
+    setStats(calculateOverallStats(history))
+  }, [history])
 
   // 리포트 생성
   async function handleGenerate() {
     setStep('generating')
     setIsGenerating(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    const report = generateResumeReport(request, records)
-    setGeneratedReport(report)
-    setStep('result')
-    setIsGenerating(false)
-  }
-
-  // ISO 30414 기반 이력서 리포트 생성
-  function generateResumeReport(req: ResumeReportRequest, recs: ExecutionRecord[]): string {
-    const jobInfo = JOB_CATEGORIES[req.jobCategory]
-
-    // 월드별로 기록 분류
-    const recordsByWorld: Record<string, ExecutionRecord[]> = {}
-    recs.forEach(r => {
-      if (!recordsByWorld[r.worldKey]) recordsByWorld[r.worldKey] = []
-      recordsByWorld[r.worldKey].push(r)
-    })
-
-    // ISO 역량별로 기록 분류
-    const recordsByISO: Record<ISOCriteriaKey, ExecutionRecord[]> = {} as any
-    Object.keys(ISO_30414_CRITERIA).forEach(key => {
-      recordsByISO[key as ISOCriteriaKey] = []
-    })
-
-    recs.forEach(r => {
-      const isoKeys = mapWorldToISO(r.worldKey)
-      isoKeys.forEach(isoKey => {
-        recordsByISO[isoKey].push(r)
+    try {
+      const res = await fetch('/api/resume-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobCategory: request.jobCategory,
+          targetCompany: request.targetCompany,
+          targetPosition: request.targetPosition,
+          additionalInfo: request.additionalInfo,
+          records: records.map(r => ({
+            worldKey: r.worldKey,
+            executionText: r.executionText,
+            date: r.date,
+          })),
+        }),
       })
-    })
 
-    // 가장 많은 활동이 있는 역량 순으로 정렬
-    const sortedCriteria = Object.entries(recordsByISO)
-      .filter(([_, records]) => records.length > 0)
-      .sort((a, b) => b[1].length - a[1].length)
+      if (!res.ok) {
+        throw new Error('API 요청 실패')
+      }
 
-    const hasRecords = recs.length > 0
-    const startDate = hasRecords ? recs.reduce((min, r) => r.date < min ? r.date : min, recs[0].date) : ''
-    const endDate = hasRecords ? recs.reduce((max, r) => r.date > max ? r.date : max, recs[0].date) : ''
-
-    return `
-# 이력서용 역량 리포트
-## ISO 30414 국제 인적자원 표준 기반
-
-**희망 직무**: ${jobInfo.icon} ${jobInfo.label}
-${req.targetCompany ? `**목표 기업**: ${req.targetCompany}` : ''}
-${req.targetPosition ? `**목표 포지션**: ${req.targetPosition}` : ''}
-
----
-
-## 역량 개발 요약
-
-${hasRecords ? `
-**성장 기간**: ${startDate} ~ ${endDate}
-**총 역량 개발 활동**: ${recs.length}회
-**개발 역량 영역**: ${sortedCriteria.length}개 / 10개
-
-본 지원자는 ISO 30414 국제 인적자원 표준의 핵심 역량 영역에서 체계적인 자기계발을 수행해왔습니다.
-특히 ${sortedCriteria.slice(0, 3).map(([k]) => ISO_30414_CRITERIA[k as ISOCriteriaKey].label).join(', ')} 영역에서 두드러진 성장을 보였습니다.
-` : `
-아직 기록된 역량 개발 활동이 없습니다.
-길로그를 통해 일상의 작은 실천들을 기록하면, 체계적인 역량 리포트가 생성됩니다.
-`}
-
----
-
-## ISO 30414 역량별 성장 이력
-
-${sortedCriteria.length > 0 ? sortedCriteria.map(([criteriaKey, criteriaRecords]) => {
-  const criteria = ISO_30414_CRITERIA[criteriaKey as ISOCriteriaKey]
-  const sortedRecs = [...criteriaRecords].sort((a, b) => a.date.localeCompare(b.date))
-  const firstDate = sortedRecs[0]?.date || ''
-  const lastDate = sortedRecs[sortedRecs.length - 1]?.date || ''
-
-  return `
-### ${criteria.icon} ${criteria.label} (${criteria.labelEn})
-
-**활동 횟수**: ${criteriaRecords.length}회 | **기간**: ${firstDate} ~ ${lastDate}
-
-**핵심 역량 설명**: ${criteria.description}
-
-**주요 성장 활동**:
-${sortedRecs.slice(-5).map(r => `• ${r.executionText} (${r.date})`).join('\n')}
-
-**성장 스토리**:
-${criteriaRecords.length >= 10
-  ? `지속적이고 꾸준한 실천을 통해 ${criteria.label} 역량을 체화하였습니다. 총 ${criteriaRecords.length}회의 관련 활동을 수행하며, 이 역량을 업무에 즉시 적용할 수 있는 수준으로 발전시켰습니다.`
-  : criteriaRecords.length >= 5
-  ? `${criteria.label} 역량 개발을 위해 ${criteriaRecords.length}회의 활동을 수행하였으며, 기본기를 갖추고 지속적으로 발전시켜 나가고 있습니다.`
-  : `${criteria.label} 역량 개발을 시작하였으며, ${criteriaRecords.length}회의 활동을 통해 기초를 다지고 있습니다.`
-}
-`
-}).join('\n') : `
-### 역량 개발 활동을 시작해보세요
-
-ISO 30414 표준의 10가지 핵심 역량:
-${Object.values(ISO_30414_CRITERIA).map(c => `• ${c.icon} ${c.label}: ${c.description}`).join('\n')}
-`}
-
----
-
-## 역량 통계 분석
-
-| 역량 영역 | 활동 횟수 | 비중 |
-|---------|---------|------|
-${sortedCriteria.map(([k, r]) => {
-  const criteria = ISO_30414_CRITERIA[k as ISOCriteriaKey]
-  const percentage = Math.round((r.length / recs.length) * 100)
-  return `| ${criteria.icon} ${criteria.label} | ${r.length}회 | ${percentage}% |`
-}).join('\n') || '| (활동 기록 필요) | - | - |'}
-
----
-
-## 기업이 원하는 보이지 않는 역량
-
-${hasRecords ? `
-본 지원자의 활동 기록을 분석한 결과, 다음과 같은 핵심 역량이 확인됩니다:
-
-${sortedCriteria.slice(0, 5).map(([k, r], idx) => {
-  const criteria = ISO_30414_CRITERIA[k as ISOCriteriaKey]
-  return `**${idx + 1}. ${criteria.label}** (${r.length}회 실천)
-   - ${criteria.description}
-   - 대표 활동: ${r[r.length - 1]?.executionText || ''}`
-}).join('\n\n')}
-` : `
-기업들이 중요시하는 보이지 않는 역량(Soft Skills):
-1. 윤리성과 정직성 - 신뢰의 기반
-2. 자기관리 능력 - 일관된 성과 창출
-3. 협업과 커뮤니케이션 - 팀 시너지
-4. 문제해결력 - 가치 창출
-5. 성장 마인드셋 - 지속적 발전
-
-이러한 역량들은 일상의 작은 실천에서 시작됩니다.
-`}
-
----
-
-## 개선 권장사항
-
-${hasRecords ? `
-현재 강점 영역: ${sortedCriteria.slice(0, 3).map(([k]) => ISO_30414_CRITERIA[k as ISOCriteriaKey].label).join(', ')}
-
-보완 권장 영역: ${Object.keys(ISO_30414_CRITERIA)
-  .filter(k => !sortedCriteria.find(([sk]) => sk === k) || recordsByISO[k as ISOCriteriaKey].length < 5)
-  .slice(0, 3)
-  .map(k => ISO_30414_CRITERIA[k as ISOCriteriaKey].label)
-  .join(', ') || '모든 영역에서 고르게 발전 중'}
-` : `
-모든 역량 영역에서 활동을 시작해보세요.
-매일 작은 실천이 큰 역량으로 쌓입니다.
-`}
-
----
-
-*본 리포트는 ISO 30414 국제 인적자원 표준을 기반으로 자동 생성되었습니다.*
-*길로그 활동 기록이 많을수록 더 풍부하고 신뢰성 있는 리포트가 제공됩니다.*
-`.trim()
+      const data = await res.json()
+      setGeneratedReport(data.report)
+      setStep('result')
+    } catch (error) {
+      console.error('이력서 리포트 생성 실패:', error)
+      alert('좋은 리포트를 만들기 위해 시간이 필요합니다 ✨ 2분 뒤에 다시 눌러주세요!')
+      setStep('details')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   // 복사
   function handleCopy() {
-    const textToCopy = isFormalStyle
-      ? convertToFormalStyle(generatedReport, 'resume')
-      : generatedReport
+    const textToCopy = isFormalStyle && formalReport ? formalReport : generatedReport
     navigator.clipboard.writeText(textToCopy)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // 서류용 문체 토글
+  // 서류용 토글 (입력창만 열기/닫기)
   function toggleFormalStyle() {
     setIsFormalStyle(!isFormalStyle)
   }
 
+  // 서류용 프롬프트 실행
+  async function handleFormalConvert(prompt: string) {
+    setIsFormalLoading(true)
+    try {
+      const res = await fetch('/api/formal-convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'resume',
+          report: generatedReport,
+          prompt,
+          records: records.map(r => ({
+            worldKey: r.worldKey,
+            executionText: r.executionText,
+            date: r.date,
+          })),
+        }),
+      })
+      if (!res.ok) throw new Error('변환 실패')
+      const data = await res.json()
+      setFormalReport(data.result)
+    } catch (error) {
+      console.error('서류용 변환 실패:', error)
+      alert('좋은 서류를 만들기 위해 시간이 필요합니다 ✨ 2분 뒤에 다시 눌러주세요!')
+    } finally {
+      setIsFormalLoading(false)
+    }
+  }
+
   // 표시할 텍스트
-  const displayReport = isFormalStyle
-    ? convertToFormalStyle(generatedReport, 'resume')
-    : generatedReport
+  const displayReport = isFormalStyle && formalReport ? formalReport : generatedReport
 
   return (
     <main className="min-h-screen bg-slate-900">
@@ -475,17 +370,67 @@ ${hasRecords ? `
                   </div>
                 </div>
 
-                {/* 서류용 문체 안내 */}
+                {/* 서류용 입력 영역 */}
                 {isFormalStyle && (
-                  <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg px-4 py-2">
-                    <p className="text-violet-300 text-sm">
-                      ✨ 자기소개서/이력서에 바로 사용 가능한 문체로 변환되었습니다
-                    </p>
+                  <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-4 space-y-3">
+                    {/* 입력창 + 변환 버튼 */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="예: 이력서 양식에 맞춰서 작성해줘"
+                        value={formalPrompt}
+                        onChange={e => setFormalPrompt(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && formalPrompt.trim() && !isFormalLoading) {
+                            handleFormalConvert(formalPrompt.trim())
+                          }
+                        }}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-violet-500/50"
+                      />
+                      <button
+                        onClick={() => {
+                          if (formalPrompt.trim()) handleFormalConvert(formalPrompt.trim())
+                        }}
+                        disabled={!formalPrompt.trim() || isFormalLoading}
+                        className="px-4 py-2 rounded-lg bg-violet-500/80 text-white text-sm font-medium hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
+                      >
+                        {isFormalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        서류용 변환
+                      </button>
+                    </div>
+
+                    {/* 예시 프롬프트 */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        '이력서 양식에 맞춰서 작성해줘',
+                        '자기소개서 성장과정으로 작성해줘',
+                        '자기소개서 지원동기로 작성해줘',
+                        '자기소개서 직무역량으로 작성해줘',
+                      ].map((text) => (
+                        <button
+                          key={text}
+                          onClick={() => {
+                            setFormalPrompt(text)
+                            handleFormalConvert(text)
+                          }}
+                          disabled={isFormalLoading}
+                          className="px-3 py-1.5 rounded-full border border-white/10 text-white/30 text-xs hover:text-violet-300 hover:border-violet-500/30 hover:bg-violet-500/10 transition-all disabled:opacity-40"
+                        >
+                          {text}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {/* 리포트 내용 */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10 max-h-[60vh] overflow-y-auto">
+                  {isFormalLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-3" />
+                      <p className="text-white/50 text-sm">AI가 서류용 문체로 변환하고 있습니다...</p>
+                    </div>
+                  ) : (
                   <div className="prose prose-invert prose-sm max-w-none">
                     {displayReport.split('\n').map((line, idx) => {
                       if (line.startsWith('# ')) {
@@ -516,6 +461,7 @@ ${hasRecords ? `
                       return <p key={idx} className="text-white/70 text-sm">{line}</p>
                     })}
                   </div>
+                  )}
                 </div>
 
                 {/* 다시 생성 */}

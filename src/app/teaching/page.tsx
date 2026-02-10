@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap, ArrowLeft } from 'lucide-react'
@@ -9,7 +9,7 @@ import { LevelBadge } from '@/components/LevelBadge'
 import { SUBJECTS, SubjectKey } from '@/lib/teaching/types'
 import { LESSON_DATA } from '@/lib/teaching/lessonContent'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 interface SubjectProgress {
   [key: string]: {
@@ -20,35 +20,8 @@ interface SubjectProgress {
 
 function TeachingContent() {
   const router = useRouter()
-  const [energy, setEnergy] = useState(50)
+  const { energy } = useUserData()
   const [progress, setProgress] = useState<SubjectProgress>({})
-
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-
-    // 진행도 불러오기 (사용자별)
-    const progressKey = getUserProgressKey('teaching-progress')
-    const savedProgress = progressKey ? localStorage.getItem(progressKey) : null
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress)
-        // 과목별 진행도 계산
-        const subjectProgress: SubjectProgress = {}
-        SUBJECTS.forEach(subject => {
-          const subjectItems = parsed.filter((p: { contentId: string }) =>
-            p.contentId.startsWith(subject.key)
-          )
-          subjectProgress[subject.key] = {
-            completed: subjectItems.filter((p: { completed: boolean }) => p.completed).length,
-            total: 6  // Level 1-2, 각 3개
-          }
-        })
-        setProgress(subjectProgress)
-      } catch {
-        setProgress({})
-      }
-    }
-  }, [])
 
   const handleSubjectClick = (subjectKey: SubjectKey) => {
     // 새 듀오링고 스타일 레슨이 있는지 확인

@@ -1,36 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, LogOut, User, Mail, Phone, Calendar } from 'lucide-react'
+import { Zap, LogOut, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getCurrentUser, getUserEnergy, logout } from '@/lib/auth'
-import type { User as UserType } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
+import { useSession, signOut } from 'next-auth/react'
 
 function ProfileContent() {
   const router = useRouter()
-  const [energy, setEnergy] = useState(50)
-  const [user, setUser] = useState<UserType | null>(null)
-
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-    setUser(getCurrentUser())
-  }, [])
+  const { energy } = useUserData()
+  const { data: session } = useSession()
 
   const handleLogout = () => {
     if (confirm('정말 로그아웃 하시겠습니까?')) {
-      logout()
-      router.push('/login')
+      signOut({ callbackUrl: '/login' })
     }
-  }
-
-  const genderLabel = (g: string) => {
-    if (g === 'male') return '남성'
-    if (g === 'female') return '여성'
-    return '기타'
   }
 
   return (
@@ -66,7 +54,7 @@ function ProfileContent() {
 
       {/* 프로필 콘텐츠 */}
       <div className="pt-20 pb-24 px-4">
-        {user && (
+        {session?.user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -74,14 +62,18 @@ function ProfileContent() {
           >
             {/* 아바타 + 이름 */}
             <div className="flex flex-col items-center gap-3 py-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-3xl font-bold">
-                  {user.name.charAt(0)}
-                </span>
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center overflow-hidden">
+                {session.user.image ? (
+                  <img src={session.user.image} alt="프로필" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white text-3xl font-bold">
+                    {(session.user.name || '?').charAt(0)}
+                  </span>
+                )}
               </div>
               <div className="text-center">
-                <h2 className="text-xl font-bold text-white">{user.name}</h2>
-                <p className="text-white/50 text-sm">@{user.username}</p>
+                <h2 className="text-xl font-bold text-white">{session.user.name || '사용자'}</h2>
+                <p className="text-white/50 text-sm">{session.user.email || ''}</p>
               </div>
             </div>
 
@@ -89,10 +81,7 @@ function ProfileContent() {
             <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-5 border border-white/10 space-y-4">
               <h3 className="text-white font-semibold text-sm mb-3">내 정보</h3>
 
-              <InfoRow icon={<User className="w-4 h-4" />} label="성별" value={genderLabel(user.gender)} />
-              <InfoRow icon={<Calendar className="w-4 h-4" />} label="나이" value={`${user.age}세`} />
-              <InfoRow icon={<Mail className="w-4 h-4" />} label="이메일" value={user.email} />
-              <InfoRow icon={<Phone className="w-4 h-4" />} label="전화번호" value={user.phone} />
+              <InfoRow icon={<Mail className="w-4 h-4" />} label="이메일" value={session.user.email || '-'} />
             </div>
 
             {/* 로그아웃 버튼 */}
@@ -111,9 +100,9 @@ function ProfileContent() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
           <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
-          <TabItem href="/profile" icon="👤" label="프로필" active />
         </div>
         <div className="h-safe-area-inset-bottom" />
       </nav>

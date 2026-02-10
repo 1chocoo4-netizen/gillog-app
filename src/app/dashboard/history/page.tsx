@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft, Search, Camera, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthGuard } from '@/components/AuthGuard'
+import { useUserData } from '@/lib/UserDataProvider'
 import {
-  getAllExecutionRecords,
   WORLD_LABELS,
   WORLD_ICONS,
   WORLD_COLORS,
@@ -14,20 +14,22 @@ import {
 } from '@/lib/executionHistory'
 
 function HistoryContent() {
+  const { history } = useUserData()
   const [allRecords, setAllRecords] = useState<ExecutionRecord[]>([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [filtered, setFiltered] = useState<ExecutionRecord[]>([])
   const [searched, setSearched] = useState(false)
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null)
 
   useEffect(() => {
-    const records = getAllExecutionRecords()
+    const records = [...history]
       .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
     setAllRecords(records)
 
     // 기본: 최근 20개 표시
     setFiltered(records.slice(0, 20))
-  }, [])
+  }, [history])
 
   const handleSearch = () => {
     if (!startDate && !endDate) {
@@ -170,6 +172,15 @@ function HistoryContent() {
                           </span>
                           <span className="text-white/30 text-xs">{formatTime(record.completedAt)}</span>
                           <span className="text-violet-400 text-xs">+{record.energy}⚡</span>
+                          {(record as ExecutionRecord & { photoUrl?: string }).photoUrl && (
+                            <button
+                              onClick={() => setViewingPhoto((record as ExecutionRecord & { photoUrl?: string }).photoUrl!)}
+                              className="flex items-center gap-1 text-cyan-400 text-xs hover:text-cyan-300 transition-colors"
+                            >
+                              <Camera className="w-3 h-3" />
+                              사진
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -177,6 +188,41 @@ function HistoryContent() {
                 </div>
               </motion.div>
             ))}
+          </AnimatePresence>
+
+          {/* 사진 보기 모달 */}
+          <AnimatePresence>
+            {viewingPhoto && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setViewingPhoto(null)}
+                  className="fixed inset-0 bg-black/80 z-50"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-4 z-50 flex items-center justify-center"
+                >
+                  <div className="relative max-w-lg w-full">
+                    <button
+                      onClick={() => setViewingPhoto(null)}
+                      className="absolute -top-10 right-0 text-white/60 hover:text-white"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                    <img
+                      src={viewingPhoto}
+                      alt="실행 기록 사진"
+                      className="w-full rounded-xl object-contain max-h-[70vh]"
+                    />
+                  </div>
+                </motion.div>
+              </>
+            )}
           </AnimatePresence>
 
           {/* 빈 상태 */}

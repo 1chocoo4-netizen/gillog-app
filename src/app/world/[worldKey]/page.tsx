@@ -1,26 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, ArrowLeft, BookOpen, MessageCircle } from 'lucide-react'
+import { Zap, ArrowLeft, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 function WorldContent() {
   const router = useRouter()
   const params = useParams()
   const worldKey = params.worldKey as WorldKey
-  const [energy, setEnergy] = useState(50)
+  const { energy } = useUserData()
 
   const worldConfig = WORLD_CONFIGS[worldKey]
-
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-  }, [])
 
   if (!worldConfig) {
     return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">월드를 찾을 수 없습니다</div>
@@ -28,15 +24,6 @@ function WorldContent() {
 
   const handleTeaching = () => {
     router.push(`/teaching/${worldKey}`)
-  }
-
-  const handleCoaching = () => {
-    if (energy >= 2) {
-      const newEnergy = energy - 2
-      setEnergy(newEnergy)
-      localStorage.setItem('gillog-energy', String(newEnergy))
-      router.push(`/world/${worldKey}/coaching`)
-    }
   }
 
   return (
@@ -90,12 +77,11 @@ function WorldContent() {
           {worldConfig.description}
         </motion.p>
 
-        {/* 선택 버튼들 */}
-        <div className="w-full max-w-sm space-y-4">
-          {/* 티칭 버튼 */}
+        {/* 티칭 버튼 */}
+        <div className="w-full max-w-sm">
           <motion.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             onClick={handleTeaching}
             className="w-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 rounded-2xl p-5 flex items-center gap-4 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all active:scale-98"
@@ -109,39 +95,7 @@ function WorldContent() {
             </div>
             <div className="text-cyan-400 text-2xl">→</div>
           </motion.button>
-
-          {/* 코칭 버튼 */}
-          <motion.button
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            onClick={handleCoaching}
-            disabled={energy < 2}
-            className={`w-full bg-gradient-to-r from-violet-500/20 to-purple-500/20 border border-violet-500/30 rounded-2xl p-5 flex items-center gap-4 hover:from-violet-500/30 hover:to-purple-500/30 transition-all active:scale-98 disabled:opacity-50`}
-          >
-            <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${worldConfig.color} flex items-center justify-center shadow-lg`}>
-              <MessageCircle className="w-7 h-7 text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="text-white font-bold text-lg">코칭</h3>
-              <p className="text-white/50 text-sm">1:1 대화로 성장하기</p>
-            </div>
-            <div className="flex items-center gap-1 text-violet-400">
-              <Zap className="w-4 h-4" fill="currentColor" />
-              <span className="text-sm font-medium">2</span>
-            </div>
-          </motion.button>
         </div>
-
-        {/* 안내 문구 */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-white/30 text-xs mt-8 text-center"
-        >
-          티칭으로 배우고, 코칭으로 실천해보세요
-        </motion.p>
       </div>
     </main>
   )

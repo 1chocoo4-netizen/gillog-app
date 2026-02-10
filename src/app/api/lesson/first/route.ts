@@ -1,46 +1,16 @@
 import { NextResponse } from 'next/server'
-import { db, findFirst, findMany } from '@/lib/db'
-
-interface LessonNode {
-  id: string
-  worldId: string
-  order: number
-  title: string
-  subtitle: string | null
-  isLocked: number
-  xpReward: number
-}
-
-interface World {
-  id: string
-  key: string
-  title: string
-  subtitle: string
-  description: string
-  colorHex: string
-  icon: string
-  order: number
-}
-
-interface Coach {
-  id: string
-  worldId: string
-  name: string
-  tagline: string
-  avatarSeed: string
-}
+import { prisma } from '@/lib/db'
 
 // GET /api/lesson/first - 첫 번째 잠금 해제된 레슨 노드 조회
 export async function GET() {
   try {
-    // 첫 번째 잠금 해제된 레슨 찾기
-    const lessonNode = findFirst<LessonNode>(`
-      SELECT ln.* FROM LessonNode ln
-      JOIN World w ON ln.worldId = w.id
-      WHERE ln.isLocked = 0
-      ORDER BY w."order" ASC, ln."order" ASC
-      LIMIT 1
-    `)
+    const lessonNode = await prisma.lessonNode.findFirst({
+      where: { isLocked: false },
+      orderBy: [
+        { world: { order: 'asc' } },
+        { order: 'asc' },
+      ],
+    })
 
     if (!lessonNode) {
       return NextResponse.json(
@@ -49,23 +19,18 @@ export async function GET() {
       )
     }
 
-    // 월드 정보 조회
-    const world = findFirst<World>(`
-      SELECT * FROM World WHERE id = ?
-    `, [lessonNode.worldId])
+    const world = await prisma.world.findUnique({
+      where: { id: lessonNode.worldId },
+    })
 
-    // 코치 정보 조회
-    const coach = findFirst<Coach>(`
-      SELECT * FROM Coach WHERE worldId = ?
-    `, [lessonNode.worldId])
+    const coach = await prisma.coach.findUnique({
+      where: { worldId: lessonNode.worldId },
+    })
 
     return NextResponse.json({
-      lessonNode: {
-        ...lessonNode,
-        isLocked: lessonNode.isLocked === 1
-      },
+      lessonNode,
       world,
-      coach
+      coach,
     })
   } catch (error) {
     console.error('First lesson error:', error)

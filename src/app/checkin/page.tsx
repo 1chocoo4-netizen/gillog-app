@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Check, Bell, X, Plus, ChevronRight, Sparkles, ArrowLeft } from 'lucide-react'
+import { Zap, Check, Bell, X, Plus, ChevronRight, ChevronLeft, Sparkles, ArrowLeft, Trash2, Lightbulb, Camera, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LevelBadge, updateLevelProgress } from '@/components/LevelBadge'
+import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy, addUserEnergy, getUserProgressKey } from '@/lib/auth'
-import { saveExecutionRecord } from '@/lib/executionHistory'
+import { useUserData } from '@/lib/UserDataProvider'
 
 // 6개 성장 영역
 const GROWTH_AREAS = [
@@ -79,6 +78,7 @@ interface ExecutionItem {
   lessonTitle?: string
   text: string
   aiRecord?: string
+  photoUrl?: string
   completed: boolean
   createdAt: string
   alarmTime?: string
@@ -88,7 +88,7 @@ type AddStep = 'closed' | 'write' | 'selectWorld'
 
 function ExecutionContent() {
   const router = useRouter()
-  const [energy, setEnergy] = useState(50)
+  const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history } = useUserData()
   const [items, setItems] = useState<ExecutionItem[]>([])
   const [showReward, setShowReward] = useState(false)
   const [alarmModal, setAlarmModal] = useState<string | null>(null)
@@ -101,29 +101,113 @@ function ExecutionContent() {
   const [feltText, setFeltText] = useState('')
   const [actionText, setActionText] = useState('')
 
+  // 팁 모달
+  const [showTip, setShowTip] = useState(false)
+
+  // 사진 업로드
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isOcrLoading, setIsOcrLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // AI 기록 모드
   const [aiMode, setAiMode] = useState(false)
   const [aiRecordText, setAiRecordText] = useState('')
 
-  // 사용자별 데이터 불러오기
+  // context에서 실행 항목 동기화
   useEffect(() => {
-    setEnergy(getUserEnergy())
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    const savedItems = localStorage.getItem(execKey)
-    if (savedItems) {
-      try {
-        setItems(JSON.parse(savedItems))
-      } catch {
-        setItems([])
+    setItems(executions)
+  }, [executions])
+
+  // 이미지 압축 (OCR용 - 큰 이미지도 처리 가능하게)
+  function compressImage(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX = 1600
+        let w = img.width, h = img.height
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+          else { w = Math.round(w * MAX / h); h = MAX }
+        }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, w, h)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        resolve(dataUrl)
       }
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  // 사진 선택 처리 + OCR 자동 실행
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.')
+      return
     }
-  }, [])
+    if (file.size > 10 * 1024 * 1024) {
+      alert('10MB 이하 파일만 업로드 가능합니다.')
+      return
+    }
+    setPhotoFile(file)
+
+    // 미리보기 + 압축 후 OCR
+    const reader = new FileReader()
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+
+    setIsOcrLoading(true)
+    compressImage(file).then(compressedDataUrl => {
+      const base64 = compressedDataUrl.split(',')[1]
+      return fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' }),
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.text) {
+          setLearnedText(prev => prev ? `${prev}\n${data.text}` : data.text)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsOcrLoading(false))
+  }
+
+  // 사진 업로드 (GCS)
+  async function uploadPhoto(): Promise<string | undefined> {
+    if (!photoFile) return undefined
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', photoFile)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const err = await res.json()
+        alert(err.error || '사진 업로드 실패')
+        return undefined
+      }
+      const data = await res.json()
+      return data.url
+    } catch {
+      alert('사진 업로드 중 오류가 발생했습니다.')
+      return undefined
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   // 아이템 저장
   function saveItems(newItems: ExecutionItem[]) {
     setItems(newItems)
-    const execKey = getUserProgressKey('executions') || 'gillog-executions-guest'
-    localStorage.setItem(execKey, JSON.stringify(newItems))
+    saveExecutions(newItems)
   }
 
   // 체크 완료 처리
@@ -136,30 +220,32 @@ function ExecutionContent() {
     )
     saveItems(updatedItems)
 
-    const newEnergy = addUserEnergy(5)
-    setEnergy(newEnergy)
+    addEnergy(5)
 
     updateLevelProgress(item.areaKey, 1)
 
-    saveExecutionRecord({
+    addHistoryRecord({
       worldKey: item.areaKey,
       areaKey: item.areaKey,
       subjectKey: item.subjectKey,
       lessonTitle: item.lessonTitle,
       executionText: item.text,
+      photoUrl: item.photoUrl,
       energy: 5,
     })
 
     setShowReward(true)
     setTimeout(() => {
       setShowReward(false)
-      router.push('/dashboard')
     }, 1500)
   }
 
   // 투두 추가 완료
-  function handleAddTodo() {
+  async function handleAddTodo() {
     if (selectedWorlds.length === 0 || !actionText.trim()) return
+
+    // 사진이 있으면 먼저 업로드
+    const photoUrl = await uploadPhoto()
 
     const combinedParts: string[] = []
     if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
@@ -172,6 +258,7 @@ function ExecutionContent() {
       areaKey: worldKey,
       text: combinedText,
       aiRecord: aiRecordText.trim() || undefined,
+      photoUrl: photoUrl || undefined,
       completed: false,
       createdAt: new Date().toISOString(),
     }))
@@ -186,6 +273,8 @@ function ExecutionContent() {
     setActionText('')
     setAiRecordText('')
     setAiMode(false)
+    setPhotoFile(null)
+    setPhotoPreview(null)
   }
 
   // 알람 설정
@@ -230,10 +319,20 @@ function ExecutionContent() {
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href="/app" className="text-white/70 hover:text-white">
-            ← 돌아가기
+          <Link href="/checkin/monthly" className="flex items-center gap-1 hover:scale-105 transition-transform">
+            <ChevronLeft className="w-5 h-5 text-white" />
+            <span className="text-white/50 text-xs font-medium">월 목표</span>
           </Link>
-          <h1 className="text-white font-semibold">실행 관리</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-white font-semibold">실행</h1>
+            <button
+              onClick={() => setShowTip(true)}
+              className="relative w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center hover:bg-amber-500/30 transition-colors"
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 text-[6px] text-slate-900 font-bold flex items-center justify-center">?</span>
+            </button>
+          </div>
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
@@ -251,8 +350,60 @@ function ExecutionContent() {
         </div>
       </header>
 
+      {/* 실행 현황 그래프 */}
+      {(() => {
+        const worldCounts = GROWTH_AREAS.map(area => ({
+          ...area,
+          count: history.filter(r => r.worldKey === area.key).length,
+        }))
+        // 제곱근 스케일 + 기준점 1000: 5개는 바닥, 1000개에서야 꽉 참
+        const maxRef = Math.max(...worldCounts.map(w => w.count), 1000)
+
+        return (
+          <div className="pt-20 px-4">
+            <div className="max-w-lg mx-auto">
+              <div className="bg-white/5 rounded-2xl px-4 py-3 mt-2">
+                <div className="flex items-end justify-between gap-1.5" style={{ height: 80 }}>
+                  {worldCounts.map((area, i) => {
+                    const ratio = Math.sqrt(area.count) / Math.sqrt(maxRef)
+                    const barHeight = area.count === 0 ? 3 : Math.max(ratio * 52, 4)
+
+                    return (
+                      <div key={area.key} className="flex-1 flex flex-col items-center gap-1">
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: i * 0.08 + 0.3 }}
+                          className="text-[10px] font-bold"
+                          style={{ color: area.count > 0 ? area.color : 'rgba(255,255,255,0.2)' }}
+                        >
+                          {area.count}
+                        </motion.span>
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: barHeight, opacity: 1 }}
+                          transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
+                          className="w-full max-w-[28px] rounded-md"
+                          style={{
+                            background: area.count === 0
+                              ? 'rgba(255,255,255,0.05)'
+                              : `linear-gradient(to top, ${area.color}30, ${area.color})`,
+                          }}
+                        />
+                        <span className="text-[10px]">{area.icon}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* 메인 영역 */}
-      <div className="pt-20 pb-32 px-4">
+      <div className="pt-4 pb-32 px-4">
+        <div className="max-w-lg mx-auto">
         {activeAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-4xl mb-4">
@@ -262,7 +413,7 @@ function ExecutionContent() {
             <p className="text-white/40 text-xs mb-6">아래 + 버튼을 눌러 직접 추가해보세요!</p>
           </div>
         ) : (
-          <div className="space-y-6 max-w-lg mx-auto">
+          <div className="space-y-6">
             {activeAreas.map(area => (
               <div key={area.key}>
                 <div className="flex items-center gap-2 mb-3">
@@ -284,29 +435,29 @@ function ExecutionContent() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleComplete(item.id)}
-                          className="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center hover:bg-white/10 transition-colors mt-0.5"
+                          className="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center hover:bg-white/10 transition-colors mt-0.5"
                           style={{ borderColor: area.color }}
                         >
                           {item.completed && (
-                            <Check className="w-4 h-4" style={{ color: area.color }} />
+                            <Check className="w-5 h-5" style={{ color: area.color }} />
                           )}
                         </button>
                         <div className="flex-1">
-                          <p className="text-white text-sm leading-relaxed whitespace-pre-line">
+                          <p className="text-white text-base leading-relaxed whitespace-pre-line">
                             {item.text}
                           </p>
                           {item.aiRecord && (
-                            <p className="text-cyan-400/70 text-xs mt-1.5 whitespace-pre-line">
+                            <p className="text-cyan-400/70 text-sm mt-1.5 whitespace-pre-line">
                               ✨ {item.aiRecord}
                             </p>
                           )}
                           {item.lessonTitle && (
-                            <p className="text-xs mt-1" style={{ color: area.color }}>
+                            <p className="text-sm mt-1" style={{ color: area.color }}>
                               📚 {item.lessonTitle}
                             </p>
                           )}
                           <div className="flex items-center gap-3 mt-2">
-                            <p className="text-white/30 text-xs">
+                            <p className="text-white/30 text-sm">
                               완료 시 +5 ⚡
                             </p>
                             {item.alarmTime ? (
@@ -334,9 +485,9 @@ function ExecutionContent() {
                             )}
                             <button
                               onClick={() => handleDeleteItem(item.id)}
-                              className="text-xs text-red-400/60 hover:text-red-400"
+                              className="text-red-400/40 hover:text-red-400 transition-colors"
                             >
-                              삭제
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -348,6 +499,7 @@ function ExecutionContent() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* 플로팅 추가 버튼 */}
@@ -385,13 +537,33 @@ function ExecutionContent() {
                   </h3>
                   <div className="flex items-center gap-2">
                     {addStep === 'write' && !aiMode && (
-                      <button
-                        onClick={() => setAiMode(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:from-cyan-500/30 hover:to-violet-500/30 transition-all"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        AI 기록
-                      </button>
+                      <>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePhotoSelect}
+                        />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                            photoFile
+                              ? 'bg-green-500/20 border-green-500/30 text-green-400'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                          }`}
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                          {photoFile ? '사진 ✓' : '사진'}
+                        </button>
+                        <button
+                          onClick={() => setAiMode(true)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:from-cyan-500/30 hover:to-violet-500/30 transition-all"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          AI 기록
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => { setAddStep('closed'); setAiMode(false) }}
@@ -445,12 +617,18 @@ function ExecutionContent() {
                       <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">📖</span>
                         배운 것
+                        {isOcrLoading && (
+                          <span className="flex items-center gap-1 text-cyan-400 text-xs font-normal">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            사진 텍스트 인식 중...
+                          </span>
+                        )}
                       </label>
                       <textarea
                         value={learnedText}
                         onChange={e => setLearnedText(e.target.value)}
                         placeholder="오늘 배운 내용을 적어주세요"
-                        rows={2}
+                        rows={Math.max(2, Math.min(learnedText.split('\n').length + 1, 8))}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50 resize-none text-sm"
                         autoFocus
                       />
@@ -484,6 +662,23 @@ function ExecutionContent() {
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none text-sm"
                       />
                     </div>
+
+                    {/* 사진 미리보기 */}
+                    {photoPreview && (
+                      <div className="relative">
+                        <img
+                          src={photoPreview}
+                          alt="첨부 사진"
+                          className="w-full max-h-40 object-cover rounded-xl border border-white/10"
+                        />
+                        <button
+                          onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center"
+                        >
+                          <X className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      </div>
+                    )}
 
                     <button
                       onClick={() => setAddStep('selectWorld')}
@@ -543,9 +738,12 @@ function ExecutionContent() {
                     </div>
 
                     {/* 미리보기 */}
-                    {(learnedText.trim() || feltText.trim() || aiRecordText.trim()) && (
+                    {(learnedText.trim() || feltText.trim() || aiRecordText.trim() || photoPreview) && (
                       <div className="bg-white/5 rounded-xl p-3 space-y-1">
                         <p className="text-white/40 text-xs font-medium mb-2">미리보기</p>
+                        {photoPreview && (
+                          <img src={photoPreview} alt="" className="w-16 h-16 object-cover rounded-lg mb-2" />
+                        )}
                         {learnedText.trim() && (
                           <p className="text-white/70 text-xs">📖 배운 것: {learnedText.trim()}</p>
                         )}
@@ -567,10 +765,15 @@ function ExecutionContent() {
 
                     <button
                       onClick={handleAddTodo}
-                      disabled={selectedWorlds.length === 0}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50"
+                      disabled={selectedWorlds.length === 0 || isUploading}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {selectedWorlds.length > 0
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          사진 업로드 중...
+                        </>
+                      ) : selectedWorlds.length > 0
                         ? `${selectedWorlds.length}개 월드에 투두 추가하기`
                         : '월드를 선택해주세요'
                       }
@@ -664,13 +867,100 @@ function ExecutionContent() {
         )}
       </AnimatePresence>
 
+      {/* 도움말 모달 */}
+      <AnimatePresence>
+        {showTip && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowTip(false)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-x-4 top-20 z-50 max-w-sm mx-auto"
+            >
+              <div className="bg-slate-800 rounded-2xl p-5 shadow-2xl border border-amber-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+                      <Lightbulb className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <h3 className="text-white font-bold">목표 설정 팁</h3>
+                  </div>
+                  <button onClick={() => setShowTip(false)} className="text-white/40 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="bg-amber-500/10 rounded-xl p-4 mb-4">
+                  <p className="text-amber-300 font-medium text-sm text-center">
+                    작은 실행들이 모여 성과를 만듭니다
+                  </p>
+                </div>
+
+                <h4 className="text-white font-bold text-sm mb-3">SMART 기법으로 목표 세우기</h4>
+
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-violet-500/20 flex items-center justify-center text-xs font-bold text-violet-400">S</span>
+                    <div>
+                      <p className="text-white text-sm font-medium">Specific - 구체적으로</p>
+                      <p className="text-white/40 text-xs">무엇을, 어떻게 할지 명확하게</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">M</span>
+                    <div>
+                      <p className="text-white text-sm font-medium">Measurable - 측정 가능하게</p>
+                      <p className="text-white/40 text-xs">숫자나 기준으로 확인할 수 있게</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">A</span>
+                    <div>
+                      <p className="text-white text-sm font-medium">Achievable - 달성 가능하게</p>
+                      <p className="text-white/40 text-xs">노력하면 이룰 수 있는 수준으로</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-xs font-bold text-amber-400">R</span>
+                    <div>
+                      <p className="text-white text-sm font-medium">Relevant - 의미 있게</p>
+                      <p className="text-white/40 text-xs">나에게 중요한 목표인지 확인</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-rose-500/20 flex items-center justify-center text-xs font-bold text-rose-400">T</span>
+                    <div>
+                      <p className="text-white text-sm font-medium">Time-bound - 기한을 정해서</p>
+                      <p className="text-white/40 text-xs">언제까지 달성할지 정하기</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 bg-white/5 rounded-xl p-3">
+                  <p className="text-white/40 text-xs">
+                    예시: &quot;이번 달 안에 매일 30분 영어 공부하기&quot;
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
           <TabItem href="/checkin" icon="⚡" label="실행" active />
+          <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
-          <TabItem href="/profile" icon="👤" label="프로필" />
         </div>
         <div className="h-safe-area-inset-bottom" />
       </nav>

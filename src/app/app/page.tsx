@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap } from 'lucide-react'
@@ -10,17 +10,12 @@ import { QuestBanner } from '@/components/map/QuestBanner'
 import { MapArea } from '@/components/map/MapArea'
 import { WorldKey, MapNode } from '@/components/map/WorldTokens'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 function AppHomeContent() {
   const router = useRouter()
   const [selectedWorld, setSelectedWorld] = useState<WorldKey>('cognition')
-  const [energy, setEnergy] = useState(50)
-
-  // 사용자별 에너지 불러오기
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-  }, [])
+  const { energy } = useUserData()
 
   const handleNodeClick = (node: MapNode) => {
     // 해당 월드만 선택 (페이지 이동 없음)
@@ -28,8 +23,8 @@ function AppHomeContent() {
   }
 
   const handleNodeEnter = (node: MapNode) => {
-    // 모든 월드는 선택 화면으로 이동
-    router.push(`/world/${node.worldKey}`)
+    // 바로 레슨(티칭)으로 이동
+    router.push(`/teaching/${node.worldKey}`)
   }
 
   return (
@@ -85,9 +80,9 @@ function AppHomeContent() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
           <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" active />
           <TabItem href="/dashboard" icon="📊" label="리포트" />
-          <TabItem href="/profile" icon="👤" label="프로필" />
         </div>
         {/* iOS 홈 인디케이터 영역 */}
         <div className="h-safe-area-inset-bottom" />

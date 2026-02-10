@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Zap, ChevronRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Zap, ChevronRight, Camera, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 import {
   calculateOverallStats,
   getRecentRecords,
@@ -18,15 +18,15 @@ import {
 } from '@/lib/executionHistory'
 
 function DashboardContent() {
-  const [energy, setEnergy] = useState(50)
+  const { energy, history } = useUserData()
   const [stats, setStats] = useState<OverallStats | null>(null)
   const [recentRecords, setRecentRecords] = useState<ExecutionRecord[]>([])
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null)
 
   useEffect(() => {
-    setEnergy(getUserEnergy())
-    setStats(calculateOverallStats())
-    setRecentRecords(getRecentRecords(5))
-  }, [])
+    setStats(calculateOverallStats(history))
+    setRecentRecords(getRecentRecords(history, 5))
+  }, [history])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -161,6 +161,15 @@ function DashboardContent() {
                         <span className="text-white/40 text-xs">{formatDate(record.date)}</span>
                         <span className="text-white/30 text-xs">·</span>
                         <span className="text-violet-400 text-xs">+{record.energy}⚡</span>
+                        {(record as ExecutionRecord & { photoUrl?: string }).photoUrl && (
+                          <button
+                            onClick={() => setViewingPhoto((record as ExecutionRecord & { photoUrl?: string }).photoUrl!)}
+                            className="flex items-center gap-1 text-cyan-400 text-xs hover:text-cyan-300 transition-colors"
+                          >
+                            <Camera className="w-3 h-3" />
+                            사진
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -168,6 +177,41 @@ function DashboardContent() {
               </div>
             </div>
           )}
+
+          {/* 사진 보기 모달 */}
+          <AnimatePresence>
+            {viewingPhoto && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setViewingPhoto(null)}
+                  className="fixed inset-0 bg-black/80 z-50"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-4 z-50 flex items-center justify-center"
+                >
+                  <div className="relative max-w-lg w-full">
+                    <button
+                      onClick={() => setViewingPhoto(null)}
+                      className="absolute -top-10 right-0 text-white/60 hover:text-white"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                    <img
+                      src={viewingPhoto}
+                      alt="실행 기록 사진"
+                      className="w-full rounded-xl object-contain max-h-[70vh]"
+                    />
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
 
           {/* 빈 상태 */}
           {stats && stats.totalExecutions === 0 && (
@@ -187,9 +231,9 @@ function DashboardContent() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
           <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" active />
-          <TabItem href="/profile" icon="👤" label="프로필" />
         </div>
         <div className="h-safe-area-inset-bottom" />
       </nav>

@@ -7,7 +7,7 @@ import { ArrowLeft, Check, Zap, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LevelBadge } from '@/components/LevelBadge'
-import { getUserEnergy, addUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 import { getLessonData, LessonStep } from '@/lib/teaching/lessonContent'
 
 function LessonContent() {
@@ -16,7 +16,7 @@ function LessonContent() {
   const worldKey = params.subject as string
   const lessonId = params.lessonId as string
 
-  const [energy, setEnergy] = useState(50)
+  const { energy, addEnergy, executions, saveExecutions } = useUserData()
   const [currentStep, setCurrentStep] = useState(0)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
@@ -42,7 +42,6 @@ function LessonContent() {
   console.log('Lesson params:', { worldKey, lessonId, subjectKey, chapterNumber, hasData: !!lessonData })
 
   useEffect(() => {
-    setEnergy(getUserEnergy())
     // 캐릭터 등장 애니메이션
     setTimeout(() => setShowCharacter(true), 300)
   }, [])
@@ -92,18 +91,8 @@ function LessonContent() {
   const handleActionSubmit = () => {
     if (!actionText.trim()) return
 
-    // 사용자별 실행 항목 저장
-    const execKey = getUserProgressKey('executions')
-
-    // execKey가 없으면 기본 키 사용
-    const storageKey = execKey || 'gillog-executions-guest'
-
-    console.log('Saving execution item:', { storageKey, actionText })
-
-    const existingItems = localStorage.getItem(storageKey)
-    const items = existingItems ? JSON.parse(existingItems) : []
-
-    const newItem = {
+    const newItems = [...executions]
+    newItems.push({
       id: `exec-${Date.now()}`,
       areaKey: 'cognition',
       subjectKey: subjectKey,
@@ -111,51 +100,17 @@ function LessonContent() {
       text: actionText,
       completed: false,
       createdAt: new Date().toISOString(),
-    }
-
-    items.push(newItem)
-    localStorage.setItem(storageKey, JSON.stringify(items))
-
-    console.log('Saved items:', items)
+    })
+    saveExecutions(newItems)
 
     // 에너지 보상
-    const newEnergy = addUserEnergy(5)
-    setEnergy(newEnergy)
-
-    // 레슨 진행도 저장
-    const progressKey = getUserProgressKey('lesson-progress')
-    if (progressKey && lessonData) {
-      const existingProgress = localStorage.getItem(progressKey)
-      const progress = existingProgress ? JSON.parse(existingProgress) : []
-      progress.push({
-        subjectKey,
-        lessonId: lessonData.id,
-        completedAt: new Date().toISOString(),
-      })
-      localStorage.setItem(progressKey, JSON.stringify(progress))
-    }
+    addEnergy(5)
 
     // 바로 실행 관리 페이지로 이동
     router.push('/checkin')
   }
 
   const handleComplete = () => {
-    // 진행도 저장
-    const progressKey = getUserProgressKey('lesson-progress')
-    if (progressKey) {
-      const existingProgress = localStorage.getItem(progressKey)
-      const progress = existingProgress ? JSON.parse(existingProgress) : []
-
-      const newProgress = {
-        subjectKey,
-        lessonId: lessonData.id,
-        completedAt: new Date().toISOString(),
-      }
-
-      progress.push(newProgress)
-      localStorage.setItem(progressKey, JSON.stringify(progress))
-    }
-
     router.push('/checkin')
   }
 

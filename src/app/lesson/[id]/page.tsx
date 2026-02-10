@@ -7,6 +7,7 @@ import { Zap, Send, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { LevelBadge } from '@/components/LevelBadge'
+import { useUserData } from '@/lib/UserDataProvider'
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
@@ -29,16 +30,8 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [coachState, setCoachState] = useState<CoachingState>('STATE')
-  const [energy, setEnergy] = useState(50)
+  const { energy, addEnergy, executions, saveExecutions } = useUserData()
   const [planText, setPlanText] = useState<string>('')  // 실행 계획 저장
-
-  // localStorage에서 에너지 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem('gillog-energy')
-    if (saved) {
-      setEnergy(parseInt(saved, 10))
-    }
-  }, [])
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -157,28 +150,22 @@ export default function LessonPage() {
 
   // 완료 처리
   function handleComplete() {
-    const newEnergy = energy + 1
-    setEnergy(newEnergy)
-    localStorage.setItem('gillog-energy', String(newEnergy))
+    addEnergy(1)
 
     // 실행 항목 저장 (planText가 있으면)
     if (planText) {
-      const existingItems = localStorage.getItem('gillog-executions')
-      const items = existingItems ? JSON.parse(existingItems) : []
-
-      const newItem = {
+      const newItems = [...executions]
+      newItems.push({
         id: `exec-${Date.now()}`,
-        areaKey: 'cognition',  // 현재는 인지 월드만
+        areaKey: 'cognition',
         text: planText,
         completed: false,
         createdAt: new Date().toISOString()
-      }
-
-      items.push(newItem)
-      localStorage.setItem('gillog-executions', JSON.stringify(items))
+      })
+      saveExecutions(newItems)
     }
 
-    router.push('/checkin')  // 실행 관리 페이지로 이동
+    router.push('/checkin')
   }
 
   return (

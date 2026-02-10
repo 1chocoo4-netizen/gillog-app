@@ -3,24 +3,20 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, ChevronRight, Sparkles, FileText, Copy, Check, FileSignature } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Sparkles, FileText, Copy, Check, FileSignature, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthGuard } from '@/components/AuthGuard'
 import {
   REPORT_TYPES,
   MAJOR_CATEGORIES,
   EVALUATION_CRITERIA,
-  generateReportPrompt,
   type ReportType,
   type MajorCategory,
   type ReportRequest,
 } from '@/lib/reportTemplates'
-import { convertToFormalStyle } from '@/lib/resumeTemplates'
+import { useUserData } from '@/lib/UserDataProvider'
 import {
-  getAllExecutionRecords,
   calculateOverallStats,
-  WORLD_LABELS,
-  WORLD_ICONS,
   type ExecutionRecord,
 } from '@/lib/executionHistory'
 
@@ -29,6 +25,7 @@ type Step = 'type' | 'major' | 'details' | 'generating' | 'result'
 function ReportContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { history } = useUserData()
 
   const [step, setStep] = useState<Step>('type')
   const [request, setRequest] = useState<ReportRequest>({
@@ -41,149 +38,98 @@ function ReportContent() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isFormalStyle, setIsFormalStyle] = useState(false)
+  const [formalReport, setFormalReport] = useState<string>('')
+  const [isFormalLoading, setIsFormalLoading] = useState(false)
+  const [formalPrompt, setFormalPrompt] = useState<string>('')
 
   useEffect(() => {
-    const allRecords = getAllExecutionRecords()
-    setRecords(allRecords)
-    setStats(calculateOverallStats())
-  }, [])
+    setRecords(history)
+    setStats(calculateOverallStats(history))
+  }, [history])
 
   // 리포트 생성
   async function handleGenerate() {
     setStep('generating')
     setIsGenerating(true)
 
-    // 약간의 딜레이 후 리포트 생성 (로딩 애니메이션 표시)
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType: request.reportType,
+          majorCategory: request.majorCategory,
+          targetSchool: request.targetSchool,
+          targetMajor: request.targetMajor,
+          additionalInfo: request.additionalInfo,
+          records: records.map(r => ({
+            worldKey: r.worldKey,
+            executionText: r.executionText,
+            date: r.date,
+          })),
+        }),
+      })
 
-    // 샘플 리포트 생성 (데이터 기반)
-    const report = generateSampleReport(request, records)
-    setGeneratedReport(report)
-    setStep('result')
-    setIsGenerating(false)
-  }
+      if (!res.ok) {
+        throw new Error('API 요청 실패')
+      }
 
-  // 샘플 리포트 생성 (API 실패 시 또는 데이터 없을 때)
-  function generateSampleReport(req: ReportRequest, recs: ExecutionRecord[]): string {
-    const majorInfo = MAJOR_CATEGORIES[req.majorCategory]
-    const recordsByWorld: Record<string, ExecutionRecord[]> = {}
-    recs.forEach(r => {
-      if (!recordsByWorld[r.worldKey]) recordsByWorld[r.worldKey] = []
-      recordsByWorld[r.worldKey].push(r)
-    })
-
-    const hasRecords = recs.length > 0
-    const topWorlds = Object.entries(recordsByWorld)
-      .sort((a, b) => b[1].length - a[1].length)
-      .slice(0, 2)
-      .map(([k]) => WORLD_LABELS[k])
-      .join(', ')
-
-    return `
-# 생활기록부용 리포트
-## ${REPORT_TYPES[req.reportType].label}
-
-**희망 계열**: ${majorInfo.label}
-${req.targetSchool ? `**목표 대학**: ${req.targetSchool}` : ''}
-${req.targetMajor ? `**목표 학과**: ${req.targetMajor}` : ''}
-
----
-
-## 종합 요약
-
-${hasRecords
-  ? `본 학생은 총 ${recs.length}건의 자기성장 활동을 수행하였으며, 특히 ${topWorlds} 영역에서 두드러진 성장을 보였습니다. 꾸준한 자기 성찰과 실천을 통해 학업역량, 진로역량, 공동체역량을 균형있게 발전시켜 나가고 있습니다.`
-  : `이 학생은 ${majorInfo.label} 진학을 희망하고 있으며, 길로그를 통한 체계적인 성장 기록을 시작하였습니다. 앞으로 다양한 활동을 기록하고 성찰하며, 입시에 필요한 역량을 쌓아갈 예정입니다.`
-}
-
----
-
-## 1. 학업역량
-
-### 학업성취도
-${recordsByWorld['cognition']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 교과 학습에서 성실하게 참여하고 있으며, 심화 학습에 대한 의지가 있음'}
-
-### 학업태도 및 자기주도성
-${recordsByWorld['selfDirected']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 스스로 학습 계획을 세우고 실천하려는 노력을 보임\n- 모르는 내용에 대해 적극적으로 질문하고 탐구함'}
-
-### 탐구력
-${hasRecords ? '' : '- 관심 분야에 대한 깊이 있는 탐구 활동 예정\n- 독서와 자료 조사를 통한 지식 확장 계획'}
-
----
-
-## 2. 진로역량
-
-### 전공적합성
-${req.targetMajor ? `- ${req.targetMajor} 진학을 위한 관련 교과 학습에 집중하고 있음` : '- 희망 전공 관련 기초 역량을 쌓아가고 있음'}
-${recordsByWorld['cognition']?.slice(0, 2).map(r => `- ${r.executionText}`).join('\n') || ''}
-
-### 진로탐색활동
-${recordsByWorld['attitude']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 다양한 진로 탐색 활동을 계획하고 있음\n- 관련 분야 독서 및 체험 활동 예정'}
-
-### 경험의 다양성
-${hasRecords ? `- 총 ${Object.keys(recordsByWorld).length}개 영역에서 활동 기록` : '- 다양한 영역의 경험을 쌓아갈 계획'}
-
----
-
-## 3. 공동체역량
-
-### 협업능력 및 소통능력
-${recordsByWorld['relationship']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 또래 친구들과의 협력 활동에서 소통 능력을 발휘함\n- 경청하고 자신의 의견을 조리있게 표현함'}
-
-### 나눔과 배려
-${recordsByWorld['character']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 어려운 친구를 돕고 배려하는 마음을 실천함\n- 공동체의 일원으로서 책임감을 보여줌'}
-
-### 성실성
-${recordsByWorld['habit']?.slice(0, 3).map(r => `- ${r.executionText} (${r.date})`).join('\n') || '- 맡은 일에 대해 꾸준히 책임감 있게 수행함\n- 약속과 규칙을 잘 지키며 신뢰를 쌓아감'}
-
----
-
-## 활동 통계
-
-| 역량 영역 | 활동 횟수 |
-|---------|---------|
-${Object.entries(recordsByWorld).map(([k, v]) => `| ${WORLD_LABELS[k]} | ${v.length}회 |`).join('\n') || '| (기록 시작 예정) | - |'}
-
----
-
-## 보완 권장 사항
-
-${hasRecords ? `
-- ${Object.keys(recordsByWorld).length < 6 ? '아직 기록이 없는 영역의 활동을 추가해보세요.' : '모든 영역에서 활동을 기록하고 있습니다!'}
-- 더 다양한 영역에서 경험을 쌓으면 종합적인 역량을 보여줄 수 있습니다.
-- 현재까지의 활동을 바탕으로 더 깊이 있는 탐구 활동을 권장합니다.
-` : `
-- 매일 작은 실천이라도 꾸준히 기록해보세요.
-- 6개 성장 영역(인지, 자기주도, 습관, 태도, 관계, 인성)을 균형있게 발전시켜보세요.
-- 기록이 쌓이면 더 풍부한 리포트가 생성됩니다.
-`}
-
----
-
-*본 리포트는 길로그 활동 기록을 바탕으로 자동 생성되었습니다.*
-*더 많은 활동을 기록할수록 더 상세하고 개인화된 리포트가 제공됩니다.*
-`.trim()
+      const data = await res.json()
+      setGeneratedReport(data.report)
+      setStep('result')
+    } catch (error) {
+      console.error('리포트 생성 실패:', error)
+      alert('좋은 리포트를 만들기 위해 시간이 필요합니다 ✨ 2분 뒤에 다시 눌러주세요!')
+      setStep('details')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   // 복사
   function handleCopy() {
-    const textToCopy = isFormalStyle
-      ? convertToFormalStyle(generatedReport, 'school')
-      : generatedReport
+    const textToCopy = isFormalStyle && formalReport ? formalReport : generatedReport
     navigator.clipboard.writeText(textToCopy)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // 서류용 문체 토글
+  // 서류용 토글 (입력창만 열기/닫기)
   function toggleFormalStyle() {
     setIsFormalStyle(!isFormalStyle)
   }
 
+  // 서류용 프롬프트 실행
+  async function handleFormalConvert(prompt: string) {
+    setIsFormalLoading(true)
+    try {
+      const res = await fetch('/api/formal-convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'school',
+          report: generatedReport,
+          prompt,
+          records: records.map(r => ({
+            worldKey: r.worldKey,
+            executionText: r.executionText,
+            date: r.date,
+          })),
+        }),
+      })
+      if (!res.ok) throw new Error('변환 실패')
+      const data = await res.json()
+      setFormalReport(data.result)
+    } catch (error) {
+      console.error('서류용 변환 실패:', error)
+      alert('좋은 서류를 만들기 위해 시간이 필요합니다 ✨ 2분 뒤에 다시 눌러주세요!')
+    } finally {
+      setIsFormalLoading(false)
+    }
+  }
+
   // 표시할 텍스트
-  const displayReport = isFormalStyle
-    ? convertToFormalStyle(generatedReport, 'school')
-    : generatedReport
+  const displayReport = isFormalStyle && formalReport ? formalReport : generatedReport
 
   return (
     <main className="min-h-screen bg-slate-900">
@@ -470,17 +416,68 @@ ${hasRecords ? `
                   </div>
                 </div>
 
-                {/* 서류용 문체 안내 */}
+                {/* 서류용 입력 영역 */}
                 {isFormalStyle && (
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-2 mb-4">
-                    <p className="text-blue-300 text-sm">
-                      ✨ 생활기록부에 바로 사용 가능한 문체로 변환되었습니다 (~음, ~함 형식)
-                    </p>
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
+                    {/* 입력창 + 변환 버튼 */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="예: 국어 세특 작성해줘"
+                        value={formalPrompt}
+                        onChange={e => setFormalPrompt(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && formalPrompt.trim() && !isFormalLoading) {
+                            handleFormalConvert(formalPrompt.trim())
+                          }
+                        }}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-blue-500/50"
+                      />
+                      <button
+                        onClick={() => {
+                          if (formalPrompt.trim()) handleFormalConvert(formalPrompt.trim())
+                        }}
+                        disabled={!formalPrompt.trim() || isFormalLoading}
+                        className="px-4 py-2 rounded-lg bg-blue-500/80 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
+                      >
+                        {isFormalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        서류용 변환
+                      </button>
+                    </div>
+
+                    {/* 예시 프롬프트 */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        '국어 세특 작성해줘',
+                        '수학 세특 작성해줘',
+                        '영어 세특 작성해줘',
+                        '과학 세특 작성해줘',
+                        '사회 세특 작성해줘',
+                      ].map((text) => (
+                        <button
+                          key={text}
+                          onClick={() => {
+                            setFormalPrompt(text)
+                            handleFormalConvert(text)
+                          }}
+                          disabled={isFormalLoading}
+                          className="px-3 py-1.5 rounded-full border border-white/10 text-white/30 text-xs hover:text-blue-300 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all disabled:opacity-40"
+                        >
+                          {text}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {/* 리포트 내용 */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10 max-h-[60vh] overflow-y-auto">
+                  {isFormalLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-3" />
+                      <p className="text-white/50 text-sm">AI가 세특 문체로 변환하고 있습니다...</p>
+                    </div>
+                  ) : (
                   <div className="prose prose-invert prose-sm max-w-none">
                     {displayReport.split('\n').map((line, idx) => {
                       if (line.startsWith('# ')) {
@@ -492,7 +489,7 @@ ${hasRecords ? `
                       if (line.startsWith('### ')) {
                         return <h3 key={idx} className="text-md font-semibold text-white/80 mt-3 mb-1">{line.slice(4)}</h3>
                       }
-                      if (line.startsWith('- ')) {
+                      if (line.startsWith('- ') || line.startsWith('• ')) {
                         return <li key={idx} className="text-white/70 text-sm ml-4">{line.slice(2)}</li>
                       }
                       if (line.startsWith('**') && line.endsWith('**')) {
@@ -507,6 +504,7 @@ ${hasRecords ? `
                       return <p key={idx} className="text-white/70 text-sm">{line}</p>
                     })}
                   </div>
+                  )}
                 </div>
 
                 {/* 다시 생성 */}

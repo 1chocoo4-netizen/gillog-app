@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, ArrowLeft, ChevronRight, Sparkles, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
-import { LevelBadge, updateLevelProgress } from '@/components/LevelBadge'
+import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { getContentById } from '@/lib/teaching/content'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy, setUserEnergy, addUserEnergy, useUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 type Step = 'concept' | 'question' | 'mission' | 'complete' | 'coaching'
 
@@ -19,7 +19,7 @@ function ContentPageContent() {
   const worldKey = params.subject as WorldKey
   const contentId = params.id as string
 
-  const [energy, setEnergy] = useState(50)
+  const { energy, addEnergy, useEnergy, executions, saveExecutions, updateLevelProgress } = useUserData()
   const [step, setStep] = useState<Step>('concept')
   const [selectedAnswer, setSelectedAnswer] = useState<string>('')
   const [showReward, setShowReward] = useState(false)
@@ -30,9 +30,7 @@ function ContentPageContent() {
   const worldConfig = WORLD_CONFIGS[worldKey]
   const chapter = worldConfig?.chapters.find(c => c.key === content?.chapterKey)
 
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-  }, [])
+  // energy comes from useUserData()
 
   if (!content || !worldConfig || !chapter) {
     return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">콘텐츠를 찾을 수 없습니다</div>
@@ -50,46 +48,22 @@ function ContentPageContent() {
   }
 
   const handleComplete = () => {
-    // 진행도 저장 (사용자별)
-    const progressKey = getUserProgressKey('teaching-progress')
-    if (progressKey) {
-      const savedProgress = localStorage.getItem(progressKey)
-      const progress = savedProgress ? JSON.parse(savedProgress) : []
-      const existing = progress.findIndex((p: { contentId: string }) => p.contentId === contentId)
-      if (existing >= 0) {
-        progress[existing].completed = true
-        progress[existing].completedAt = new Date().toISOString()
-      } else {
-        progress.push({
-          contentId,
-          completed: true,
-          completedAt: new Date().toISOString()
-        })
-      }
-      localStorage.setItem(progressKey, JSON.stringify(progress))
-    }
-
-    // 에너지 보상 (사용자별)
-    const newEnergy = addUserEnergy(content.energyReward)
-    setEnergy(newEnergy)
+    // 에너지 보상
+    addEnergy(content.energyReward)
 
     // 레벨 진행도 업데이트
     updateLevelProgress(worldKey, 1)
 
-    // 실행 미션을 실행 관리에 추가 (사용자별)
-    const execKey = getUserProgressKey('executions')
-    if (execKey) {
-      const savedExecutions = localStorage.getItem(execKey)
-      const executions = savedExecutions ? JSON.parse(savedExecutions) : []
-      executions.push({
-        id: `exec-${Date.now()}`,
-        areaKey: worldKey,
-        text: content.actionMission,
-        completed: false,
-        createdAt: new Date().toISOString()
-      })
-      localStorage.setItem(execKey, JSON.stringify(executions))
-    }
+    // 실행 미션을 실행 관리에 추가
+    const newItems = [...executions]
+    newItems.push({
+      id: `exec-${Date.now()}`,
+      areaKey: worldKey,
+      text: content.actionMission,
+      completed: false,
+      createdAt: new Date().toISOString()
+    })
+    saveExecutions(newItems)
 
     setShowReward(true)
     setTimeout(() => {
@@ -99,9 +73,8 @@ function ContentPageContent() {
   }
 
   const handleGoToCoaching = () => {
-    // 코칭으로 이동 (사용자별 에너지 사용)
-    if (useUserEnergy(2)) {
-      setEnergy(getUserEnergy())
+    // 코칭으로 이동 (에너지 사용)
+    if (useEnergy(2)) {
       router.push('/lesson/cognition-1')
     }
   }

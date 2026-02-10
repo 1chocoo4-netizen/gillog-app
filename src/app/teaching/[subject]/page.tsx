@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap, ArrowLeft, Lock, Check } from 'lucide-react'
@@ -10,7 +10,7 @@ import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { getContentsByWorldAndChapter } from '@/lib/teaching/content'
 import { LESSON_DATA } from '@/lib/teaching/lessonContent'
 import { AuthGuard } from '@/components/AuthGuard'
-import { getUserEnergy, getUserProgressKey } from '@/lib/auth'
+import { useUserData } from '@/lib/UserDataProvider'
 
 interface ContentProgress {
   contentId: string
@@ -22,24 +22,10 @@ function WorldTeachingContent() {
   const router = useRouter()
   const worldKey = params.subject as WorldKey
 
-  const [energy, setEnergy] = useState(50)
+  const { energy } = useUserData()
   const [progress, setProgress] = useState<ContentProgress[]>([])
 
   const worldConfig = WORLD_CONFIGS[worldKey]
-
-  useEffect(() => {
-    setEnergy(getUserEnergy())
-
-    const progressKey = getUserProgressKey('teaching-progress')
-    const savedProgress = progressKey ? localStorage.getItem(progressKey) : null
-    if (savedProgress) {
-      try {
-        setProgress(JSON.parse(savedProgress))
-      } catch {
-        setProgress([])
-      }
-    }
-  }, [])
 
   if (!worldConfig) {
     return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">월드를 찾을 수 없습니다</div>
@@ -90,7 +76,7 @@ function WorldTeachingContent() {
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href={`/world/${worldKey}`} className="flex items-center gap-2 text-white/70 hover:text-white">
+          <Link href="/app" className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">돌아가기</span>
           </Link>

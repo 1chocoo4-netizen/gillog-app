@@ -1,32 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Zap, ArrowLeft, BookOpen, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
+import { useUserData } from '@/lib/UserDataProvider'
 
 export default function CognitionWorldPage() {
   const router = useRouter()
-  const [energy, setEnergy] = useState(50)
-
-  useEffect(() => {
-    const saved = localStorage.getItem('gillog-energy')
-    if (saved) {
-      setEnergy(parseInt(saved, 10))
-    }
-  }, [])
+  const { energy, useEnergy } = useUserData()
 
   const handleTeaching = () => {
     router.push('/teaching')
   }
 
   const handleCoaching = () => {
-    if (energy >= 2) {
-      const newEnergy = energy - 2
-      setEnergy(newEnergy)
-      localStorage.setItem('gillog-energy', String(newEnergy))
+    if (useEnergy(2)) {
       router.push('/world/cognition/coaching')
     }
   }
