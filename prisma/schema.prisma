@@ -90,12 +90,13 @@ model UserData {
   id     String @id @default(cuid())
   userId String @unique
 
-  energy       Int    @default(50)
-  levelData    Json   @default("{\"level\":1,\"progress\":{\"cognition\":0,\"selfDirected\":0,\"habit\":0,\"attitude\":0,\"relationship\":0,\"character\":0}}")
-  executions   Json   @default("[]")
-  history      Json   @default("[]")
-  bucketList   Json   @default("[]")
-  monthlyGoals Json   @default("{}")
+  energy          Int     @default(50)
+  levelData       Json    @default("{\"level\":1,\"progress\":{\"cognition\":0,\"selfDirected\":0,\"habit\":0,\"attitude\":0,\"relationship\":0,\"character\":0}}")
+  executions      Json    @default("[]")
+  history         Json    @default("[]")
+  bucketList      Json    @default("[]")
+  monthlyGoals    Json    @default("{}")
+  surveyMilestones Json    @default("[]")
 
   updatedAt DateTime @updatedAt
 
@@ -310,4 +311,21 @@ model UserBadge {
   badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+// ========================================
+// 설문조사 응답
+// ========================================
+
+model SurveyResponse {
+  id              String @id @default(cuid())
+  userHash        String
+  milestone       Int    @default(5)
+  encryptedData   String
+  careerScore     Float
+  communityScore  Float
+  nonCognitiveScore Float
+  totalScore      Float
+
+  createdAt DateTime @default(now())
 }

@@ -40,7 +40,7 @@ export async function PATCH(request: Request) {
     const body = await request.json()
 
     // 허용된 필드만 업데이트
-    const allowedFields = ['energy', 'levelData', 'executions', 'history', 'bucketList', 'monthlyGoals']
+    const allowedFields = ['energy', 'levelData', 'executions', 'history', 'bucketList', 'monthlyGoals', 'surveyMilestones']
     const updateData: Record<string, unknown> = {}
 
     for (const field of allowedFields) {

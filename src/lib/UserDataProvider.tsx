@@ -96,6 +96,12 @@ interface UserDataContextType {
   monthlyGoals: Record<string, MonthlyGoal[]>
   saveMonthlyGoals: (monthKey: string, goals: MonthlyGoal[]) => void
   getMonthlyGoals: (monthKey: string) => MonthlyGoal[]
+
+  // 설문조사
+  showSurvey: boolean
+  surveyMilestones: number[]
+  pendingMilestone: number | null
+  completeMilestone: () => void
 }
 
 const UserDataContext = createContext<UserDataContextType | null>(null)
@@ -105,6 +111,7 @@ const UserDataContext = createContext<UserDataContextType | null>(null)
 // ========================================
 
 const GROWTH_AREAS = ['cognition', 'selfDirected', 'habit', 'attitude', 'relationship', 'character']
+const SURVEY_MILESTONES = [5, 100, 500]
 
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -116,6 +123,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistoryState] = useState<ExecutionRecord[]>([])
   const [bucketList, setBucketListState] = useState<BucketItem[]>([])
   const [monthlyGoals, setMonthlyGoalsState] = useState<Record<string, MonthlyGoal[]>>({})
+  const [surveyMilestones, setSurveyMilestonesState] = useState<number[]>([])
+  const [showSurvey, setShowSurvey] = useState(false)
+  const [pendingMilestone, setPendingMilestone] = useState<number | null>(null)
 
   // 디바운스 타이머
   const syncTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -151,6 +161,19 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
         const mg = typeof data.monthlyGoals === 'string' ? JSON.parse(data.monthlyGoals) : data.monthlyGoals
         setMonthlyGoalsState(mg && typeof mg === 'object' ? mg : {})
+
+        const sm = Array.isArray(data.surveyMilestones) ? data.surveyMilestones as number[] : []
+        setSurveyMilestonesState(sm)
+
+        // 초기 로딩 시: 미완료 마일스톤 중 도달한 것이 있으면 트리거
+        const histArr = Array.isArray(hist) ? hist : []
+        const nextMilestone = SURVEY_MILESTONES.find(
+          m => histArr.length >= m && !sm.includes(m)
+        )
+        if (nextMilestone) {
+          setPendingMilestone(nextMilestone)
+          setTimeout(() => setShowSurvey(true), 1500)
+        }
       } catch (e) {
         console.error('Failed to load user data:', e)
       } finally {
@@ -283,11 +306,21 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     setHistoryState(prev => {
       const updated = [...prev, newRecord]
       syncToServer({ history: updated })
+
+      // 마일스톤 도달 시 설문 트리거
+      const reached = SURVEY_MILESTONES.find(
+        m => updated.length >= m && !surveyMilestones.includes(m)
+      )
+      if (reached && !pendingMilestone) {
+        setPendingMilestone(reached)
+        setTimeout(() => setShowSurvey(true), 1500)
+      }
+
       return updated
     })
 
     return newRecord
-  }, [syncToServer])
+  }, [syncToServer, surveyMilestones, pendingMilestone])
 
   // ========================================
   // 버킷리스트 함수
@@ -315,6 +348,19 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   }, [monthlyGoals])
 
   // ========================================
+  // 설문 완료 처리 (마일스톤 단위)
+  // ========================================
+
+  const completeMilestone = useCallback(() => {
+    if (pendingMilestone === null) return
+    const updated = [...surveyMilestones, pendingMilestone].sort((a, b) => a - b)
+    setSurveyMilestonesState(updated)
+    setShowSurvey(false)
+    setPendingMilestone(null)
+    syncToServer({ surveyMilestones: updated })
+  }, [syncToServer, pendingMilestone, surveyMilestones])
+
+  // ========================================
   // Context Value
   // ========================================
 
@@ -335,6 +381,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     monthlyGoals,
     saveMonthlyGoals,
     getMonthlyGoals,
+    showSurvey,
+    surveyMilestones,
+    pendingMilestone,
+    completeMilestone,
   }
 
   return (
