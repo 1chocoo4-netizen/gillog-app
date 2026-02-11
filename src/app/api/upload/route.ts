@@ -5,14 +5,14 @@ import { auth } from '@/lib/auth'
 export const maxDuration = 30
 
 const storage = new Storage({
-  projectId: process.env.GCS_PROJECT_ID,
+  projectId: process.env.GCS_PROJECT_ID?.trim(),
   credentials: {
-    client_email: process.env.GCS_CLIENT_EMAIL,
+    client_email: process.env.GCS_CLIENT_EMAIL?.trim(),
     private_key: process.env.GCS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   },
 })
 
-const BUCKET_NAME = process.env.GCS_BUCKET_NAME || ''
+const BUCKET_NAME = (process.env.GCS_BUCKET_NAME || '').trim()
 
 export async function POST(req: NextRequest) {
   const session = await auth()
