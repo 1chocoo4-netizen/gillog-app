@@ -22,12 +22,12 @@ const GROWTH_AREAS = [
 // 월드별 레슨 목록
 const WORLD_LESSONS: Record<string, { key: string; title: string }[]> = {
   cognition: [
-    { key: 'focus', title: '집중력 향상' },
-    { key: 'memory', title: '기억력 강화' },
-    { key: 'thinking', title: '비판적 사고' },
-    { key: 'learning', title: '효과적인 학습법' },
-    { key: 'reading', title: '독해력 향상' },
-    { key: 'custom', title: '직접 입력' },
+    { key: 'korean', title: '국어' },
+    { key: 'english', title: '영어' },
+    { key: 'math', title: '수학' },
+    { key: 'humanities', title: '인문' },
+    { key: 'social', title: '사회' },
+    { key: 'science', title: '과학' },
   ],
   selfDirected: [
     { key: 'goal', title: '목표 설정' },
@@ -424,19 +424,9 @@ function ExecutionContent() {
           </div>
           <div className="flex items-center gap-3">
             <LevelBadge />
-            <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <div className="flex items-center gap-1">
-                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${energy}%` }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                  />
-                </div>
-                <span className="text-xs text-white/60 font-medium">{energy}</span>
-              </div>
+              <span className="text-xs text-white/60 font-medium">{energy}</span>
             </div>
           </div>
         </div>

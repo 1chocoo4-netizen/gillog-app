@@ -1,50 +1,38 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 interface MapPathProps {
-  startX: number  // 퍼센트 (0-100)
-  startY: number  // 픽셀
-  endX: number    // 퍼센트 (0-100)
-  endY: number    // 픽셀
+  startX: number
+  startY: number
+  endX: number
+  endY: number
   index: number
 }
 
-export function MapPath({ startX, startY, endX, endY, index }: MapPathProps) {
-  // 두 노드 사이에 점들 생성
-  const dotCount = 5
-  const dots = []
+export function MapPath({ startX, startY, endX, endY }: MapPathProps) {
+  const y1 = startY + 45
+  const y2 = endY + 45
+  const height = y2 - y1
 
-  for (let i = 1; i <= dotCount; i++) {
-    const t = i / (dotCount + 1)
-
-    // 직선 보간
-    const x = startX + (endX - startX) * t
-    const y = startY + (endY - startY) * t
-
-    dots.push({ x, y, delay: i * 0.05 })
-  }
+  // S자 곡선 컨트롤 포인트 (x: 0~100 좌표계)
+  const cp1y = height * 0.4
+  const cp2y = height * 0.6
 
   return (
-    <>
-      {dots.map((dot, i) => (
-        <motion.div
-          key={`dot-${index}-${i}`}
-          className="absolute w-2 h-2 rounded-full bg-white/25 pointer-events-none"
-          style={{
-            left: `${dot.x}%`,
-            top: dot.y,
-            transform: 'translate(-50%, -50%)',
-          }}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.3,
-            delay: index * 0.1 + dot.delay,
-            ease: 'easeOut',
-          }}
-        />
-      ))}
-    </>
+    <svg
+      className="absolute left-0 pointer-events-none"
+      viewBox={`0 0 100 ${height}`}
+      preserveAspectRatio="none"
+      style={{ top: y1, width: '100%', height }}
+    >
+      <path
+        d={`M ${startX} 0 C ${startX} ${cp1y} ${endX} ${cp2y} ${endX} ${height}`}
+        fill="none"
+        stroke="white"
+        strokeOpacity="0.15"
+        strokeWidth="0.5"
+        vectorEffect="non-scaling-stroke"
+        strokeDasharray="6 4"
+      />
+    </svg>
   )
 }

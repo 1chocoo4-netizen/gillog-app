@@ -233,19 +233,9 @@ function CoachingChat() {
           </div>
           <div className="flex items-center gap-3">
             <LevelBadge />
-            <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <div className="flex items-center gap-1">
-                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${energy}%` }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                  />
-                </div>
-                <span className="text-xs text-white/60 font-medium">{energy}</span>
-              </div>
+              <span className="text-xs text-white/60 font-medium">{energy}</span>
             </div>
           </div>
         </div>

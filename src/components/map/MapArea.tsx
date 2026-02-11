@@ -18,11 +18,11 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
   // 6개 노드 생성 (월드당 1개)
   const nodes = useMemo(() => generateDummyNodes(), [])
 
-  // 노드 위치 계산 (양쪽으로 살짝 펼침)
+  // 노드 위치 계산 (듀오링고 스타일 - 가운데 중심 살짝 좌우)
   const getNodePosition = (index: number) => {
-    const baseX = 50 // 중앙 기준
-    const offsetX = (index % 2 === 0 ? -8 : 8) // 양쪽으로 펼침
-    const y = 80 + index * 110 // 세로 간격
+    const baseX = 50
+    const offsetX = (index % 2 === 0 ? -4 : 4)
+    const y = 16 + index * 88
 
     return {
       x: baseX + offsetX,
@@ -35,36 +35,9 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
   return (
     <div
       ref={containerRef}
-      className="relative w-full min-h-screen pb-80"
-      style={{
-        background: `
-          linear-gradient(180deg,
-            rgba(15, 23, 42, 1) 0%,
-            rgba(15, 23, 42, 0.98) 50%,
-            rgba(20, 30, 50, 1) 100%
-          )
-        `,
-      }}
+      className="relative w-full pb-48 bg-slate-900"
     >
-      {/* 배경 노이즈 텍스처 */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
 
-      {/* 배경 글로우 (선택된 월드 색상) */}
-      <motion.div
-        key={selectedWorld}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at center top, ${WORLD_TOKENS[selectedWorld].bgGlow}, transparent 70%)`,
-        }}
-      />
 
       {/* 노드들과 경로 */}
       <div className="relative z-10">
@@ -118,8 +91,6 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
         })}
       </div>
 
-      {/* 하단 페이드 그라데이션 */}
-      <div className="fixed bottom-20 left-0 right-0 h-24 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none z-10" />
     </div>
   )
 }

@@ -43,7 +43,7 @@ export const WORLD_TOKENS = {
   character: {
     key: 'character',
     label: '인성',
-    icon: '🤝',
+    icon: '❤️',
     color: '#FB923C', // orange
     bgGlow: 'rgba(251, 146, 60, 0.3)',
     order: 6,
