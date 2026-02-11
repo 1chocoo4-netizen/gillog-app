@@ -22,7 +22,7 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
 
   // 듀오링고 스타일 - 가운데 중심 살짝 좌우
   const getNodePosition = (index: number) => {
-    const baseX = 50
+    const baseX = 40
     const offsetX = (index % 2 === 0 ? -5 : 5)
     const y = NODE_START_Y + index * NODE_GAP
 
