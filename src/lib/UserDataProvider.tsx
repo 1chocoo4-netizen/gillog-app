@@ -23,6 +23,8 @@ export interface ExecutionItem {
   completed: boolean
   createdAt: string
   alarmTime?: string
+  isDaily?: boolean           // 매일 반복 실행 여부
+  lastCompletedDate?: string  // 마지막 완료 날짜 "YYYY-MM-DD"
 }
 
 export interface ExecutionRecord {
@@ -212,6 +214,20 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       }
     }, 500)
   }, [status])
+
+  // 10분마다 에너지 +1 자동 회복
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    const timer = setInterval(() => {
+      setEnergyState(prev => {
+        if (prev >= 100) return prev
+        const next = prev + 1
+        syncToServer({ energy: next })
+        return next
+      })
+    }, 10 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [status, syncToServer])
 
   // ========================================
   // 에너지 함수들

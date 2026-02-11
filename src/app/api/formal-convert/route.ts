@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     const systemPrompt = type === 'school' ? SCHOOL_SYSTEM_PROMPT : RESUME_SYSTEM_PROMPT
 
     const worldLabels: Record<string, string> = {
-      cognition: '인지',
+      cognition: '인지(학습)',
       selfDirected: '자기주도',
       habit: '습관',
       attitude: '태도',
@@ -117,7 +117,7 @@ ${prompt}
       ],
       generationConfig: {
         temperature: 0.6,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 65536,
       },
     })
 

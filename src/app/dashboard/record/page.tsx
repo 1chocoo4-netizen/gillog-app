@@ -273,7 +273,7 @@ function RecordContent() {
                 </div>
 
                 {/* 리포트 내용 */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/10 max-h-[60vh] overflow-y-auto">
+                <div className="bg-white/5 rounded-xl p-5 border border-white/10">
                   <div className="prose prose-invert prose-sm max-w-none">
                     {generatedReport.split('\n').map((line, idx) => {
                       if (line.startsWith('# ')) {
@@ -300,6 +300,9 @@ function RecordContent() {
                       }
                       return <p key={idx} className="text-white/70 text-sm">{line}</p>
                     })}
+                    <div className="mt-6 pt-4 border-t border-white/10 text-center">
+                      <p className="text-white/30 text-xs">리포트가 끝났습니다</p>
+                    </div>
                   </div>
                 </div>
 

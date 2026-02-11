@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     })
 
     const worldLabels: Record<string, string> = {
-      cognition: '인지',
+      cognition: '인지(학습)',
       selfDirected: '자기주도',
       habit: '습관',
       attitude: '태도',
@@ -134,7 +134,7 @@ ${records.length > 0 ? recordsSummary : '(실행 완료 기록이 없습니다. 
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 65536,
       },
     })
 

@@ -23,7 +23,7 @@ export interface WorldConfig {
 export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
   cognition: {
     key: 'cognition',
-    label: '인지',
+    label: '인지(학습)',
     icon: '🧠',
     description: '생각하고, 이해하고, 기억하고, 문제를 해결하는 힘',
     color: 'from-violet-500 to-purple-600',

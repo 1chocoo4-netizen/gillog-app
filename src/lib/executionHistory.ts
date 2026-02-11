@@ -205,7 +205,7 @@ export function getCalendarHeatmapData(records: ExecutionRecord[], days: number 
 }
 
 export const WORLD_LABELS: Record<string, string> = {
-  cognition: '인지',
+  cognition: '인지(학습)',
   selfDirected: '자기주도',
   habit: '습관',
   attitude: '태도',

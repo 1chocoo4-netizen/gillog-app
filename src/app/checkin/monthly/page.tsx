@@ -28,7 +28,7 @@ interface ExecutionItem {
 }
 
 const GROWTH_AREAS: Record<string, { label: string; icon: string; color: string }> = {
-  cognition: { label: '인지', icon: '🧠', color: '#8b5cf6' },
+  cognition: { label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
   selfDirected: { label: '자기주도', icon: '🎯', color: '#06b6d4' },
   habit: { label: '습관', icon: '🔄', color: '#22c55e' },
   attitude: { label: '태도', icon: '💪', color: '#f59e0b' },
@@ -485,12 +485,12 @@ function TabItem({ href, icon, label, active = false }: {
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors ${
+      className={`flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-xl transition-colors min-w-[56px] ${
         active ? 'text-white' : 'text-white/40 hover:text-white/60'
       }`}
     >
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-medium ${active ? 'text-white' : 'text-white/40'}`}>{label}</span>
+      <span className="text-[22px]">{icon}</span>
+      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>{label}</span>
     </Link>
   )
 }

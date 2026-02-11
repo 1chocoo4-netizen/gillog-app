@@ -14,7 +14,7 @@ import { BottomTabBar } from '@/components/BottomTabBar'
 
 // ── 6개 성장 영역 ──
 const GROWTH_AREAS = [
-  { key: 'cognition', label: '인지', icon: '🧠', color: '#8b5cf6' },
+  { key: 'cognition', label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
   { key: 'selfDirected', label: '자기주도', icon: '🎯', color: '#06b6d4' },
   { key: 'habit', label: '습관', icon: '🔄', color: '#22c55e' },
   { key: 'attitude', label: '태도', icon: '💪', color: '#f59e0b' },

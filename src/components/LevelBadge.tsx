@@ -27,6 +27,8 @@ export function LevelBadge() {
   const { data: session } = useSession()
   const [surveyResults, setSurveyResults] = useState<SurveyResult[]>([])
   const [surveyLoading, setSurveyLoading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -41,6 +43,22 @@ export function LevelBadge() {
   const handleLogout = () => {
     if (confirm('정말 로그아웃 하시겠습니까?')) {
       signOut({ callbackUrl: '/login' })
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true)
+    try {
+      const res = await fetch('/api/user-data', { method: 'DELETE' })
+      if (res.ok) {
+        signOut({ callbackUrl: '/login' })
+      } else {
+        alert('탈퇴 처리 중 오류가 발생했습니다.')
+      }
+    } catch {
+      alert('네트워크 오류가 발생했습니다.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -74,14 +92,17 @@ export function LevelBadge() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="fixed inset-x-4 top-[20%] z-50 max-w-sm mx-auto"
             >
-              <div className="bg-slate-800 rounded-2xl p-6 shadow-2xl border border-white/10 max-h-[70vh] overflow-y-auto">
+              <div className="bg-slate-800 rounded-2xl shadow-2xl border border-white/10 max-h-[70vh] flex flex-col overflow-hidden">
                 {/* 닫기 버튼 */}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="absolute top-4 right-4 text-white/50 hover:text-white p-1"
+                  className="absolute top-4 right-4 text-white/50 hover:text-white p-1 z-10"
                 >
                   <X className="w-5 h-5" />
                 </button>
+
+                {/* 스크롤 가능 영역 */}
+                <div className="p-6 pb-0 overflow-y-auto flex-1">
 
                 {/* 프로필 */}
                 <div className="flex flex-col items-center">
@@ -155,14 +176,69 @@ export function LevelBadge() {
                   )}
                 </div>
 
-                {/* 로그아웃 */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 mt-5 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  로그아웃
-                </button>
+                </div>
+
+                {/* 하단 고정 영역 */}
+                <div className="p-6 pt-2 flex-shrink-0">
+                  {/* 로그아웃 */}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    로그아웃
+                  </button>
+
+                  {/* 탈퇴하기 */}
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full mt-3 text-center text-white/30 text-xs hover:text-red-400 transition-colors"
+                  >
+                    탈퇴하기
+                  </button>
+                </div>
+
+                {/* 탈퇴 확인 모달 */}
+                <AnimatePresence>
+                  {showDeleteConfirm && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+                      onClick={() => setShowDeleteConfirm(false)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        className="bg-slate-800 rounded-2xl p-6 mx-4 max-w-xs w-full border border-red-500/20 shadow-2xl"
+                      >
+                        <p className="text-white font-semibold text-center mb-3">정말 탈퇴하시겠습니까?</p>
+                        <p className="text-white/50 text-xs text-center leading-relaxed mb-5">
+                          모든 데이터는 지워지고 영구 삭제됩니다.<br />
+                          이 작업은 되돌릴 수 없습니다.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="flex-1 py-2.5 rounded-xl bg-white/10 text-white/70 text-sm font-medium hover:bg-white/15 transition-colors"
+                          >
+                            취소
+                          </button>
+                          <button
+                            onClick={handleDeleteAccount}
+                            disabled={isDeleting}
+                            className="flex-1 py-2.5 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                          >
+                            {isDeleting ? '처리 중...' : '탈퇴하기'}
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </>

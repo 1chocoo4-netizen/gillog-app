@@ -2,7 +2,7 @@
 export const WORLD_TOKENS = {
   cognition: {
     key: 'cognition',
-    label: '인지',
+    label: '인지(학습)',
     icon: '🧠',
     color: '#A78BFA', // violet
     bgGlow: 'rgba(167, 139, 250, 0.3)',

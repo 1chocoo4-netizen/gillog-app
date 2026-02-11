@@ -29,6 +29,25 @@ export async function GET() {
   }
 }
 
+// DELETE: 회원 탈퇴 (모든 데이터 영구 삭제)
+export async function DELETE() {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await prisma.user.delete({
+      where: { id: session.user.id },
+    })
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('DELETE /api/user-data error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
 // PATCH: 변경된 데이터 업데이트
 export async function PATCH(request: Request) {
   try {

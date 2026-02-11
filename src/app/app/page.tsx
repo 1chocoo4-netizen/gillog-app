@@ -46,7 +46,7 @@ function AppHomeContent() {
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
-                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
                     initial={{ width: 0 }}
@@ -106,23 +106,17 @@ function TabItem({
     <Link
       href={href}
       className={`
-        flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors
+        flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-xl transition-colors min-w-[56px]
         ${active
           ? 'text-white'
           : 'text-white/40 hover:text-white/60'
         }
       `}
     >
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-medium ${active ? 'text-white' : 'text-white/40'}`}>
+      <span className="text-[22px]">{icon}</span>
+      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
         {label}
       </span>
-      {active && (
-        <motion.div
-          layoutId="tabIndicator"
-          className="absolute bottom-1 w-1 h-1 bg-white rounded-full"
-        />
-      )}
     </Link>
   )
 }

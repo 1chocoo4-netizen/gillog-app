@@ -331,7 +331,7 @@ function getRecentTurns(sessionId: string, limit: number = 10): ConversationTurn
 export async function POST(request: NextRequest): Promise<NextResponse<ChatResponse>> {
   try {
     const body: ChatRequest = await request.json()
-    const { sessionId, message = '', worldKey = 'cognition', worldLabel = '인지', isFirstTurn = false } = body
+    const { sessionId, message = '', worldKey = 'cognition', worldLabel = '인지(학습)', isFirstTurn = false } = body
 
     // 메시지가 없으면 에러
     if (!message) {

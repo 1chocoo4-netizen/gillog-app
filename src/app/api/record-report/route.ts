@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     const worldLabels: Record<string, string> = {
-      cognition: '인지',
+      cognition: '인지(학습)',
       selfDirected: '자기주도',
       habit: '습관',
       attitude: '태도',
@@ -98,7 +98,7 @@ ${recordsSummary}
       ],
       generationConfig: {
         temperature: 0.8,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 65536,
       },
     })
 

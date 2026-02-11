@@ -6,7 +6,7 @@
 export const WORLDS = {
   cognition: {
     key: 'cognition',
-    title: '인지',
+    title: '인지(학습)',
     subtitle: '나를 이해하기',
     description: '자신의 감정, 생각, 행동 패턴을 인식하고 이해하는 능력',
     color: 'var(--gl-world-cognition)',

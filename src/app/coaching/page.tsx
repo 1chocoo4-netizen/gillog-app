@@ -236,7 +236,7 @@ function CoachingChat() {
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
-                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
                     initial={{ width: 0 }}
@@ -289,14 +289,14 @@ function CoachingChat() {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'coach' && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm mr-2 flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-base mr-2 flex-shrink-0">
                     🧑‍🏫
                   </div>
                 )}
-                <div className={`max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed ${
+                <div className={`max-w-[78%] px-4 py-3 text-[15px] leading-relaxed ${
                   msg.role === 'user'
                     ? 'bg-violet-600 text-white rounded-2xl rounded-br-sm'
-                    : 'bg-white/10 text-white rounded-2xl rounded-bl-sm'
+                    : 'bg-white/10 text-white/90 rounded-2xl rounded-bl-sm'
                 }`}>
                   {msg.content}
                 </div>
@@ -306,7 +306,7 @@ function CoachingChat() {
 
           {isTyping && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm mr-2">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-base mr-2">
                 🧑‍🏫
               </div>
               <div className="bg-white/10 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
@@ -365,7 +365,7 @@ function CoachingChat() {
               <p className="text-white/50 text-xs mb-2">어떤 영역의 실행인가요? (복수 선택 가능)</p>
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
-                  { key: 'cognition', label: '인지', icon: '🧠' },
+                  { key: 'cognition', label: '인지(학습)', icon: '🧠' },
                   { key: 'selfDirected', label: '자기주도', icon: '🎯' },
                   { key: 'habit', label: '습관', icon: '🔄' },
                   { key: 'attitude', label: '태도', icon: '💪' },
@@ -785,9 +785,9 @@ function CoachingChat() {
 
 function NavItem({ href, icon, label, active = false }: { href: string; icon: string; label: string; active?: boolean }) {
   return (
-    <Link href={href} className={`flex flex-col items-center gap-1 px-6 py-1 ${active ? 'text-white' : 'text-white/40 hover:text-white/60'}`}>
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs ${active ? 'font-medium' : ''}`}>{label}</span>
+    <Link href={href} className={`flex flex-col items-center gap-0.5 px-5 py-2.5 min-w-[56px] rounded-xl transition-colors ${active ? 'text-white' : 'text-white/40 hover:text-white/60'}`}>
+      <span className="text-[22px]">{icon}</span>
+      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>{label}</span>
     </Link>
   )
 }

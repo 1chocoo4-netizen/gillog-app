@@ -424,7 +424,7 @@ function ResumeContent() {
                 )}
 
                 {/* 리포트 내용 */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/10 max-h-[60vh] overflow-y-auto">
+                <div className="bg-white/5 rounded-xl p-5 border border-white/10">
                   {isFormalLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-3" />
@@ -460,6 +460,9 @@ function ResumeContent() {
                       }
                       return <p key={idx} className="text-white/70 text-sm">{line}</p>
                     })}
+                    <div className="mt-6 pt-4 border-t border-white/10 text-center">
+                      <p className="text-white/30 text-xs">리포트가 끝났습니다</p>
+                    </div>
                   </div>
                   )}
                 </div>

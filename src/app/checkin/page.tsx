@@ -11,7 +11,7 @@ import { useUserData } from '@/lib/UserDataProvider'
 
 // 6개 성장 영역
 const GROWTH_AREAS = [
-  { key: 'cognition', label: '인지', icon: '🧠', color: '#8b5cf6' },
+  { key: 'cognition', label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
   { key: 'selfDirected', label: '자기주도', icon: '🎯', color: '#06b6d4' },
   { key: 'habit', label: '습관', icon: '🔄', color: '#22c55e' },
   { key: 'attitude', label: '태도', icon: '💪', color: '#f59e0b' },
@@ -82,6 +82,8 @@ interface ExecutionItem {
   completed: boolean
   createdAt: string
   alarmTime?: string
+  isDaily?: boolean           // 매일 반복 실행 여부
+  lastCompletedDate?: string  // 마지막 완료 날짜 "YYYY-MM-DD"
 }
 
 type AddStep = 'closed' | 'write' | 'selectWorld'
@@ -111,6 +113,9 @@ function ExecutionContent() {
   // 팁 모달
   const [showTip, setShowTip] = useState(false)
 
+  // 매일 실행 패널
+  const [showDailyPanel, setShowDailyPanel] = useState(false)
+
   // 사진 업로드
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -127,6 +132,22 @@ function ExecutionContent() {
   useEffect(() => {
     setItems(executions)
   }, [executions])
+
+  // 매일 실행 항목 일일 리셋
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const needsReset = items.some(
+      i => i.isDaily && i.completed && i.lastCompletedDate !== todayStr
+    )
+    if (needsReset) {
+      const resetItems = items.map(i =>
+        i.isDaily && i.completed && i.lastCompletedDate !== todayStr
+          ? { ...i, completed: false }
+          : i
+      )
+      saveItems(resetItems)
+    }
+  }, [items]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 이미지 압축 (maxPx: 최대 픽셀, quality: JPEG 품질)
   function compressImage(file: File, maxPx = 1600, quality = 0.8): Promise<string> {
@@ -278,8 +299,11 @@ function ExecutionContent() {
       return
     }
 
+    const todayStr = new Date().toISOString().split('T')[0]
     const updatedItems = items.map(i =>
-      i.id === itemId ? { ...i, completed: true } : i
+      i.id === itemId
+        ? { ...i, completed: true, ...(i.isDaily ? { lastCompletedDate: todayStr } : {}) }
+        : i
     )
     saveItems(updatedItems)
 
@@ -316,6 +340,7 @@ function ExecutionContent() {
     combinedParts.push(`🎯 실행: ${actionText.trim()}`)
     const combinedText = combinedParts.join('\n')
 
+    const isDaily = actionText.includes('매일')
     const newItems: ExecutionItem[] = selectedWorlds.map(worldKey => ({
       id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${worldKey}`,
       areaKey: worldKey,
@@ -324,6 +349,7 @@ function ExecutionContent() {
       photoUrl: photoUrl || undefined,
       completed: false,
       createdAt: new Date().toISOString(),
+      ...(isDaily ? { isDaily: true } : {}),
     }))
 
     saveItems([...items, ...newItems])
@@ -401,7 +427,7 @@ function ExecutionContent() {
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
-                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
                     initial={{ width: 0 }}
@@ -442,7 +468,7 @@ function ExecutionContent() {
         return (
           <div className="pt-20 px-4">
             <div className="max-w-lg mx-auto">
-              <div className="bg-white/5 rounded-2xl px-4 py-3 mt-2">
+              <div className="bg-white/5 rounded-2xl px-4 py-3 mt-2 relative">
                 <div className="flex items-end justify-between gap-1.5" style={{ height: 80 }}>
                   {worldCounts.map((area, i) => {
                     const ratio = Math.sqrt(area.count) / Math.sqrt(maxRef)
@@ -454,7 +480,7 @@ function ExecutionContent() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: i * 0.08 + 0.3 }}
-                          className="text-[10px] font-bold"
+                          className="text-[11px] font-bold"
                           style={{ color: area.count > 0 ? area.color : 'rgba(255,255,255,0.2)' }}
                         >
                           {area.count}
@@ -470,11 +496,77 @@ function ExecutionContent() {
                               : `linear-gradient(to top, ${area.color}30, ${area.color})`,
                           }}
                         />
-                        <span className="text-[10px]">{area.icon}</span>
+                        <span className="text-[12px]">{area.icon}</span>
                       </div>
                     )
                   })}
                 </div>
+
+                {/* 매일 실행 아이콘 (오른쪽 위) */}
+                {items.some(i => i.isDaily) && (
+                  <>
+                    <button
+                      onClick={() => setShowDailyPanel(prev => !prev)}
+                      className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 transition-colors"
+                    >
+                      <span className="text-xs">🔄</span>
+                      <span className="text-[10px] text-emerald-400 font-medium">매일</span>
+                      <span className="text-[10px] text-emerald-300 font-bold">
+                        {items.filter(i => i.isDaily && i.completed && i.lastCompletedDate === new Date().toISOString().split('T')[0]).length}
+                        /{items.filter(i => i.isDaily).length}
+                      </span>
+                    </button>
+
+                    {/* 매일 실행 패널 */}
+                    <AnimatePresence>
+                      {showDailyPanel && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-10 right-2 z-20 w-64 bg-slate-800 border border-emerald-500/20 rounded-xl p-3 shadow-2xl"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-emerald-400 font-semibold">🔄 매일 실행 항목</span>
+                            <button onClick={() => setShowDailyPanel(false)} className="text-white/40 hover:text-white">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                            {items.filter(i => i.isDaily).map(item => {
+                              const todayDone = item.completed && item.lastCompletedDate === new Date().toISOString().split('T')[0]
+                              return (
+                                <div key={item.id} className="flex items-center gap-2 py-1">
+                                  {todayDone ? (
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                      <Check className="w-3 h-3 text-emerald-400" />
+                                    </span>
+                                  ) : (
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/20" />
+                                  )}
+                                  <span className={`flex-1 text-xs truncate ${todayDone ? 'text-white/40 line-through' : 'text-white/80'}`}>
+                                    {item.text.split('\n').pop()?.replace('🎯 실행: ', '') || item.text}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      const updated = items.map(i =>
+                                        i.id === item.id ? { ...i, isDaily: undefined, lastCompletedDate: undefined } : i
+                                      )
+                                      saveItems(updated)
+                                    }}
+                                    className="flex-shrink-0 w-4 h-4 rounded-full hover:bg-red-500/20 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -499,7 +591,7 @@ function ExecutionContent() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{area.icon}</span>
                   <h2 className="text-white font-semibold">{area.label}</h2>
-                  <span className="text-white/30 text-xs ml-auto">
+                  <span className="text-white/50 text-xs ml-auto">
                     {area.items.filter(i => !i.completed).length}개
                   </span>
                 </div>
@@ -516,7 +608,7 @@ function ExecutionContent() {
                         <button
                           onClick={() => handleComplete(item.id)}
                           disabled={!item.completed && dailyRemaining <= 0}
-                          className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 ${
+                          className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 ${
                             !item.completed && dailyRemaining <= 0
                               ? 'opacity-30 cursor-not-allowed'
                               : 'hover:bg-white/10'
@@ -551,7 +643,7 @@ function ExecutionContent() {
                                 사진
                               </button>
                             )}
-                            <p className="text-white/30 text-sm">
+                            <p className="text-white/50 text-sm">
                               완료 시 +5 ⚡
                             </p>
                             {item.alarmTime ? (
@@ -1127,15 +1219,15 @@ function TabItem({
     <Link
       href={href}
       className={`
-        flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors
+        flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-xl transition-colors min-w-[56px]
         ${active
           ? 'text-white'
           : 'text-white/40 hover:text-white/60'
         }
       `}
     >
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-medium ${active ? 'text-white' : 'text-white/40'}`}>
+      <span className="text-[22px]">{icon}</span>
+      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
         {label}
       </span>
     </Link>

@@ -49,7 +49,7 @@ function DashboardContent() {
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
-                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
                     initial={{ width: 0 }}
@@ -81,7 +81,7 @@ function DashboardContent() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold">생활기록부용 리포트</h3>
-                    <p className="text-white/50 text-sm mt-0.5">대입 · 학교 제출용</p>
+                    <p className="text-white/60 text-sm mt-0.5">대입 · 학교 제출용</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -99,7 +99,7 @@ function DashboardContent() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold">이력서용 리포트</h3>
-                    <p className="text-white/50 text-sm mt-0.5">면접 · 취업용 리포트</p>
+                    <p className="text-white/60 text-sm mt-0.5">면접 · 취업용 리포트</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -117,7 +117,7 @@ function DashboardContent() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold">쓰기용 리포트</h3>
-                    <p className="text-white/50 text-sm mt-0.5">블로그 · SNS · 개인 기록용</p>
+                    <p className="text-white/60 text-sm mt-0.5">블로그 · SNS · 개인 기록용</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -179,7 +179,7 @@ function DashboardContent() {
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm line-clamp-2">{record.executionText}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-white/40 text-xs">{formatDate(record.date)}</span>
+                        <span className="text-white/50 text-xs">{formatDate(record.date)}</span>
                         <span className="text-white/30 text-xs">·</span>
                         <span className="text-violet-400 text-xs">+{record.energy}⚡</span>
                         {(record as ExecutionRecord & { photoUrl?: string }).photoUrl && (
@@ -277,15 +277,15 @@ function TabItem({
     <Link
       href={href}
       className={`
-        flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors
+        flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-xl transition-colors min-w-[56px]
         ${active
           ? 'text-white'
           : 'text-white/40 hover:text-white/60'
         }
       `}
     >
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-medium ${active ? 'text-white' : 'text-white/40'}`}>
+      <span className="text-[22px]">{icon}</span>
+      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
         {label}
       </span>
     </Link>
