@@ -52,13 +52,30 @@ function CoachingChat() {
     if (initialized.current) return
     initialized.current = true
 
-    const greetings = [
-      '안녕, 반가워! 오늘 해결하고 싶은 고민이 있어? 아니면 도전해보고 싶은 목표가 있으면 말해줘!',
-      '안녕! 오늘은 어떤 걸 성장시켜볼까? 고민이든 목표든, 뭐든 좋아!',
-      '반가워! 요즘 풀고 싶은 고민이나 이루고 싶은 게 있어? 같이 방법 찾아보자!',
-      '안녕! 오늘 하루, 어떤 나로 성장하고 싶어? 목표든 고민이든 편하게 얘기해줘!',
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+    const hellos = ['안녕', '안녕!', '반가워!', '어서와!', '안녕, 반가워!', '와, 왔구나!', '하이!']
+    const topics = [
+      '오늘 해결하고 싶은 고민',
+      '도전해보고 싶은 목표',
+      '성장하고 싶은 부분',
+      '요즘 신경 쓰이는 것',
+      '바꾸고 싶은 습관',
+      '이루고 싶은 꿈',
+      '머릿속에 맴도는 생각',
+      '잘하고 싶은 것',
+      '새롭게 시작하고 싶은 것',
+      '마음속에 담아둔 이야기',
     ]
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)]
+    const endings = [
+      '있어? 편하게 말해줘!',
+      '있으면 같이 얘기해보자!',
+      '있어? 뭐든 좋아!',
+      '있어? 같이 방법 찾아보자!',
+      '있으면 말해줘!',
+      '있어? 한번 같이 파보자!',
+      '있어? 다 꺼내봐!',
+    ]
+    const greeting = `${pick(hellos)} ${pick(topics)}${pick(endings)}`
 
     setTimeout(() => {
       addMessage('coach', greeting)
