@@ -139,6 +139,8 @@ function ExecutionContent() {
   }, [executions])
 
   // 매일 실행 항목 일일 리셋
+  // - 체크 완료한 항목 → 다음날 리셋 (다시 뜸)
+  // - 체크 안 한 항목 → 그대로 남아있음
   useEffect(() => {
     const todayStr = getLocalDateStr()
     const needsReset = items.some(

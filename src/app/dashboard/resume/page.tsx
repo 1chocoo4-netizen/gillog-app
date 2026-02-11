@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronRight, Sparkles, FileText, Copy, Check, FileSignature, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -310,28 +310,7 @@ function ResumeContent() {
 
             {/* Step 3: 생성 중 */}
             {step === 'generating' && (
-              <motion.div
-                key="generating"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center min-h-[60vh]"
-              >
-                <div className="relative w-24 h-24 mb-6">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-0 rounded-full border-4 border-violet-500/30 border-t-violet-500"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-violet-400" />
-                  </div>
-                </div>
-                <h2 className="text-white text-xl font-bold mb-2">역량 분석 중...</h2>
-                <p className="text-white/50 text-sm text-center">
-                  ISO 30414 기준으로 {records.length}개의 활동을 분석하고 있습니다
-                </p>
-              </motion.div>
+              <ResumeTimer recordCount={records.length} />
             )}
 
             {/* Step 4: 결과 */}
@@ -428,7 +407,7 @@ function ResumeContent() {
                   {isFormalLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-3" />
-                      <p className="text-white/50 text-sm">AI가 서류용 문체로 변환하고 있습니다...</p>
+                      <p className="text-white/50 text-sm">당신의 역량을 이력서에 담고 있습니다</p>
                     </div>
                   ) : (
                   <div className="prose prose-invert prose-sm max-w-none">
@@ -488,6 +467,88 @@ function ResumeContent() {
         </div>
       </div>
     </main>
+  )
+}
+
+const LOADING_MESSAGES = [
+  '보이지 않는 당신의 성장을 보고있습니다',
+  '매일의 노력이 빛나는 순간입니다',
+  '당신의 이야기를 정리하고 있습니다',
+  '소중한 기록들을 엮고 있습니다',
+  '꾸준함이 만들어낸 결과를 담고 있습니다',
+]
+
+const TIMER_RADIUS = 54
+const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_RADIUS
+
+function ResumeTimer({ recordCount }: { recordCount: number }) {
+  const [countdown, setCountdown] = useState(30)
+  const [msgIdx, setMsgIdx] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => (prev <= 0 ? 0 : prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const msgTimer = setInterval(() => {
+      setMsgIdx(prev => (prev + 1) % LOADING_MESSAGES.length)
+    }, 4000)
+    return () => clearInterval(msgTimer)
+  }, [])
+
+  const progress = 1 - countdown / 30
+
+  return (
+    <motion.div
+      key="generating"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex flex-col items-center justify-center min-h-[60vh]"
+    >
+      <div className="relative w-32 h-32 mb-8">
+        <svg width="128" height="128" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r={TIMER_RADIUS} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+          <circle
+            cx="60" cy="60" r={TIMER_RADIUS}
+            fill="none"
+            stroke="url(#timerGradResume)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={TIMER_CIRCUMFERENCE}
+            strokeDashoffset={TIMER_CIRCUMFERENCE * (1 - progress)}
+            transform="rotate(-90 60 60)"
+            style={{ transition: 'stroke-dashoffset 1s linear' }}
+          />
+          <defs>
+            <linearGradient id="timerGradResume" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8B5CF6" />
+              <stop offset="100%" stopColor="#06B6D4" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-3xl font-bold text-white tabular-nums">{countdown}</span>
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={msgIdx}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.4 }}
+          className="text-white text-lg font-medium text-center mb-2"
+        >
+          {LOADING_MESSAGES[msgIdx]}
+        </motion.p>
+      </AnimatePresence>
+      <p className="text-white/30 text-xs">{recordCount}개의 활동 기록 분석 중</p>
+    </motion.div>
   )
 }
 
