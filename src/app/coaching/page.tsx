@@ -746,7 +746,7 @@ function CoachingChat() {
               <h3 className="text-white font-bold text-lg mb-1">코칭 시작하기</h3>
               <div className="flex items-center justify-center gap-1 mb-4">
                 <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-                <span className="text-yellow-400 font-bold text-lg">-20</span>
+                <span className="text-yellow-400 font-bold text-lg">-10</span>
               </div>
               {energy < 10 ? (
                 <p className="text-red-400 text-sm mb-4">에너지가 부족합니다 (현재: {energy})</p>
