@@ -108,10 +108,10 @@ function CoachingChat() {
   }
 
   function handleStartCoaching() {
-    if (energy < 20) return
+    if (energy < 10) return
 
     // 에너지 차감
-    addEnergy(-20)
+    addEnergy(-10)
     setCoachingStarted(true)
     setShowStartModal(false)
 
@@ -713,7 +713,7 @@ function CoachingChat() {
                 <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
                 <span className="text-yellow-400 font-bold text-lg">-20</span>
               </div>
-              {energy < 20 ? (
+              {energy < 10 ? (
                 <p className="text-red-400 text-sm mb-4">에너지가 부족합니다 (현재: {energy})</p>
               ) : (
                 <p className="text-white/50 text-sm mb-4">현재 에너지: {energy}</p>
@@ -727,7 +727,7 @@ function CoachingChat() {
                 </button>
                 <button
                   onClick={handleStartCoaching}
-                  disabled={energy < 20}
+                  disabled={energy < 10}
                   className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold disabled:opacity-40 active:scale-[0.98] transition-transform"
                 >
                   시작하기
