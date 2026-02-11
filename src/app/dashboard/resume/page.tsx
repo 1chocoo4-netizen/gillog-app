@@ -358,7 +358,7 @@ function ResumeContent() {
                       }`}
                     >
                       <FileSignature className="w-4 h-4" />
-                      서류용
+                      이력서용 변환
                     </button>
                     <button
                       onClick={handleCopy}
@@ -395,7 +395,7 @@ function ResumeContent() {
                         className="px-4 py-2 rounded-lg bg-violet-500/80 text-white text-sm font-medium hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
                       >
                         {isFormalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                        서류용 변환
+                        이력서용 변환
                       </button>
                     </div>
 

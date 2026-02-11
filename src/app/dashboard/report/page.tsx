@@ -404,7 +404,7 @@ function ReportContent() {
                       }`}
                     >
                       <FileSignature className="w-4 h-4" />
-                      서류용
+                      생활기록부용 변환
                     </button>
                     <button
                       onClick={handleCopy}
@@ -441,7 +441,7 @@ function ReportContent() {
                         className="px-4 py-2 rounded-lg bg-blue-500/80 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
                       >
                         {isFormalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                        서류용 변환
+                        생활기록부용 변환
                       </button>
                     </div>
 
