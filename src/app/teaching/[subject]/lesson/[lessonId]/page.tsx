@@ -368,7 +368,7 @@ function LessonContent() {
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file || !file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) return
+    if (!file || !file.type.startsWith('image/') || file.size > 50 * 1024 * 1024) return
     setPhotoFile(file)
     const reader = new FileReader()
     reader.onload = (ev) => setPhotoPreview(ev.target?.result as string)
@@ -395,11 +395,20 @@ function LessonContent() {
     try {
       let fileToUpload: File
       try {
-        const compressed = await compressImage(photoFile, 1200, 0.7)
-        fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
+        let compressed = await compressImage(photoFile, 2400, 0.85)
+        let file = dataUrlToFile(compressed, 'photo.jpg')
+        if (file.size > 3.5 * 1024 * 1024) {
+          compressed = await compressImage(photoFile, 1800, 0.75)
+          file = dataUrlToFile(compressed, 'photo.jpg')
+        }
+        if (file.size > 3.5 * 1024 * 1024) {
+          compressed = await compressImage(photoFile, 1400, 0.65)
+          file = dataUrlToFile(compressed, 'photo.jpg')
+        }
+        fileToUpload = file
       } catch {
         if (photoFile.size > 4 * 1024 * 1024) {
-          alert('사진 용량이 너무 큽니다. 다른 사진을 선택해주세요.')
+          alert('사진을 처리할 수 없습니다. 다른 사진을 선택해주세요.')
           return undefined
         }
         fileToUpload = photoFile

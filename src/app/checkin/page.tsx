@@ -179,8 +179,8 @@ function ExecutionContent() {
       alert('이미지 파일만 업로드 가능합니다.')
       return
     }
-    if (file.size > 10 * 1024 * 1024) {
-      alert('10MB 이하 파일만 업로드 가능합니다.')
+    if (file.size > 50 * 1024 * 1024) {
+      alert('50MB 이하 파일만 업로드 가능합니다.')
       return
     }
     setPhotoFile(file)
@@ -214,15 +214,24 @@ function ExecutionContent() {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
-      // 모바일 대용량 사진 대비: 압축 필수 (Vercel 4.5MB 제한)
+      // 고화질 압축 (2400px) → 3.5MB 초과 시 단계별 재압축
       let fileToUpload: File
       try {
-        const compressed = await compressImage(photoFile, 1200, 0.7)
-        fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
+        let compressed = await compressImage(photoFile, 2400, 0.85)
+        let file = dataUrlToFile(compressed, 'photo.jpg')
+        // Vercel 4.5MB 제한 대비: 3.5MB 초과 시 재압축
+        if (file.size > 3.5 * 1024 * 1024) {
+          compressed = await compressImage(photoFile, 1800, 0.75)
+          file = dataUrlToFile(compressed, 'photo.jpg')
+        }
+        if (file.size > 3.5 * 1024 * 1024) {
+          compressed = await compressImage(photoFile, 1400, 0.65)
+          file = dataUrlToFile(compressed, 'photo.jpg')
+        }
+        fileToUpload = file
       } catch {
-        // 압축 실패 시 원본이 4MB 이하면 시도, 아니면 에러
         if (photoFile.size > 4 * 1024 * 1024) {
-          alert('사진 용량이 너무 큽니다. 다른 사진을 선택해주세요.')
+          alert('사진을 처리할 수 없습니다. 다른 사진을 선택해주세요.')
           return undefined
         }
         fileToUpload = photoFile
