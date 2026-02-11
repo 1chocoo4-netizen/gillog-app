@@ -19,10 +19,17 @@ type Step = 'input' | 'generating' | 'result'
 const WORLD_KEYS = ['cognition', 'selfDirected', 'habit', 'attitude', 'relationship', 'character'] as const
 
 const EXAMPLE_PURPOSES = [
-  '블로그 회고글',
-  '인스타 캡션',
-  '일기/저널',
+  '블로그',
+  '인스타',
+  '스레드',
+  '일기',
+  '저널',
+  '여행',
   '자기소개',
+  '에세이',
+  '브런치',
+  '주장하는 글',
+  '논설문',
 ]
 
 function RecordContent() {
@@ -144,7 +151,7 @@ function RecordContent() {
                   </label>
                   <input
                     type="text"
-                    placeholder="예: 이번 달 성장 블로그 글"
+                    placeholder="예: 내 성실한 경험으로 블로그 글 써줘"
                     value={purpose}
                     onChange={e => setPurpose(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
