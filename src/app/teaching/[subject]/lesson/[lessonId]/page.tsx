@@ -329,24 +329,41 @@ function LessonContent() {
   }
 
   // ── 사진 관련 ──
-  function compressImage(file: File): Promise<string> {
-    return new Promise((resolve) => {
+  function compressImage(file: File, maxPx = 1600, quality = 0.8): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file)
       const img = new Image()
       img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const MAX = 1600
-        let w = img.width, h = img.height
-        if (w > MAX || h > MAX) {
-          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
-          else { w = Math.round(w * MAX / h); h = MAX }
-        }
-        canvas.width = w; canvas.height = h
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.8))
+        URL.revokeObjectURL(url)
+        try {
+          const canvas = document.createElement('canvas')
+          let w = img.width, h = img.height
+          if (w > maxPx || h > maxPx) {
+            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx }
+            else { w = Math.round(w * maxPx / h); h = maxPx }
+          }
+          canvas.width = w; canvas.height = h
+          const ctx = canvas.getContext('2d')
+          if (!ctx) { reject(new Error('Canvas not supported')); return }
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/jpeg', quality))
+        } catch (err) { reject(err) }
       }
-      img.src = URL.createObjectURL(file)
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('이미지를 불러올 수 없습니다.'))
+      }
+      img.src = url
     })
+  }
+
+  function dataUrlToFile(dataUrl: string, fileName: string): File {
+    const [header, base64] = dataUrl.split(',')
+    const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
+    const binary = atob(base64)
+    const arr = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
+    return new File([arr], fileName, { type: mime })
   }
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -376,8 +393,13 @@ function LessonContent() {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
+      let fileToUpload: File = photoFile
+      try {
+        const compressed = await compressImage(photoFile, 1200, 0.7)
+        fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
+      } catch { /* 압축 실패 시 원본 사용 */ }
       const formData = new FormData()
-      formData.append('file', photoFile)
+      formData.append('file', fileToUpload)
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) return undefined
       const data = await res.json()

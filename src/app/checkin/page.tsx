@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Check, Bell, X, Plus, ChevronRight, ChevronLeft, Sparkles, ArrowLeft, Trash2, Lightbulb, Camera, Loader2 } from 'lucide-react'
+import { Zap, Check, Bell, X, Plus, ChevronRight, ChevronLeft, Sparkles, ArrowLeft, Trash2, Lightbulb, Camera, Loader2, ImageIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -117,6 +117,7 @@ function ExecutionContent() {
   const [isUploading, setIsUploading] = useState(false)
   const [isOcrLoading, setIsOcrLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null)
 
   // AI 기록 모드
   const [aiMode, setAiMode] = useState(false)
@@ -127,27 +128,47 @@ function ExecutionContent() {
     setItems(executions)
   }, [executions])
 
-  // 이미지 압축 (OCR용 - 큰 이미지도 처리 가능하게)
-  function compressImage(file: File): Promise<string> {
-    return new Promise((resolve) => {
+  // 이미지 압축 (maxPx: 최대 픽셀, quality: JPEG 품질)
+  function compressImage(file: File, maxPx = 1600, quality = 0.8): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file)
       const img = new Image()
       img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const MAX = 1600
-        let w = img.width, h = img.height
-        if (w > MAX || h > MAX) {
-          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
-          else { w = Math.round(w * MAX / h); h = MAX }
+        URL.revokeObjectURL(url)
+        try {
+          const canvas = document.createElement('canvas')
+          let w = img.width, h = img.height
+          if (w > maxPx || h > maxPx) {
+            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx }
+            else { w = Math.round(w * maxPx / h); h = maxPx }
+          }
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')
+          if (!ctx) { reject(new Error('Canvas not supported')); return }
+          ctx.drawImage(img, 0, 0, w, h)
+          const dataUrl = canvas.toDataURL('image/jpeg', quality)
+          resolve(dataUrl)
+        } catch (err) {
+          reject(err)
         }
-        canvas.width = w
-        canvas.height = h
-        const ctx = canvas.getContext('2d')!
-        ctx.drawImage(img, 0, 0, w, h)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-        resolve(dataUrl)
       }
-      img.src = URL.createObjectURL(file)
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('이미지를 불러올 수 없습니다.'))
+      }
+      img.src = url
     })
+  }
+
+  // dataURL → File 변환
+  function dataUrlToFile(dataUrl: string, fileName: string): File {
+    const [header, base64] = dataUrl.split(',')
+    const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
+    const binary = atob(base64)
+    const arr = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
+    return new File([arr], fileName, { type: mime })
   }
 
   // 사진 선택 처리 + OCR 자동 실행
@@ -188,13 +209,21 @@ function ExecutionContent() {
       .finally(() => setIsOcrLoading(false))
   }
 
-  // 사진 업로드 (GCS)
+  // 사진 업로드 (GCS) - 압축 후 업로드
   async function uploadPhoto(): Promise<string | undefined> {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
+      // 모바일 대용량 사진 대비: 1200px, 품질 0.7로 압축
+      let fileToUpload: File = photoFile
+      try {
+        const compressed = await compressImage(photoFile, 1200, 0.7)
+        fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
+      } catch {
+        // 압축 실패 시 원본 사용
+      }
       const formData = new FormData()
-      formData.append('file', photoFile)
+      formData.append('file', fileToUpload)
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) {
         const err = await res.json()
@@ -493,6 +522,15 @@ function ExecutionContent() {
                             </p>
                           )}
                           <div className="flex items-center gap-3 mt-2">
+                            {item.photoUrl && (
+                              <button
+                                onClick={() => setViewPhotoUrl(item.photoUrl!)}
+                                className="flex items-center gap-1 text-xs text-blue-400 bg-blue-400/10 px-2 py-1 rounded-full hover:bg-blue-400/20 transition-colors"
+                              >
+                                <ImageIcon className="w-3 h-3" />
+                                사진
+                              </button>
+                            )}
                             <p className="text-white/30 text-sm">
                               완료 시 +5 ⚡
                             </p>
@@ -900,6 +938,41 @@ function ExecutionContent() {
             </div>
             <p className="text-white/80">실행 완료!</p>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 사진 보기 모달 */}
+      <AnimatePresence>
+        {viewPhotoUrl && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewPhotoUrl(null)}
+              className="fixed inset-0 bg-black/80 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-4 z-50 flex items-center justify-center"
+            >
+              <div className="relative max-w-lg w-full">
+                <button
+                  onClick={() => setViewPhotoUrl(null)}
+                  className="absolute -top-3 -right-3 w-8 h-8 bg-white/10 backdrop-blur rounded-full flex items-center justify-center z-10"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+                <img
+                  src={viewPhotoUrl}
+                  alt="첨부 사진"
+                  className="w-full max-h-[70vh] object-contain rounded-xl"
+                />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

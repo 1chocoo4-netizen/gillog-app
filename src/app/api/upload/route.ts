@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Storage } from '@google-cloud/storage'
 import { auth } from '@/lib/auth'
 
+export const maxDuration = 30
+
 const storage = new Storage({
   projectId: process.env.GCS_PROJECT_ID,
   credentials: {
