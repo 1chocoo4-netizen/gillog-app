@@ -111,7 +111,7 @@ const UserDataContext = createContext<UserDataContextType | null>(null)
 // ========================================
 
 const GROWTH_AREAS = ['cognition', 'selfDirected', 'habit', 'attitude', 'relationship', 'character']
-const SURVEY_MILESTONES = [5, 100, 500]
+const SURVEY_MILESTONES = [1, 100, 500]
 
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()

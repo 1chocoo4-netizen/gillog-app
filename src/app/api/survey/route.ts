@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid answers' }, { status: 400 })
     }
 
-    const VALID_MILESTONES = [5, 100, 500]
+    const VALID_MILESTONES = [1, 100, 500]
     if (!milestone || !VALID_MILESTONES.includes(milestone)) {
       return NextResponse.json({ error: 'Invalid milestone' }, { status: 400 })
     }
