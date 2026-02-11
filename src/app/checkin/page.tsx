@@ -214,26 +214,37 @@ function ExecutionContent() {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
-      // 모바일 대용량 사진 대비: 1200px, 품질 0.7로 압축
-      let fileToUpload: File = photoFile
+      // 모바일 대용량 사진 대비: 압축 필수 (Vercel 4.5MB 제한)
+      let fileToUpload: File
       try {
         const compressed = await compressImage(photoFile, 1200, 0.7)
         fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
       } catch {
-        // 압축 실패 시 원본 사용
+        // 압축 실패 시 원본이 4MB 이하면 시도, 아니면 에러
+        if (photoFile.size > 4 * 1024 * 1024) {
+          alert('사진 용량이 너무 큽니다. 다른 사진을 선택해주세요.')
+          return undefined
+        }
+        fileToUpload = photoFile
       }
       const formData = new FormData()
       formData.append('file', fileToUpload)
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.error || '사진 업로드 실패')
+        let errMsg = '사진 업로드 실패'
+        try {
+          const err = await res.json()
+          errMsg = err.error || errMsg
+        } catch {
+          errMsg = `업로드 실패 (${res.status})`
+        }
+        alert(errMsg)
         return undefined
       }
       const data = await res.json()
       return data.url
-    } catch {
-      alert('사진 업로드 중 오류가 발생했습니다.')
+    } catch (e) {
+      alert(`사진 업로드 중 오류: ${e instanceof Error ? e.message : '네트워크 오류'}`)
       return undefined
     } finally {
       setIsUploading(false)

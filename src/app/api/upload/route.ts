@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: signedUrl })
   } catch (error) {
-    console.error('Upload error:', error)
-    return NextResponse.json({ error: '업로드에 실패했습니다.' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('Upload error:', msg)
+    return NextResponse.json({ error: `업로드 실패: ${msg.slice(0, 100)}` }, { status: 500 })
   }
 }

@@ -393,18 +393,32 @@ function LessonContent() {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
-      let fileToUpload: File = photoFile
+      let fileToUpload: File
       try {
         const compressed = await compressImage(photoFile, 1200, 0.7)
         fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
-      } catch { /* 압축 실패 시 원본 사용 */ }
+      } catch {
+        if (photoFile.size > 4 * 1024 * 1024) {
+          alert('사진 용량이 너무 큽니다. 다른 사진을 선택해주세요.')
+          return undefined
+        }
+        fileToUpload = photoFile
+      }
       const formData = new FormData()
       formData.append('file', fileToUpload)
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      if (!res.ok) return undefined
+      if (!res.ok) {
+        let errMsg = '사진 업로드 실패'
+        try { const err = await res.json(); errMsg = err.error || errMsg } catch { errMsg = `업로드 실패 (${res.status})` }
+        alert(errMsg)
+        return undefined
+      }
       const data = await res.json()
       return data.url
-    } catch { return undefined }
+    } catch (e) {
+      alert(`사진 업로드 중 오류: ${e instanceof Error ? e.message : '네트워크 오류'}`)
+      return undefined
+    }
     finally { setIsUploading(false) }
   }
 
