@@ -88,6 +88,11 @@ interface ExecutionItem {
 
 type AddStep = 'closed' | 'write' | 'selectWorld'
 
+/** 로컬 시간 기준 "YYYY-MM-DD" (자정 기준 리셋용) */
+function getLocalDateStr(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function ExecutionContent() {
   const router = useRouter()
   const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history } = useUserData()
@@ -97,7 +102,7 @@ function ExecutionContent() {
 
   // 오늘 완료한 실행 수 (하루 최대 5개)
   const DAILY_LIMIT = 5
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalDateStr()
   const todayCompletedCount = history.filter(r => r.date === today).length
   const dailyRemaining = Math.max(0, DAILY_LIMIT - todayCompletedCount)
   const [alarmModal, setAlarmModal] = useState<string | null>(null)
@@ -135,7 +140,7 @@ function ExecutionContent() {
 
   // 매일 실행 항목 일일 리셋
   useEffect(() => {
-    const todayStr = new Date().toISOString().split('T')[0]
+    const todayStr = getLocalDateStr()
     const needsReset = items.some(
       i => i.isDaily && i.completed && i.lastCompletedDate !== todayStr
     )
@@ -299,7 +304,7 @@ function ExecutionContent() {
       return
     }
 
-    const todayStr = new Date().toISOString().split('T')[0]
+    const todayStr = getLocalDateStr()
     const updatedItems = items.map(i =>
       i.id === itemId
         ? { ...i, completed: true, ...(i.isDaily ? { lastCompletedDate: todayStr } : {}) }
@@ -502,7 +507,7 @@ function ExecutionContent() {
                       <span className="text-xs">🔄</span>
                       <span className="text-[10px] text-emerald-400 font-medium">매일</span>
                       <span className="text-[10px] text-emerald-300 font-bold">
-                        {items.filter(i => i.isDaily && i.completed && i.lastCompletedDate === new Date().toISOString().split('T')[0]).length}
+                        {items.filter(i => i.isDaily && i.completed && i.lastCompletedDate === getLocalDateStr()).length}
                         /{items.filter(i => i.isDaily).length}
                       </span>
                     </button>
@@ -524,7 +529,7 @@ function ExecutionContent() {
                           </div>
                           <div className="space-y-1.5 max-h-40 overflow-y-auto">
                             {items.filter(i => i.isDaily).map(item => {
-                              const todayDone = item.completed && item.lastCompletedDate === new Date().toISOString().split('T')[0]
+                              const todayDone = item.completed && item.lastCompletedDate === getLocalDateStr()
                               return (
                                 <div key={item.id} className="flex items-center gap-2 py-1">
                                   {todayDone ? (

@@ -38,8 +38,12 @@ export interface OverallStats {
   dailyStats: DailyStats[]
 }
 
+function toLocalDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return toLocalDateStr(new Date())
 }
 
 function getThisWeekStart(): Date {
@@ -66,7 +70,7 @@ function calculateStreak(records: ExecutionRecord[]): { current: number; longest
   const today = getTodayString()
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().split('T')[0]
+  const yesterdayStr = toLocalDateStr(yesterday)
 
   let currentStreak = 0
   let checkDate = new Date()
@@ -83,7 +87,7 @@ function calculateStreak(records: ExecutionRecord[]): { current: number; longest
   }
 
   while (true) {
-    const dateStr = checkDate.toISOString().split('T')[0]
+    const dateStr = toLocalDateStr(checkDate)
     if (dateSet.has(dateStr)) {
       currentStreak++
       checkDate.setDate(checkDate.getDate() - 1)
@@ -189,7 +193,7 @@ export function getCalendarHeatmapData(records: ExecutionRecord[], days: number 
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = toLocalDateStr(date)
     const count = dateCountMap[dateStr] || 0
 
     let level = 0

@@ -312,10 +312,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
   const addHistoryRecord = useCallback((record: Omit<ExecutionRecord, 'id' | 'date' | 'completedAt'>) => {
     const now = new Date()
+    const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     const newRecord: ExecutionRecord = {
       ...record,
       id: `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      date: now.toISOString().split('T')[0],
+      date: localDate,
       completedAt: now.toISOString(),
     }
 

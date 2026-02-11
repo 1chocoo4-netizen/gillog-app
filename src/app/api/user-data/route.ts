@@ -15,11 +15,24 @@ export async function GET() {
     })
 
     if (!userData) {
-      // UserData가 없으면 생성
       const newData = await prisma.userData.create({
         data: { userId: session.user.id },
       })
       return NextResponse.json(newData)
+    }
+
+    // 경과 시간 기반 에너지 자동 회복 (10분당 +1, 최대 100)
+    const now = new Date()
+    const elapsed = now.getTime() - new Date(userData.energyUpdatedAt).getTime()
+    const recovered = Math.floor(elapsed / (10 * 60 * 1000))
+
+    if (recovered > 0 && userData.energy < 100) {
+      const newEnergy = Math.min(100, userData.energy + recovered)
+      const updated = await prisma.userData.update({
+        where: { userId: session.user.id },
+        data: { energy: newEnergy, energyUpdatedAt: now },
+      })
+      return NextResponse.json(updated)
     }
 
     return NextResponse.json(userData)
@@ -70,6 +83,11 @@ export async function PATCH(request: Request) {
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
+    // energy가 변경되면 energyUpdatedAt도 갱신
+    if (updateData.energy !== undefined) {
+      updateData.energyUpdatedAt = new Date()
     }
 
     const userData = await prisma.userData.upsert({
