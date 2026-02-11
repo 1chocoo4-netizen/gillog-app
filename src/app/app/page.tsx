@@ -18,35 +18,33 @@ function AppHomeContent() {
   const { energy } = useUserData()
 
   const handleNodeClick = (node: MapNode) => {
-    // 해당 월드만 선택 (페이지 이동 없음)
     setSelectedWorld(node.worldKey)
   }
 
   const handleNodeEnter = (node: MapNode) => {
-    // 바로 레슨(티칭)으로 이동
     router.push(`/teaching/${node.worldKey}`)
   }
 
   return (
     <main className="min-h-screen bg-slate-900">
-      {/* 상단 HUD - 에너지 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* 로고/타이틀 */}
+      {/* 상단 HUD */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-b border-white/5">
+        <div className="flex items-center justify-between px-4 py-2.5">
+          {/* 로고 */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">G</span>
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xs">G</span>
             </div>
-            <span className="text-white font-semibold">길로그</span>
+            <span className="text-white font-semibold text-sm">길로그</span>
           </div>
 
           {/* 레벨 + 에너지 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <LevelBadge />
-            <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+            <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1">
+              <Zap className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
-                <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
                     initial={{ width: 0 }}
@@ -54,13 +52,13 @@ function AppHomeContent() {
                     transition={{ duration: 0.5, ease: 'easeOut' }}
                   />
                 </div>
-                <span className="text-xs text-white/60 font-medium">{energy}</span>
+                <span className="text-[11px] text-white/50 font-medium">{energy}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 월드 선택 배너 */}
+        {/* 월드 선택 탭 */}
         <QuestBanner
           selectedWorld={selectedWorld}
           onWorldChange={setSelectedWorld}
@@ -68,7 +66,7 @@ function AppHomeContent() {
       </header>
 
       {/* 메인 맵 영역 */}
-      <div className="pt-32">
+      <div className="pt-28 pb-20">
         <MapArea
           selectedWorld={selectedWorld}
           onNodeClick={handleNodeClick}
@@ -106,15 +104,15 @@ function TabItem({
     <Link
       href={href}
       className={`
-        flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-xl transition-colors min-w-[56px]
+        flex flex-col items-center gap-0.5 px-5 py-2 rounded-xl transition-colors min-w-[56px]
         ${active
           ? 'text-white'
           : 'text-white/40 hover:text-white/60'
         }
       `}
     >
-      <span className="text-[22px]">{icon}</span>
-      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
+      <span className="text-xl">{icon}</span>
+      <span className={`text-[10px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
         {label}
       </span>
     </Link>

@@ -9,11 +9,13 @@ interface MapPathProps {
 }
 
 export function MapPath({ startX, startY, endX, endY }: MapPathProps) {
-  const y1 = startY + 45
-  const y2 = endY + 45
+  // 노드 중심으로 오프셋 (노드 크기/2 = 32~40px 부근)
+  const y1 = startY + 36
+  const y2 = endY + 36
   const height = y2 - y1
 
-  // S자 곡선 컨트롤 포인트 (x: 0~100 좌표계)
+  if (height <= 0) return null
+
   const cp1y = height * 0.4
   const cp2y = height * 0.6
 
@@ -28,7 +30,7 @@ export function MapPath({ startX, startY, endX, endY }: MapPathProps) {
         d={`M ${startX} 0 C ${startX} ${cp1y} ${endX} ${cp2y} ${endX} ${height}`}
         fill="none"
         stroke="white"
-        strokeOpacity="0.15"
+        strokeOpacity="0.12"
         strokeWidth="0.5"
         vectorEffect="non-scaling-stroke"
         strokeDasharray="6 4"

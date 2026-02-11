@@ -12,34 +12,34 @@ interface MapAreaProps {
   onNodeEnter: (node: MapNodeType) => void
 }
 
+const NODE_GAP = 100 // 노드 간 세로 간격
+const NODE_START_Y = 20 // 첫 노드 상단 여백
+
 export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 6개 노드 생성 (월드당 1개)
   const nodes = useMemo(() => generateDummyNodes(), [])
 
-  // 노드 위치 계산 (듀오링고 스타일 - 가운데 중심 살짝 좌우)
+  // 듀오링고 스타일 - 가운데 중심 살짝 좌우
   const getNodePosition = (index: number) => {
     const baseX = 50
-    const offsetX = (index % 2 === 0 ? -4 : 4)
-    const y = 16 + index * 88
+    const offsetX = (index % 2 === 0 ? -5 : 5)
+    const y = NODE_START_Y + index * NODE_GAP
 
-    return {
-      x: baseX + offsetX,
-      y,
-    }
+    return { x: baseX + offsetX, y }
   }
 
   const nodePositions = nodes.map((_, i) => getNodePosition(i))
 
+  // 전체 맵 높이 계산 (마지막 노드 + 노드 크기 + 라벨 + 여백)
+  const totalHeight = NODE_START_Y + (nodes.length - 1) * NODE_GAP + 120
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full pb-48 bg-slate-900"
+      className="relative w-full bg-slate-900"
+      style={{ height: totalHeight }}
     >
-
-
-      {/* 노드들과 경로 */}
       <div className="relative z-10">
         {/* 경로 - 노드 사이 점선 */}
         {nodes.slice(0, -1).map((node, i) => {
@@ -58,9 +58,10 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
             />
           )
         })}
+
+        {/* 노드들 */}
         {nodes.map((node, i) => {
           const pos = nodePositions[i]
-          // selectedWorld와 일치하는 노드가 활성화
           const isActive = node.worldKey === selectedWorld
 
           return (
@@ -90,7 +91,6 @@ export function MapArea({ selectedWorld, onNodeClick, onNodeEnter }: MapAreaProp
           )
         })}
       </div>
-
     </div>
   )
 }
