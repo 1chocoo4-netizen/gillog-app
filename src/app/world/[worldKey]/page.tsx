@@ -1,20 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, ArrowLeft, BookOpen } from 'lucide-react'
+import { ArrowLeft, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { AuthGuard } from '@/components/AuthGuard'
-import { useUserData } from '@/lib/UserDataProvider'
 
 function WorldContent() {
   const router = useRouter()
   const params = useParams()
   const worldKey = params.worldKey as WorldKey
-  const { energy } = useUserData()
 
   const worldConfig = WORLD_CONFIGS[worldKey]
 
@@ -38,10 +35,6 @@ function WorldContent() {
           <h1 className="text-white font-semibold">{worldConfig.label} 월드</h1>
           <div className="flex items-center gap-3">
             <LevelBadge />
-            <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <span className="text-xs text-white/60">{energy}</span>
-            </div>
           </div>
         </div>
       </header>
@@ -90,7 +83,7 @@ function WorldContent() {
               <BookOpen className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <h3 className="text-white font-bold text-lg">티칭</h3>
+              <h3 className="text-white font-bold text-lg">학습</h3>
               <p className="text-white/50 text-sm">핵심 원리 배우기</p>
             </div>
             <div className="text-cyan-400 text-2xl">→</div>

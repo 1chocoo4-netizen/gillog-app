@@ -86,7 +86,7 @@ export default function CognitionWorldPage() {
               <BookOpen className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <h3 className="text-white font-bold text-lg">티칭</h3>
+              <h3 className="text-white font-bold text-lg">학습</h3>
               <p className="text-white/50 text-sm">핵심 원리 배우기</p>
             </div>
             <div className="text-cyan-400 text-2xl">→</div>
@@ -122,7 +122,7 @@ export default function CognitionWorldPage() {
           transition={{ delay: 0.7 }}
           className="text-white/30 text-xs mt-8 text-center"
         >
-          티칭으로 배우고, 코칭으로 실천해보세요
+          학습으로 배우고, 코칭으로 실천해보세요
         </motion.p>
       </div>
     </main>

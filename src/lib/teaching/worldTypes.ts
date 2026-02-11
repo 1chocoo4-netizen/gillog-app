@@ -47,13 +47,10 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     color: 'from-cyan-500 to-blue-600',
     chapters: [
       { key: 'goal', label: '목표설정', icon: '🎯', color: 'from-cyan-500 to-blue-600', gradient: 'from-cyan-500/20 to-blue-500/20' },
-      { key: 'planning', label: '계획수립', icon: '📋', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
       { key: 'time', label: '시간관리', icon: '⏰', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
       { key: 'priority', label: '우선순위', icon: '📌', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
       { key: 'motivation', label: '동기부여', icon: '🔥', color: 'from-orange-500 to-red-600', gradient: 'from-orange-500/20 to-red-500/20' },
-      { key: 'review', label: '자기점검', icon: '✅', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
-      { key: 'resource', label: '자원활용', icon: '🧰', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
-      { key: 'adapt', label: '적응력', icon: '🔄', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
+      { key: 'selfAwareness', label: '자기인식', icon: '🪞', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
     ]
   },
   habit: {
@@ -63,14 +60,11 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     description: '좋은 습관을 만들고 나쁜 습관을 바꾸는 힘',
     color: 'from-green-500 to-emerald-600',
     chapters: [
-      { key: 'trigger', label: '습관 트리거', icon: '🔔', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
-      { key: 'routine', label: '루틴 만들기', icon: '🔁', color: 'from-blue-500 to-cyan-600', gradient: 'from-blue-500/20 to-cyan-500/20' },
-      { key: 'reward', label: '보상 설계', icon: '🎁', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
-      { key: 'stack', label: '습관 쌓기', icon: '📚', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
+      { key: 'goodHabit', label: '좋은 습관 만들기', icon: '✨', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
       { key: 'break', label: '나쁜 습관 끊기', icon: '✂️', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
-      { key: 'track', label: '습관 추적', icon: '📈', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
-      { key: 'environment', label: '환경 설계', icon: '🏠', color: 'from-indigo-500 to-blue-600', gradient: 'from-indigo-500/20 to-blue-500/20' },
-      { key: 'identity', label: '정체성 변화', icon: '🦋', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
+      { key: 'reward', label: '보상 쌓기', icon: '🎁', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
+      { key: 'stack', label: '습관 쌓기', icon: '📚', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
+      { key: 'environment', label: '환경설정', icon: '🏠', color: 'from-blue-500 to-cyan-600', gradient: 'from-blue-500/20 to-cyan-500/20' },
     ]
   },
   attitude: {
@@ -81,10 +75,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     color: 'from-amber-500 to-orange-600',
     chapters: [
       { key: 'growth', label: '성장 마인드셋', icon: '🌱', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
-      { key: 'resilience', label: '회복탄력성', icon: '🏀', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
-      { key: 'positive', label: '긍정 사고', icon: '☀️', color: 'from-yellow-500 to-amber-600', gradient: 'from-yellow-500/20 to-amber-500/20' },
-      { key: 'grit', label: '끈기', icon: '💪', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
       { key: 'curiosity', label: '호기심', icon: '🔍', color: 'from-blue-500 to-cyan-600', gradient: 'from-blue-500/20 to-cyan-500/20' },
+      { key: 'grit', label: '끈기', icon: '💪', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
+      { key: 'resilience', label: '회복탄력성', icon: '🏀', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
       { key: 'humility', label: '겸손', icon: '🙏', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
       { key: 'courage', label: '용기', icon: '🦁', color: 'from-orange-500 to-red-600', gradient: 'from-orange-500/20 to-red-500/20' },
       { key: 'gratitude', label: '감사', icon: '💝', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
@@ -99,12 +92,9 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     chapters: [
       { key: 'communication', label: '소통', icon: '💬', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
       { key: 'empathy', label: '공감', icon: '💗', color: 'from-red-500 to-rose-600', gradient: 'from-red-500/20 to-rose-500/20' },
-      { key: 'listening', label: '경청', icon: '👂', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
-      { key: 'boundaries', label: '경계 설정', icon: '🚧', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
       { key: 'trust', label: '신뢰', icon: '🤞', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
-      { key: 'conflict', label: '갈등 해결', icon: '🕊️', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
       { key: 'support', label: '지지하기', icon: '🫂', color: 'from-cyan-500 to-blue-600', gradient: 'from-cyan-500/20 to-blue-500/20' },
-      { key: 'networking', label: '네트워킹', icon: '🌐', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
+      { key: 'listening', label: '경청', icon: '👂', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
     ]
   },
   character: {
@@ -114,14 +104,15 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     description: '바른 인격과 좋은 관계를 만드는 힘',
     color: 'from-rose-500 to-red-600',
     chapters: [
-      { key: 'empathy', label: '공감', icon: '💗', color: 'from-rose-500 to-red-600', gradient: 'from-rose-500/20 to-red-500/20' },
-      { key: 'respect', label: '존중', icon: '🙇', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
-      { key: 'honesty', label: '정직', icon: '⚖️', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
-      { key: 'responsibility', label: '책임감', icon: '🎖️', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
+      { key: 'love', label: '사랑', icon: '❤️', color: 'from-rose-500 to-red-600', gradient: 'from-rose-500/20 to-red-500/20' },
+      { key: 'emotion', label: '감정', icon: '🎭', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
+      { key: 'heart', label: '마음', icon: '💜', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
+      { key: 'responsibility', label: '책임', icon: '🎖️', color: 'from-green-500 to-emerald-600', gradient: 'from-green-500/20 to-emerald-500/20' },
       { key: 'kindness', label: '친절', icon: '🤗', color: 'from-pink-500 to-rose-600', gradient: 'from-pink-500/20 to-rose-500/20' },
       { key: 'cooperation', label: '협동', icon: '🤜🤛', color: 'from-cyan-500 to-blue-600', gradient: 'from-cyan-500/20 to-blue-500/20' },
-      { key: 'fairness', label: '공정', icon: '⚖️', color: 'from-violet-500 to-purple-600', gradient: 'from-violet-500/20 to-purple-500/20' },
+      { key: 'respect', label: '존중', icon: '🙇', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
       { key: 'service', label: '봉사', icon: '🌍', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
+      { key: 'fairness', label: '공정', icon: '⚖️', color: 'from-indigo-500 to-blue-600', gradient: 'from-indigo-500/20 to-blue-500/20' },
     ]
   }
 }

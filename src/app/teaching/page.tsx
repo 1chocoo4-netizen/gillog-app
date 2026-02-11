@@ -10,6 +10,7 @@ import { SUBJECTS, SubjectKey } from '@/lib/teaching/types'
 import { LESSON_DATA } from '@/lib/teaching/lessonContent'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
+import { BottomTabBar } from '@/components/BottomTabBar'
 
 interface SubjectProgress {
   [key: string]: {
@@ -44,7 +45,7 @@ function TeachingContent() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">돌아가기</span>
           </Link>
-          <h1 className="text-white font-semibold">티칭</h1>
+          <h1 className="text-white font-semibold">학습</h1>
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
@@ -56,7 +57,7 @@ function TeachingContent() {
       </header>
 
       {/* 메인 영역 */}
-      <div className="pt-20 pb-8 px-4">
+      <div className="pt-20 pb-24 px-4">
         {/* 타이틀 */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -106,6 +107,8 @@ function TeachingContent() {
           })}
         </div>
       </div>
+
+      <BottomTabBar />
     </main>
   )
 }

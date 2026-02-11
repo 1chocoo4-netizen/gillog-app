@@ -69,7 +69,7 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
   { id: 'm9', areaKey: 'community', text: '나는 함께 협력하면 더 좋은 결과를 낼 수 있다고 생각한다.' },
   { id: 'm10', areaKey: 'community', text: '나는 공정하고 정의로운 것이 중요하다고 생각한다.' },
 
-  // ========== 비인지 역량 (nonCognitive) ==========
+  // ========== 인성 역량 (nonCognitive) ==========
   { id: 'n1', areaKey: 'nonCognitive', text: '나는 어려운 일이 있어도 포기하지 않는다.' },
   { id: 'n2', areaKey: 'nonCognitive', text: '나는 스스로 계획을 세우고 실천할 수 있다.' },
   { id: 'n3', areaKey: 'nonCognitive', text: '나는 감정을 잘 조절할 수 있다.' },

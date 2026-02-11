@@ -1,100 +1,137 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, ArrowLeft, ChevronRight, Sparkles, MessageCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Lock, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
-import { getContentById } from '@/lib/teaching/content'
+import { TIERS, TierKey, makeStageId, STAGE_CONTENT, getCompletedStages } from '@/lib/teaching/lessonData'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
+import { BottomTabBar } from '@/components/BottomTabBar'
 
-type Step = 'concept' | 'question' | 'mission' | 'complete' | 'coaching'
-
-function ContentPageContent() {
+function StageMapContent() {
   const params = useParams()
   const router = useRouter()
   const worldKey = params.subject as WorldKey
-  const contentId = params.id as string
+  const chapterKey = params.id as string
 
-  const { energy, addEnergy, useEnergy, executions, saveExecutions, updateLevelProgress } = useUserData()
-  const [step, setStep] = useState<Step>('concept')
-  const [selectedAnswer, setSelectedAnswer] = useState<string>('')
-  const [showReward, setShowReward] = useState(false)
-
-  const content = getContentById(contentId)
-
-  // 월드 설정과 챕터 정보 가져오기
   const worldConfig = WORLD_CONFIGS[worldKey]
-  const chapter = worldConfig?.chapters.find(c => c.key === content?.chapterKey)
+  const chapter = worldConfig?.chapters.find(c => c.key === chapterKey)
 
-  // energy comes from useUserData()
+  const { energy, addEnergy } = useUserData()
+  const [completedStages, setCompletedStages] = useState<string[]>([])
+  const [showEnergyAlert, setShowEnergyAlert] = useState(false)
+  const [unlockTarget, setUnlockTarget] = useState<{ tierKey: TierKey; stageNumber: number } | null>(null)
 
-  if (!content || !worldConfig || !chapter) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">콘텐츠를 찾을 수 없습니다</div>
+  useEffect(() => {
+    setCompletedStages(getCompletedStages())
+  }, [])
+
+  if (!worldConfig || !chapter) {
+    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">챕터를 찾을 수 없습니다</div>
   }
 
-  const handleNext = () => {
-    if (step === 'concept') {
-      setStep('question')
-    } else if (step === 'question') {
-      setStep('mission')
-    } else if (step === 'mission') {
-      // 완료 처리
-      handleComplete()
+  const getStageStatus = (tierKey: TierKey, stageNumber: number): 'locked' | 'current' | 'completed' => {
+    const stageId = makeStageId(chapterKey, tierKey, stageNumber)
+
+    // 이미 완료한 스테이지
+    if (completedStages.includes(stageId)) return 'completed'
+
+    // 콘텐츠가 있는지 확인
+    const hasContent = !!STAGE_CONTENT[stageId]
+
+    // 첫 번째 스테이지는 항상 열림
+    if (stageNumber === 1 && hasContent) return 'current'
+
+    // 이전 스테이지가 완료되었으면 현재 스테이지 열림
+    if (stageNumber > 1) {
+      const prevStageId = makeStageId(chapterKey, tierKey, stageNumber - 1)
+      if (completedStages.includes(prevStageId) && hasContent) return 'current'
+    }
+
+    return 'locked'
+  }
+
+  const isTierUnlocked = (tierKey: TierKey): boolean => {
+    if (tierKey === 'bronze') return true
+
+    // 이전 티어의 모든 10단계가 완료되었는지 확인
+    const tierIndex = TIERS.findIndex(t => t.key === tierKey)
+    if (tierIndex <= 0) return true
+    const prevTier = TIERS[tierIndex - 1]
+    for (let i = 1; i <= prevTier.stageCount; i++) {
+      const prevStageId = makeStageId(chapterKey, prevTier.key, i)
+      if (!completedStages.includes(prevStageId)) return false
+    }
+    return true
+  }
+
+  // 티어별 완료 수 계산
+  const getTierCompletedCount = (tierKey: TierKey): number => {
+    let count = 0
+    for (let i = 1; i <= 10; i++) {
+      const stageId = makeStageId(chapterKey, tierKey, i)
+      if (completedStages.includes(stageId)) count++
+    }
+    return count
+  }
+
+  const handleStageClick = (tierKey: TierKey, stageNumber: number) => {
+    const stageId = makeStageId(chapterKey, tierKey, stageNumber)
+    const status = getStageStatus(tierKey, stageNumber)
+
+    if (status === 'completed') {
+      router.push(`/teaching/${worldKey}/lesson/${stageId}`)
+      return
+    }
+
+    if (status === 'current') {
+      if (energy < 5) {
+        setShowEnergyAlert(true)
+        setTimeout(() => setShowEnergyAlert(false), 2000)
+        return
+      }
+      router.push(`/teaching/${worldKey}/lesson/${stageId}`)
+      return
+    }
+
+    // locked 상태 - 콘텐츠가 있으면 10⚡ 해금 팝업
+    const hasContent = !!STAGE_CONTENT[stageId]
+    if (hasContent) {
+      setUnlockTarget({ tierKey, stageNumber })
     }
   }
 
-  const handleComplete = () => {
-    // 에너지 보상
-    addEnergy(content.energyReward)
-
-    // 레벨 진행도 업데이트
-    updateLevelProgress(worldKey, 1)
-
-    // 실행 미션을 실행 관리에 추가
-    const newItems = [...executions]
-    newItems.push({
-      id: `exec-${Date.now()}`,
-      areaKey: worldKey,
-      text: content.actionMission,
-      completed: false,
-      createdAt: new Date().toISOString()
-    })
-    saveExecutions(newItems)
-
-    setShowReward(true)
-    setTimeout(() => {
-      setShowReward(false)
-      setStep('complete')
-    }, 1500)
-  }
-
-  const handleGoToCoaching = () => {
-    // 코칭으로 이동 (에너지 사용)
-    if (useEnergy(2)) {
-      router.push('/lesson/cognition-1')
+  const handleUnlockConfirm = () => {
+    if (!unlockTarget) return
+    const stageId = makeStageId(chapterKey, unlockTarget.tierKey, unlockTarget.stageNumber)
+    if (energy < 10) {
+      setUnlockTarget(null)
+      setShowEnergyAlert(true)
+      setTimeout(() => setShowEnergyAlert(false), 2000)
+      return
     }
-  }
-
-  const handleFinish = () => {
-    router.push(`/teaching/${worldKey}`)
+    addEnergy(-10)
+    setUnlockTarget(null)
+    router.push(`/teaching/${worldKey}/lesson/${stageId}?unlock=true`)
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 flex flex-col">
+    <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
           <Link href={`/teaching/${worldKey}`} className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm">나가기</span>
+            <span className="text-sm">돌아가기</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{chapter.icon}</span>
-            <span className="text-white font-medium text-sm">{chapter.label}</span>
+            <span className="text-xl">{chapter.icon}</span>
+            <h1 className="text-white font-semibold">{chapter.label}</h1>
           </div>
           <div className="flex items-center gap-3">
             <LevelBadge />
@@ -104,247 +141,154 @@ function ContentPageContent() {
             </div>
           </div>
         </div>
-
-        {/* 진행 바 */}
-        <div className="px-4 pb-3">
-          <div className="flex gap-2">
-            {['concept', 'question', 'mission'].map((s, i) => (
-              <div
-                key={s}
-                className={`flex-1 h-1 rounded-full ${
-                  ['concept', 'question', 'mission'].indexOf(step) >= i
-                    ? `bg-gradient-to-r ${chapter.color}`
-                    : 'bg-white/10'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
       </header>
 
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 pt-28 pb-32 px-4 overflow-y-auto">
-        <AnimatePresence mode="wait">
-          {/* STEP 1: 핵심 원리 */}
-          {step === 'concept' && (
+      {/* 티어 맵 */}
+      <div className="pt-20 pb-24 px-4 max-w-md mx-auto">
+        {TIERS.map((tier, tierIndex) => {
+          const unlocked = isTierUnlocked(tier.key)
+          const completedCount = getTierCompletedCount(tier.key)
+
+          return (
             <motion.div
-              key="concept"
+              key={tier.key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-lg mx-auto"
+              transition={{ delay: tierIndex * 0.1 }}
+              className="mb-8"
             >
-              <div className="text-center mb-6">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${chapter.gradient} text-white/80 border border-white/10`}>
-                  STEP 1 · 핵심 원리
-                </span>
-              </div>
-
-              <h2 className="text-2xl font-bold text-white text-center mb-8">
-                {content.conceptTitle}
-              </h2>
-
-              <div className={`bg-gradient-to-br ${chapter.gradient} border border-white/10 rounded-2xl p-6`}>
-                <p className="text-white text-lg leading-relaxed whitespace-pre-line">
-                  {content.conceptContent}
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 2: 사고 질문 */}
-          {step === 'question' && (
-            <motion.div
-              key="question"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-lg mx-auto"
-            >
-              <div className="text-center mb-6">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${chapter.gradient} text-white/80 border border-white/10`}>
-                  STEP 2 · 생각해보기
-                </span>
-              </div>
-
-              <div className={`bg-gradient-to-br ${chapter.gradient} border border-white/10 rounded-2xl p-6 mb-6`}>
-                <p className="text-white text-xl font-medium text-center">
-                  {content.thinkingQuestion}
-                </p>
-              </div>
-
-              <textarea
-                value={selectedAnswer}
-                onChange={(e) => setSelectedAnswer(e.target.value)}
-                placeholder="여기에 생각을 적어보세요..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 resize-none h-32 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-              />
-
-              <p className="text-white/40 text-xs text-center mt-3">
-                생각을 정리하면 더 잘 기억돼요
-              </p>
-            </motion.div>
-          )}
-
-          {/* STEP 3: 실행 미션 */}
-          {step === 'mission' && (
-            <motion.div
-              key="mission"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-lg mx-auto"
-            >
-              <div className="text-center mb-6">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${chapter.gradient} text-white/80 border border-white/10`}>
-                  STEP 3 · 오늘의 미션
-                </span>
-              </div>
-
-              <div className="text-center mb-8">
-                <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">
-                  실행 미션이 생성됐어요!
-                </h3>
-                <p className="text-white/50 text-sm">
-                  실행 관리에서 완료하면 보상을 받아요
-                </p>
-              </div>
-
-              <div className={`bg-gradient-to-br ${chapter.gradient} border border-white/20 rounded-2xl p-6`}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${chapter.color} flex items-center justify-center flex-shrink-0`}>
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium text-lg">
-                      {content.actionMission}
-                    </p>
-                    <div className="flex items-center gap-3 mt-3">
-                      <span className="text-white/50 text-sm flex items-center gap-1">
-                        <Zap className="w-4 h-4 text-yellow-400" />
-                        완료 시 +5
-                      </span>
-                    </div>
-                  </div>
+              {/* 티어 헤더 */}
+              <div className={`flex items-center gap-3 mb-4 ${!unlocked ? 'opacity-40' : ''}`}>
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center text-lg shadow-lg`}>
+                  {tier.icon}
                 </div>
+                <div>
+                  <h2 className="text-white font-bold">{tier.label}</h2>
+                  <p className="text-white/40 text-xs">
+                    {unlocked
+                      ? completedCount > 0
+                        ? `${completedCount}/${tier.stageCount} 완료`
+                        : `${tier.stageCount}단계`
+                      : '이전 단계를 완료하면 열려요'
+                    }
+                  </p>
+                </div>
+                {!unlocked && <Lock className="w-4 h-4 text-white/30 ml-auto" />}
+              </div>
+
+              {/* 스테이지 그리드 */}
+              <div className="grid grid-cols-5 gap-2">
+                {Array.from({ length: tier.stageCount }, (_, i) => {
+                  const stageNumber = i + 1
+                  const stageId = makeStageId(chapterKey, tier.key, stageNumber)
+                  const isCompleted = completedStages.includes(stageId)
+                  const status = isCompleted ? 'completed' : (unlocked ? getStageStatus(tier.key, stageNumber) : 'locked')
+                  const hasContent = !!STAGE_CONTENT[stageId]
+                  const canUnlock = status === 'locked' && hasContent
+
+                  return (
+                    <motion.button
+                      key={stageNumber}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleStageClick(tier.key, stageNumber)}
+                      className={`
+                        relative w-full aspect-square rounded-xl flex items-center justify-center
+                        font-bold text-sm transition-all border
+                        ${status === 'completed'
+                          ? 'bg-green-500/20 border-green-500/40 text-green-400 shadow-lg'
+                          : status === 'current'
+                          ? `bg-gradient-to-br ${tier.color} border-white/40 text-white shadow-lg ring-2 ring-white/30 ring-offset-2 ring-offset-slate-900`
+                          : canUnlock
+                          ? 'bg-white/5 border-white/10 text-white/30 hover:border-yellow-500/40'
+                          : 'bg-white/5 border-white/10 text-white/10 opacity-40'
+                        }
+                      `}
+                    >
+                      {status === 'completed' ? (
+                        <span className="text-[10px] font-black tracking-wider">PASS</span>
+                      ) : (
+                        stageNumber
+                      )}
+
+                      {/* 현재 스테이지 표시 */}
+                      {status === 'current' && (
+                        <motion.div
+                          className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-400"
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        />
+                      )}
+                    </motion.button>
+                  )
+                })}
               </div>
             </motion.div>
-          )}
-
-          {/* 완료 화면 */}
-          {step === 'complete' && (
-            <motion.div
-              key="complete"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-lg mx-auto text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', delay: 0.2 }}
-                className={`w-24 h-24 rounded-full bg-gradient-to-br ${chapter.color} flex items-center justify-center mx-auto mb-6 shadow-lg shadow-violet-500/30`}
-              >
-                <span className="text-5xl">🎉</span>
-              </motion.div>
-
-              <h2 className="text-2xl font-bold text-white mb-2">학습 완료!</h2>
-              <p className="text-white/50 mb-8">
-                {content.conceptTitle}을(를) 배웠어요
-              </p>
-
-              {/* 보상 표시 */}
-              <div className="flex justify-center gap-4 mb-8">
-                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl px-4 py-3 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-400" fill="currentColor" />
-                  <span className="text-white font-bold">+{content.energyReward}</span>
-                </div>
-                <div className="bg-violet-500/20 border border-violet-500/30 rounded-xl px-4 py-3 flex items-center gap-2">
-                  <span className="text-violet-400 font-bold">+{content.xpReward} XP</span>
-                </div>
-              </div>
-
-              {/* 코칭 연결 */}
-              <div className={`bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/30 rounded-2xl p-6 mb-4`}>
-                <p className="text-white/80 mb-2">방금 배운 방법을 바로 써보려는 게 정말 좋아.</p>
-                <p className="text-white/60 text-sm mb-4">{content.conceptTitle}을(를) 이해한 것 같아.</p>
-                <p className="text-white font-medium">이 방법을 오늘 어디에 먼저 써볼 수 있을까?</p>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={handleGoToCoaching}
-                  disabled={energy < 2}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  코칭으로 실천하기
-                  <span className="text-white/70 text-sm flex items-center gap-1 ml-2">
-                    <Zap className="w-3 h-3" />2
-                  </span>
-                </button>
-
-                <button
-                  onClick={handleFinish}
-                  className="w-full py-3 rounded-xl bg-white/10 text-white/70 font-medium"
-                >
-                  다음에 하기
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          )
+        })}
       </div>
 
-      {/* 하단 버튼 */}
-      {step !== 'complete' && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-4">
-          <button
-            onClick={handleNext}
-            disabled={step === 'question' && !selectedAnswer.trim()}
-            className={`w-full py-4 rounded-xl bg-gradient-to-r ${chapter.color} text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50 max-w-lg mx-auto`}
-          >
-            {step === 'mission' ? '미션 받고 완료하기' : '다음'}
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
-      {/* 보상 팝업 */}
+      {/* 10⚡ 해금 확인 팝업 */}
       <AnimatePresence>
-        {showReward && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          >
-            <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl px-12 py-8 text-center">
-              <motion.div
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sparkles className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              </motion.div>
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <Zap className="w-8 h-8 text-yellow-400" fill="currentColor" />
-                <span className="text-4xl font-bold text-white">+{content.energyReward}</span>
+        {unlockTarget && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setUnlockTarget(null)} className="fixed inset-0 bg-black/60 z-50" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-8">
+              <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-white/10 shadow-2xl">
+                <div className="text-center mb-5">
+                  <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-3">
+                    <Zap className="w-7 h-7 text-yellow-400" />
+                  </div>
+                  <h3 className="text-white font-bold text-lg mb-1">스테이지 해금</h3>
+                  <p className="text-white/50 text-sm">
+                    10⚡ 에너지를 사용해서<br />이 스테이지를 바로 열 수 있어요
+                  </p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-3 mb-5 flex items-center justify-between">
+                  <span className="text-white/60 text-sm">현재 에너지</span>
+                  <span className={`font-bold ${energy >= 10 ? 'text-yellow-400' : 'text-red-400'}`}>{energy}⚡</span>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setUnlockTarget(null)}
+                    className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 font-medium text-sm">
+                    취소
+                  </button>
+                  <button onClick={handleUnlockConfirm} disabled={energy < 10}
+                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-1.5">
+                    <Zap className="w-4 h-4" />10⚡ 해금
+                  </button>
+                </div>
               </div>
-              <p className="text-white/80">학습 완료!</p>
-            </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 에너지 부족 알림 */}
+      <AnimatePresence>
+        {showEnergyAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-20 left-4 right-4 z-50 bg-red-500/90 backdrop-blur-lg rounded-xl px-4 py-3 flex items-center gap-3 max-w-md mx-auto"
+          >
+            <Zap className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+            <p className="text-white text-sm font-medium">에너지가 부족해요! (현재: {energy}⚡)</p>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <BottomTabBar />
     </main>
   )
 }
 
-export default function ContentPage() {
+export default function StageMapPage() {
   return (
     <AuthGuard>
-      <ContentPageContent />
+      <StageMapContent />
     </AuthGuard>
   )
 }

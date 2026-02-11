@@ -91,6 +91,13 @@ function ExecutionContent() {
   const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history } = useUserData()
   const [items, setItems] = useState<ExecutionItem[]>([])
   const [showReward, setShowReward] = useState(false)
+  const [showDailyLimit, setShowDailyLimit] = useState(false)
+
+  // 오늘 완료한 실행 수 (하루 최대 5개)
+  const DAILY_LIMIT = 5
+  const today = new Date().toISOString().split('T')[0]
+  const todayCompletedCount = history.filter(r => r.date === today).length
+  const dailyRemaining = Math.max(0, DAILY_LIMIT - todayCompletedCount)
   const [alarmModal, setAlarmModal] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState('09:00')
 
@@ -210,10 +217,17 @@ function ExecutionContent() {
     saveExecutions(newItems)
   }
 
-  // 체크 완료 처리
+  // 체크 완료 처리 (하루 최대 5개)
   function handleComplete(itemId: string) {
     const item = items.find(i => i.id === itemId)
     if (!item || item.completed) return
+
+    // 일일 실행 제한 체크
+    if (todayCompletedCount >= DAILY_LIMIT) {
+      setShowDailyLimit(true)
+      setTimeout(() => setShowDailyLimit(false), 3000)
+      return
+    }
 
     const updatedItems = items.map(i =>
       i.id === itemId ? { ...i, completed: true } : i
@@ -337,18 +351,35 @@ function ExecutionContent() {
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <motion.span
-                key={energy}
-                initial={{ scale: 1.5, color: '#facc15' }}
-                animate={{ scale: 1, color: 'rgba(255,255,255,0.6)' }}
-                className="text-xs font-medium"
-              >
-                {energy}
-              </motion.span>
+              <div className="flex items-center gap-1">
+                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${energy}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                  />
+                </div>
+                <span className="text-xs text-white/60 font-medium">{energy}</span>
+              </div>
             </div>
           </div>
         </div>
       </header>
+
+      {/* 오늘 남은 실행 횟수 */}
+      <div className="pt-16 px-4">
+        <div className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium ${
+          dailyRemaining > 0
+            ? 'bg-indigo-500/10 text-indigo-300'
+            : 'bg-gray-800 text-gray-500'
+        }`}>
+          {dailyRemaining > 0
+            ? `오늘 실행 가능 ${dailyRemaining}/${DAILY_LIMIT}회`
+            : `오늘 실행 완료 (${DAILY_LIMIT}/${DAILY_LIMIT})`
+          }
+        </div>
+      </div>
 
       {/* 실행 현황 그래프 */}
       {(() => {
@@ -435,7 +466,12 @@ function ExecutionContent() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleComplete(item.id)}
-                          className="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center hover:bg-white/10 transition-colors mt-0.5"
+                          disabled={!item.completed && dailyRemaining <= 0}
+                          className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 ${
+                            !item.completed && dailyRemaining <= 0
+                              ? 'opacity-30 cursor-not-allowed'
+                              : 'hover:bg-white/10'
+                          }`}
                           style={{ borderColor: area.color }}
                         >
                           {item.completed && (
@@ -863,6 +899,21 @@ function ExecutionContent() {
               <span className="text-3xl font-bold text-white">+5</span>
             </div>
             <p className="text-white/80">실행 완료!</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 일일 제한 알림 */}
+      <AnimatePresence>
+        {showDailyLimit && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-gray-800 border border-gray-700 rounded-xl px-5 py-3 text-center shadow-2xl"
+          >
+            <p className="text-sm text-gray-200 font-medium">오늘의 실행은 모두 완료했어요!</p>
+            <p className="text-xs text-gray-400 mt-1">하루 최대 {DAILY_LIMIT}개까지 기록할 수 있습니다.</p>
           </motion.div>
         )}
       </AnimatePresence>

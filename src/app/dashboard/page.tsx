@@ -48,14 +48,17 @@ function DashboardContent() {
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <motion.span
-                key={energy}
-                initial={{ scale: 1.5, color: '#facc15' }}
-                animate={{ scale: 1, color: 'rgba(255,255,255,0.6)' }}
-                className="text-xs font-medium"
-              >
-                {energy}
-              </motion.span>
+              <div className="flex items-center gap-1">
+                <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${energy}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                  />
+                </div>
+                <span className="text-xs text-white/60 font-medium">{energy}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -96,7 +99,25 @@ function DashboardContent() {
                   </div>
                   <div>
                     <h3 className="text-white font-bold">이력서용 리포트</h3>
-                    <p className="text-white/50 text-sm mt-0.5">면접 · 취업용 역량 기록</p>
+                    <p className="text-white/50 text-sm mt-0.5">면접 · 취업용 리포트</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/record"
+              className="block w-full bg-gradient-to-br from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 rounded-2xl p-5 text-left hover:from-cyan-500/30 hover:to-teal-500/30 transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center text-2xl">
+                    ✏️
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold">쓰기용 리포트</h3>
+                    <p className="text-white/50 text-sm mt-0.5">블로그 · SNS · 개인 기록용</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -116,12 +137,12 @@ function DashboardContent() {
                         <span>{WORLD_ICONS[ws.worldKey] || '📌'}</span>
                         <span>{WORLD_LABELS[ws.worldKey] || ws.worldKey}</span>
                       </span>
-                      <span className="text-white/50 text-xs">{ws.count}회 ({ws.percentage}%)</span>
+                      <span className="text-white/50 text-xs">{ws.count}회</span>
                     </div>
                     <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${ws.percentage}%` }}
+                        animate={{ width: `${Math.min((ws.count / 1000) * 100, 100)}%` }}
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                         className="h-full rounded-full"
                         style={{ backgroundColor: WORLD_COLORS[ws.worldKey] || '#8b5cf6' }}

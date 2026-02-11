@@ -11,6 +11,23 @@ datasource db {
 }
 
 // ========================================
+// Enums
+// ========================================
+
+enum Role {
+  USER
+  ADMIN
+  RESEARCHER
+}
+
+enum ConsentStatus {
+  PENDING
+  APPROVED
+  DENIED
+  REVOKED
+}
+
+// ========================================
 // NextAuth 모델
 // ========================================
 
@@ -20,6 +37,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  role          Role      @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,6 +56,11 @@ model User {
   answers       Answer[]
   rewardEvents  RewardEvent[]
   reportEntries ReportEntry[]
+
+  // Relations - B2B
+  executionMetrics ExecutionMetric[]
+  dataConsents     DataConsent[]
+  receivedMessages DirectMessage[]
 }
 
 model Account {
@@ -327,5 +350,78 @@ model SurveyResponse {
   nonCognitiveScore Float
   totalScore      Float
 
+  createdAt DateTime @default(now())
+
+  @@index([milestone])
+}
+
+// ========================================
+// B2B 실행 DNA 대시보드
+// ========================================
+
+model ExecutionMetric {
+  id     String @id @default(cuid())
+  userId String
+  period String // "2026-01", "2026-Q1" 등
+
+  // ISO 30414 기반 8개 실행 역량 지표 (0~100)
+  initiative      Float @default(0) // 자기주도 실행력
+  consistency     Float @default(0) // 실행 일관성
+  reflectiveness  Float @default(0) // 성찰 깊이
+  adaptability    Float @default(0) // 적응적 실행
+  collaboration   Float @default(0) // 협력적 실행
+  goalClarity     Float @default(0) // 목표 명확성
+  emotionalAware  Float @default(0) // 정서 인식력
+  growthMindset   Float @default(0) // 성장 마인드셋
+  overallScore    Float @default(0) // 종합 점수
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([userId])
+}
+
+model DataConsent {
+  id            String        @id @default(cuid())
+  userId        String
+  institutionId String
+  coachEmail    String?
+  status        ConsentStatus @default(PENDING)
+
+  requestedAt DateTime  @default(now())
+  respondedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, institutionId])
+  @@index([institutionId])
+  @@index([coachEmail])
+}
+
+model DirectMessage {
+  id         String   @id @default(cuid())
+  toUserId   String
+  fromName   String   // 보낸 사람 이름 (기관 담당자)
+  message    String
+  isRead     Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+
+  toUser User @relation(fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId, isRead])
+}
+
+// ========================================
+// 기관/코치 허용 이메일
+// ========================================
+
+model AllowedCoach {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
   createdAt DateTime @default(now())
 }

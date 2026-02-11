@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { WORLD_TOKENS, MapNode as MapNodeType } from './WorldTokens'
-import { Brain, Zap } from 'lucide-react'
+import { Brain } from 'lucide-react'
 
 interface MapNodeProps {
   node: MapNodeType
@@ -109,17 +109,6 @@ export function MapNode({ node, isActive, onClick, onEnter }: MapNodeProps) {
         />
       )}
 
-      {/* XP 라벨 (Active만) */}
-      {isActive && (
-        <motion.div
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-full"
-        >
-          <Zap className="w-3 h-3 text-yellow-400" fill="currentColor" />
-          <span className="text-xs text-white/80 font-medium">-2</span>
-        </motion.div>
-      )}
     </motion.button>
   )
 }

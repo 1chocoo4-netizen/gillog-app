@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
 
 const SCHOOL_SYSTEM_PROMPT = `너는 교육부 학교생활기록부 작성 전문가다.
 
@@ -17,6 +17,8 @@ const SCHOOL_SYSTEM_PROMPT = `너는 교육부 학교생활기록부 작성 전�
 4. 실행 기록에 있는 데이터만 사용한다. 절대로 없는 활동이나 성과를 지어내지 않는다
 5. 과장하지 않는다. 사실 그대로를 교육부 문체로 서술한다
 6. 데이터가 없으면 "해당 영역의 기록이 없음"으로 표기한다
+7. 원문에 없는 대회명, 수상 실적, 프로젝트명, 구체적 수치를 절대 만들어내지 않는다
+8. 실행 기록에 명시되지 않은 내용은 추론하거나 유추하지 않는다
 
 [세특 작성 시 추가 규칙]
 - 해당 교과의 관점에서 학생의 역량을 서술한다
@@ -39,6 +41,8 @@ const RESUME_SYSTEM_PROMPT = `너는 대기업 인사팀 출신 이력서/자기
 5. 실행 기록에 있는 데이터만 사용한다. 절대로 없는 활동이나 성과를 지어내지 않는다
 6. 과장하지 않는다. 사실 그대로를 전문적인 문체로 서술한다
 7. 데이터가 없으면 "해당 역량의 기록이 없습니다"로 표기한다
+8. 원문에 없는 대회명, 수상 실적, 프로젝트명, 구체적 수치를 절대 만들어내지 않는다
+9. 실행 기록에 명시되지 않은 내용은 추론하거나 유추하지 않는다
 
 [이력서 양식 작성 시 추가 규칙]
 - 역량별로 구분하여 작성한다
@@ -86,9 +90,9 @@ export async function POST(req: NextRequest) {
       ? records.map(r => `- [${r.date}] (${worldLabels[r.worldKey] || r.worldKey}) ${r.executionText}`).join('\n')
       : '(실행 기록 없음)'
 
-    const userPrompt = `다음은 AI가 생성한 리포트와 학생/지원자의 원본 실행 기록입니다.
+    const userPrompt = `다음은 리포트와 학생/지원자의 원본 실행 기록입니다.
 
-## 생성된 리포트
+## 리포트
 ${report}
 
 ## 원본 실행 기록 (총 ${records.length}건)
@@ -97,7 +101,12 @@ ${recordsSummary}
 ## 요청
 ${prompt}
 
-[중요] 위의 원본 실행 기록에 있는 데이터만 근거로 사용하세요. 절대로 없는 활동을 지어내거나 과장하지 마세요. 날짜도 실행 기록의 날짜를 그대로 사용하세요.`
+[중요 - 할루시네이션 금지 규칙]
+1. 위의 원본 실행 기록에 있는 데이터만 근거로 사용하세요.
+2. 절대로 없는 활동, 대회명, 수상 실적, 프로젝트명, 수치를 지어내지 마세요.
+3. 날짜도 실행 기록의 날짜를 그대로 사용하세요.
+4. 실행 기록에 없는 내용은 추론하거나 유추하지 마세요. 기록된 사실만 서술하세요.
+5. 데이터가 부족한 영역은 억지로 채우지 말고 "해당 기록 없음"으로 표기하세요.`
 
     const requestBody = JSON.stringify({
       systemInstruction: {
@@ -108,7 +117,7 @@ ${prompt}
       ],
       generationConfig: {
         temperature: 0.6,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
       },
     })
 

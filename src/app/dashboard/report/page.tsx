@@ -343,7 +343,7 @@ function ReportContent() {
                   className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-5 h-5" />
-                  AI 리포트 생성하기
+                  리포트 생성하기
                 </button>
 
                 {records.length === 0 && (
@@ -375,7 +375,7 @@ function ReportContent() {
                 </div>
                 <h2 className="text-white text-xl font-bold mb-2">리포트 생성 중...</h2>
                 <p className="text-white/50 text-sm text-center">
-                  AI가 {records.length}개의 활동 기록을 분석하고 있습니다
+                  {records.length}개의 활동 기록을 분석하고 있습니다
                 </p>
               </motion.div>
             )}
@@ -475,7 +475,7 @@ function ReportContent() {
                   {isFormalLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-3" />
-                      <p className="text-white/50 text-sm">AI가 세특 문체로 변환하고 있습니다...</p>
+                      <p className="text-white/50 text-sm">세특 문체로 변환하고 있습니다...</p>
                     </div>
                   ) : (
                   <div className="prose prose-invert prose-sm max-w-none">

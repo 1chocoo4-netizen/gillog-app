@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 import { hashUserId, encryptData } from '@/lib/survey-crypto'
 import { SURVEY_AREAS, SURVEY_QUESTIONS } from '@/lib/surveyQuestions'
 
-// GET: 완료된 마일스톤 목록 반환
+// GET: 완료된 마일스톤 목록 + 마일스톤별 점수 반환
 export async function GET() {
   try {
     const session = await auth()
@@ -19,7 +19,25 @@ export async function GET() {
 
     const milestones = (userData?.surveyMilestones as number[]) ?? []
 
-    return NextResponse.json({ surveyMilestones: milestones })
+    // 마일스톤별 점수 조회
+    const userHash = hashUserId(session.user.id)
+    const responses = await prisma.surveyResponse.findMany({
+      where: { userHash },
+      select: {
+        milestone: true,
+        careerScore: true,
+        communityScore: true,
+        nonCognitiveScore: true,
+        totalScore: true,
+        createdAt: true,
+      },
+      orderBy: { milestone: 'asc' },
+    })
+
+    return NextResponse.json({
+      surveyMilestones: milestones,
+      results: responses,
+    })
   } catch (error) {
     console.error('GET /api/survey error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

@@ -1,19 +1,59 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Zap, LogOut, Mail } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Zap, LogOut, Mail, ShieldOff } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
 import { useSession, signOut } from 'next-auth/react'
 
+interface ApprovedConsent {
+  id: string
+  institutionId: string
+}
+
 function ProfileContent() {
   const router = useRouter()
   const { energy } = useUserData()
   const { data: session } = useSession()
+  const [consents, setConsents] = useState<ApprovedConsent[]>([])
+  const [revoking, setRevoking] = useState(false)
+  const [revokeSuccess, setRevokeSuccess] = useState(false)
+
+  const fetchConsents = useCallback(async () => {
+    try {
+      const res = await fetch('/api/b2b/consent/my/approved')
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.consents) setConsents(data.consents)
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (session?.user) fetchConsents()
+  }, [session?.user, fetchConsents])
+
+  async function handleRevoke(consentId: string) {
+    if (!confirm('데이터 공유 동의를 철회하시겠습니까?\n철회 후 기관에서 더 이상 리포트를 열람할 수 없습니다.')) return
+    setRevoking(true)
+    try {
+      const res = await fetch('/api/b2b/consent', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ consentId, status: 'REVOKED' }),
+      })
+      if (res.ok) {
+        setConsents((prev) => prev.filter((c) => c.id !== consentId))
+        setRevokeSuccess(true)
+        setTimeout(() => setRevokeSuccess(false), 2000)
+      }
+    } catch {} finally {
+      setRevoking(false)
+    }
+  }
 
   const handleLogout = () => {
     if (confirm('정말 로그아웃 하시겠습니까?')) {
@@ -83,6 +123,43 @@ function ProfileContent() {
 
               <InfoRow icon={<Mail className="w-4 h-4" />} label="이메일" value={session.user.email || '-'} />
             </div>
+
+            {/* 동의 철회 */}
+            <AnimatePresence>
+              {revokeSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-center py-2 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
+                >
+                  <span className="text-xs text-emerald-400">동의가 철회되었습니다.</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {consents.length > 0 && (
+              <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-5 border border-white/10 space-y-3">
+                <h3 className="text-white font-semibold text-sm">데이터 공유 관리</h3>
+                <p className="text-white/40 text-xs">현재 기관에 실행 DNA 리포트를 공유 중입니다.</p>
+                {consents.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between gap-3 pt-2 border-t border-white/5">
+                    <div className="flex items-center gap-2 text-sm text-white/70 min-w-0">
+                      <span className="text-indigo-400 text-xs">공유 중</span>
+                      <span className="truncate">{c.institutionId}</span>
+                    </div>
+                    <button
+                      onClick={() => handleRevoke(c.id)}
+                      disabled={revoking}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/80 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/60 hover:text-red-400 text-xs font-medium transition-colors disabled:opacity-50 flex-shrink-0"
+                    >
+                      <ShieldOff className="w-3.5 h-3.5" />
+                      동의 철회
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* 로그아웃 버튼 */}
             <button

@@ -1,401 +1,662 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Check, Zap, Sparkles } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Check, X, Sparkles, CheckCircle, Zap, Camera, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
+import { getStage, parseStageId, getTierConfig, LessonCard, markStageCompleted, isStageCompleted } from '@/lib/teaching/lessonData'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LevelBadge } from '@/components/LevelBadge'
 import { useUserData } from '@/lib/UserDataProvider'
-import { getLessonData, LessonStep } from '@/lib/teaching/lessonContent'
+import { BottomTabBar } from '@/components/BottomTabBar'
+
+// ── 6개 성장 영역 ──
+const GROWTH_AREAS = [
+  { key: 'cognition', label: '인지', icon: '🧠', color: '#8b5cf6' },
+  { key: 'selfDirected', label: '자기주도', icon: '🎯', color: '#06b6d4' },
+  { key: 'habit', label: '습관', icon: '🔄', color: '#22c55e' },
+  { key: 'attitude', label: '태도', icon: '💪', color: '#f59e0b' },
+  { key: 'relationship', label: '관계', icon: '🤝', color: '#ec4899' },
+  { key: 'character', label: '인성', icon: '❤️', color: '#fb923c' },
+]
+
+// ── 개별 카드 컴포넌트 ──
+
+function ConceptCardView({ card }: { card: Extract<LessonCard, { type: 'concept' }> }) {
+  return (
+    <div className="text-center">
+      <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto mb-6">
+        <span className="text-3xl">💡</span>
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-6">{card.title}</h2>
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+        <p className="text-white/90 text-lg leading-relaxed whitespace-pre-line">{card.description}</p>
+      </div>
+    </div>
+  )
+}
+
+function SummaryCardView({ card }: { card: Extract<LessonCard, { type: 'summary' }> }) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-white text-center mb-6">핵심 키워드</h2>
+      <div className="space-y-3">
+        {card.keywords.map((kw, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.15 }}
+            className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4"
+          >
+            <span className="text-3xl">{kw.icon}</span>
+            <div>
+              <h3 className="text-white font-bold">{kw.label}</h3>
+              <p className="text-white/50 text-sm">{kw.description}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ExampleCardView({ card }: { card: Extract<LessonCard, { type: 'example' }> }) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-white text-center mb-6">어떤 차이가 있을까?</h2>
+      <div className="space-y-4">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <X className="w-5 h-5 text-red-400" />
+            <span className="text-red-400 font-bold text-sm">{card.bad.label}</span>
+          </div>
+          <p className="text-white/80 whitespace-pre-line">{card.bad.story}</p>
+        </div>
+        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Check className="w-5 h-5 text-green-400" />
+            <span className="text-green-400 font-bold text-sm">{card.good.label}</span>
+          </div>
+          <p className="text-white/80 whitespace-pre-line">{card.good.story}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function OXCardView({ card, selected, onSelect }: {
+  card: Extract<LessonCard, { type: 'ox' }>
+  selected: boolean | null
+  onSelect: (v: boolean) => void
+}) {
+  const answered = selected !== null
+  const isCorrect = selected === card.answer
+
+  return (
+    <div>
+      <h2 className="text-lg font-bold text-white text-center mb-2">OX 퀴즈</h2>
+      <p className="text-white/50 text-sm text-center mb-6">맞으면 O, 틀리면 X를 눌러봐!</p>
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+        <p className="text-white text-center font-medium">{card.statement}</p>
+      </div>
+      <div className="flex gap-4 justify-center mb-6">
+        <button onClick={() => onSelect(true)} disabled={answered}
+          className={`w-20 h-20 rounded-2xl text-3xl font-bold flex items-center justify-center transition-all border-2
+            ${answered && selected === true ? (isCorrect ? 'bg-green-500/30 border-green-500 text-green-400' : 'bg-red-500/30 border-red-500 text-red-400') : 'bg-white/5 border-white/20 text-white hover:bg-white/10'}`}>
+          O
+        </button>
+        <button onClick={() => onSelect(false)} disabled={answered}
+          className={`w-20 h-20 rounded-2xl text-3xl font-bold flex items-center justify-center transition-all border-2
+            ${answered && selected === false ? (isCorrect ? 'bg-green-500/30 border-green-500 text-green-400' : 'bg-red-500/30 border-red-500 text-red-400') : 'bg-white/5 border-white/20 text-white hover:bg-white/10'}`}>
+          X
+        </button>
+      </div>
+      <AnimatePresence>
+        {answered && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl p-4 ${isCorrect ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>
+            <p className={`font-bold mb-1 ${isCorrect ? 'text-green-400' : 'text-amber-400'}`}>{isCorrect ? '정답! 🎉' : '아쉽지만 오답!'}</p>
+            <p className="text-white/70 text-sm whitespace-pre-line">{card.feedback}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function MultipleChoiceCardView({ card, selected, onSelect }: {
+  card: Extract<LessonCard, { type: 'multipleChoice' }>
+  selected: number | null
+  onSelect: (v: number) => void
+}) {
+  const answered = selected !== null
+  const isCorrect = selected === card.correctIndex
+
+  return (
+    <div>
+      <h2 className="text-lg font-bold text-white text-center mb-6">{card.question}</h2>
+      <div className="space-y-3 mb-6">
+        {card.options.map((opt, i) => {
+          const isSelected = selected === i
+          const isAnswer = i === card.correctIndex
+          return (
+            <button key={i} onClick={() => onSelect(i)} disabled={answered}
+              className={`w-full text-left p-4 rounded-xl border transition-all
+                ${answered ? isAnswer ? 'bg-green-500/20 border-green-500/40 text-white' : isSelected ? 'bg-red-500/20 border-red-500/40 text-white/60' : 'bg-white/5 border-white/10 text-white/40'
+                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20'}`}>
+              <div className="flex items-center gap-3">
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border
+                  ${answered && isAnswer ? 'bg-green-500 border-green-500 text-white' : answered && isSelected ? 'bg-red-500 border-red-500 text-white' : 'border-white/30'}`}>
+                  {answered && isAnswer ? <Check className="w-4 h-4" /> : answered && isSelected ? <X className="w-4 h-4" /> : String.fromCharCode(65 + i)}
+                </span>
+                <span className="text-sm">{opt}</span>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+      <AnimatePresence>
+        {answered && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl p-4 ${isCorrect ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>
+            <p className={`font-bold mb-1 ${isCorrect ? 'text-green-400' : 'text-amber-400'}`}>{isCorrect ? '정답! 🎉' : '아쉽지만 오답!'}</p>
+            <p className="text-white/70 text-sm whitespace-pre-line">{card.explanation}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function FeedbackCardView({ card }: { card: Extract<LessonCard, { type: 'feedback' }> }) {
+  return (
+    <div className="text-center">
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
+        className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto mb-6">
+        <span className="text-3xl">🌟</span>
+      </motion.div>
+      <h2 className="text-xl font-bold text-white mb-4">오늘 배운 것</h2>
+      <div className="bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/20 rounded-2xl p-6 mb-6">
+        <p className="text-white font-medium text-lg">{card.summary}</p>
+      </div>
+      <p className="text-white/70 whitespace-pre-line">{card.message}</p>
+    </div>
+  )
+}
+
+function MissionCardView({ card, checked, onCheck }: {
+  card: Extract<LessonCard, { type: 'mission' }>
+  checked: boolean
+  onCheck: () => void
+}) {
+  return (
+    <div className="text-center">
+      <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+      <h2 className="text-xl font-bold text-white mb-2">오늘의 실천 미션</h2>
+      <p className="text-white/50 text-sm mb-6">작은 실천이 큰 변화를 만들어!</p>
+      <button onClick={onCheck}
+        className={`w-full rounded-2xl p-6 border transition-all text-left ${checked ? 'bg-green-500/20 border-green-500/30' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+        <div className="flex items-start gap-4">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${checked ? 'bg-green-500' : 'bg-white/10 border border-white/20'}`}>
+            {checked && <Check className="w-5 h-5 text-white" />}
+          </div>
+          <p className={`font-medium whitespace-pre-line ${checked ? 'text-green-400' : 'text-white'}`}>{card.mission}</p>
+        </div>
+      </button>
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-white/50 text-sm mt-6">
+        {card.encouragement}
+      </motion.p>
+    </div>
+  )
+}
+
+// ── 카드 라벨 ──
+const CARD_LABELS: Record<string, string> = {
+  concept: '개념',
+  summary: '핵심 요약',
+  example: '사례',
+  ox: 'OX 퀴즈',
+  multipleChoice: '문제',
+  feedback: '정리',
+  mission: '실천 미션',
+}
+
+// ── 메인 레슨 페이지 ──
+
+type ExecStep = 'closed' | 'write' | 'selectWorld'
 
 function LessonContent() {
   const params = useParams()
   const router = useRouter()
-  const worldKey = params.subject as string
+  const searchParams = useSearchParams()
+  const worldKey = params.subject as WorldKey
   const lessonId = params.lessonId as string
+  const isUnlockMode = searchParams.get('unlock') === 'true'
 
-  const { energy, addEnergy, executions, saveExecutions } = useUserData()
-  const [currentStep, setCurrentStep] = useState(0)
-  const [selectedOption, setSelectedOption] = useState<number | null>(null)
-  const [showExplanation, setShowExplanation] = useState(false)
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
+  const parsed = parseStageId(lessonId)
+  const stage = getStage(lessonId)
+  const tier = parsed ? getTierConfig(parsed.tierKey) : null
+  const worldConfig = WORLD_CONFIGS[worldKey]
+
+  const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord } = useUserData()
+
+  // 카드 상태
+  const [currentCard, setCurrentCard] = useState(0)
+  const [oxAnswer, setOxAnswer] = useState<boolean | null>(null)
+  const [mcAnswer, setMcAnswer] = useState<number | null>(null)
+  const [missionChecked, setMissionChecked] = useState(false)
+
+  // 보상 팝업
+  const [showReward, setShowReward] = useState(false)
+
+  // 실행 기록 모달 상태
+  const [execStep, setExecStep] = useState<ExecStep>('closed')
+  const [selectedWorlds, setSelectedWorlds] = useState<string[]>([])
+  const [learnedText, setLearnedText] = useState('')
+  const [feltText, setFeltText] = useState('')
   const [actionText, setActionText] = useState('')
-  const [isComplete, setIsComplete] = useState(false)
-  const [showCharacter, setShowCharacter] = useState(false)
+  const [aiMode, setAiMode] = useState(false)
+  const [aiRecordText, setAiRecordText] = useState('')
 
-  // lessonId 형식: humanities-ch1 → subjectKey: humanities, chapterNumber: 1
-  // 안전하게 파싱
-  let subjectKey = 'humanities'
-  let chapterNumber = 1
-
-  if (lessonId && lessonId.includes('-ch')) {
-    const parts = lessonId.split('-ch')
-    subjectKey = parts[0] || 'humanities'
-    chapterNumber = parseInt(parts[1]) || 1
-  }
-
-  const lessonData = getLessonData(subjectKey, chapterNumber)
-
-  // 디버깅 로그
-  console.log('Lesson params:', { worldKey, lessonId, subjectKey, chapterNumber, hasData: !!lessonData })
-
+  // 에너지 차감 (첫 도전만, 복습은 무료, unlock은 이미 맵에서 차감)
+  const [energyDeducted, setEnergyDeducted] = useState(false)
   useEffect(() => {
-    // 캐릭터 등장 애니메이션
-    setTimeout(() => setShowCharacter(true), 300)
-  }, [])
+    if (!lessonId || energyDeducted) return
+    const alreadyCompleted = isStageCompleted(lessonId)
+    if (!alreadyCompleted && !isUnlockMode) {
+      addEnergy(-5)
+      setEnergyDeducted(true)
+    }
+  }, [lessonId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!lessonData) {
+  // 사진 업로드
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isOcrLoading, setIsOcrLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  if (!stage || !parsed || !tier || !worldConfig) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <p className="text-white">레슨을 찾을 수 없습니다.</p>
-      </div>
+      <main className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
+        <p className="text-white/30 mb-4">레슨 준비중</p>
+        <button onClick={() => router.back()} className="text-white/50 text-sm underline">돌아가기</button>
+      </main>
     )
   }
 
-  const step = lessonData.steps[currentStep]
-  const progress = ((currentStep + 1) / lessonData.steps.length) * 100
+  const cards = stage.cards
+  const card = cards[currentCard]
+  const totalCards = cards.length
+  const progress = ((currentCard + 1) / totalCards) * 100
 
-  const handleOptionSelect = (index: number) => {
-    if (showExplanation) return
-    setSelectedOption(index)
-  }
-
-  const handleConfirm = () => {
-    if (step.type === 'question' && step.correctIndex !== undefined) {
-      const correct = selectedOption === step.correctIndex
-      setIsCorrect(correct)
-      setShowExplanation(true)
-    } else if (step.type === 'message') {
-      goToNextStep()
+  const canProceed = (): boolean => {
+    if (!card) return false
+    switch (card.type) {
+      case 'ox': return oxAnswer !== null
+      case 'multipleChoice': return mcAnswer !== null
+      default: return true
     }
   }
 
-  const handleContinue = () => {
-    setShowExplanation(false)
-    setSelectedOption(null)
-    setIsCorrect(null)
-    goToNextStep()
+  // ── 학습 완료 처리 ──
+  const handleLessonComplete = () => {
+    // +2 에너지 지급
+    addEnergy(2)
+    updateLevelProgress(worldKey, 1)
+
+    // 진행도 저장
+    markStageCompleted(lessonId)
+
+    // 보상 팝업 → 실행 기록 모달
+    setShowReward(true)
+    setTimeout(() => {
+      setShowReward(false)
+      setSelectedWorlds([worldKey])
+      setExecStep('write')
+    }, 1500)
   }
 
-  const goToNextStep = () => {
-    if (currentStep < lessonData.steps.length - 1) {
-      setCurrentStep(prev => prev + 1)
+  const handleNext = () => {
+    if (currentCard < totalCards - 1) {
+      setCurrentCard(prev => prev + 1)
     } else {
-      // 레슨 완료
-      setIsComplete(true)
+      handleLessonComplete()
     }
   }
 
-  const handleActionSubmit = () => {
-    if (!actionText.trim()) return
+  // ── 사진 관련 ──
+  function compressImage(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX = 1600
+        let w = img.width, h = img.height
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+          else { w = Math.round(w * MAX / h); h = MAX }
+        }
+        canvas.width = w; canvas.height = h
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.8))
+      }
+      img.src = URL.createObjectURL(file)
+    })
+  }
 
-    const newItems = [...executions]
-    newItems.push({
-      id: `exec-${Date.now()}`,
-      areaKey: 'cognition',
-      subjectKey: subjectKey,
-      lessonTitle: lessonData?.title || '인문 레슨',
-      text: actionText,
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) return
+    setPhotoFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+
+    setIsOcrLoading(true)
+    compressImage(file).then(compressedDataUrl => {
+      const base64 = compressedDataUrl.split(',')[1]
+      return fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' }),
+      })
+    })
+      .then(res => res.json())
+      .then(data => { if (data.text) setLearnedText(prev => prev ? `${prev}\n${data.text}` : data.text) })
+      .catch(() => {})
+      .finally(() => setIsOcrLoading(false))
+  }
+
+  async function uploadPhoto(): Promise<string | undefined> {
+    if (!photoFile) return undefined
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', photoFile)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) return undefined
+      const data = await res.json()
+      return data.url
+    } catch { return undefined }
+    finally { setIsUploading(false) }
+  }
+
+  // ── 실행 기록 저장 ──
+  async function handleAddTodo() {
+    if (selectedWorlds.length === 0 || !actionText.trim()) return
+
+    const photoUrl = await uploadPhoto()
+
+    const combinedParts: string[] = []
+    if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
+    if (feltText.trim()) combinedParts.push(`💭 느낀 것: ${feltText.trim()}`)
+    combinedParts.push(`🎯 실행: ${actionText.trim()}`)
+    const combinedText = combinedParts.join('\n')
+
+    const newItems = selectedWorlds.map(wk => ({
+      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${wk}`,
+      areaKey: wk,
+      lessonTitle: stage?.title ?? '',
+      text: combinedText,
+      aiRecord: aiRecordText.trim() || undefined,
+      photoUrl: photoUrl || undefined,
       completed: false,
       createdAt: new Date().toISOString(),
-    })
-    saveExecutions(newItems)
+    }))
 
-    // 에너지 보상
-    addEnergy(5)
-
-    // 바로 실행 관리 페이지로 이동
-    router.push('/checkin')
+    saveExecutions([...executions, ...newItems])
+    setExecStep('closed')
+    router.push(`/teaching/${worldKey}/${parsed?.chapterKey ?? ''}`)
   }
 
-  const handleComplete = () => {
-    router.push('/checkin')
+  function handleSkipExec() {
+    setExecStep('closed')
+    router.push(`/teaching/${worldKey}/${parsed?.chapterKey ?? ''}`)
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <main className="min-h-screen bg-slate-900 flex flex-col">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href={`/teaching/${worldKey}`} className="text-white/70 hover:text-white">
+          <Link href={`/teaching/${worldKey}/${parsed.chapterKey}`} className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm">나가기</span>
           </Link>
-
-          {/* 진행 바 */}
-          <div className="flex-1 mx-4 h-2 bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: lessonData.characterColor }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
-            />
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{tier.icon}</span>
+            <span className="text-white text-sm font-medium">{tier.label} {parsed.stageNumber}단계</span>
           </div>
-
-          <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-            <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-            <span className="text-xs text-white/60">{energy}</span>
+          <div className="flex items-center gap-3">
+            <LevelBadge />
+            <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
+              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <span className="text-xs text-white/60">{energy}</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 pb-3">
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <motion.div className={`h-full rounded-full bg-gradient-to-r ${tier.color}`} animate={{ width: `${progress}%` }} transition={{ duration: 0.3 }} />
           </div>
         </div>
       </header>
 
-      {/* 메인 콘텐츠 */}
-      <div className="pt-20 pb-32 px-4 max-w-lg mx-auto">
-        {!isComplete ? (
-          <>
-            {/* 캐릭터 */}
-            <AnimatePresence>
-              {showCharacter && (step.type === 'message' || step.type === 'question') && (
-                <motion.div
-                  initial={{ scale: 0, y: 50 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0, y: -50 }}
-                  className="flex items-start gap-3 mb-6"
-                >
-                  {/* 캐릭터 아바타 */}
-                  <motion.div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg"
-                    style={{ backgroundColor: lessonData.characterColor }}
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                  >
-                    {lessonData.characterEmoji}
-                  </motion.div>
-
-                  <div>
-                    <p className="text-white/60 text-xs mb-1">{lessonData.characterName}</p>
-                    {step.character && (
-                      <motion.div
-                        key={currentStep}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-lg max-w-xs"
-                      >
-                        <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-                          {step.message}
-                        </p>
-                      </motion.div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* 질문 카드 */}
-            <AnimatePresence mode="wait">
-              {step.type === 'question' && (
-                <motion.div
-                  key={`question-${currentStep}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mt-4"
-                >
-                  {/* 질문 */}
-                  <div className="bg-white/10 backdrop-blur rounded-2xl p-5 mb-4">
-                    <p className="text-white text-lg font-medium text-center">
-                      {step.question}
-                    </p>
-                  </div>
-
-                  {/* 선택지 */}
-                  <div className="space-y-3">
-                    {step.options?.map((option, index) => (
-                      <motion.button
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        onClick={() => handleOptionSelect(index)}
-                        disabled={showExplanation}
-                        className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                          selectedOption === index
-                            ? showExplanation
-                              ? isCorrect
-                                ? 'border-green-500 bg-green-500/20'
-                                : 'border-red-500 bg-red-500/20'
-                              : 'border-violet-500 bg-violet-500/20'
-                            : showExplanation && index === step.correctIndex
-                            ? 'border-green-500 bg-green-500/20'
-                            : 'border-white/10 bg-white/5 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                              selectedOption === index
-                                ? showExplanation
-                                  ? isCorrect
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-red-500 text-white'
-                                  : 'bg-violet-500 text-white'
-                                : showExplanation && index === step.correctIndex
-                                ? 'bg-green-500 text-white'
-                                : 'bg-white/10 text-white/60'
-                            }`}
-                          >
-                            {showExplanation && index === step.correctIndex ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              String.fromCharCode(65 + index)
-                            )}
-                          </div>
-                          <span className="text-white">{option}</span>
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  {/* 설명 카드 */}
-                  <AnimatePresence>
-                    {showExplanation && step.explanation && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4"
-                      >
-                        <div
-                          className={`p-4 rounded-xl ${
-                            isCorrect ? 'bg-green-500/20' : 'bg-amber-500/20'
-                          }`}
-                        >
-                          <p className="text-white text-sm whitespace-pre-line">
-                            {step.explanation}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-
-              {/* 실행 입력 */}
-              {step.type === 'action' && (
-                <motion.div
-                  key="action"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4"
-                >
-                  <div className="bg-gradient-to-br from-violet-500/20 to-purple-600/20 rounded-2xl p-5 border border-violet-500/30">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Sparkles className="w-5 h-5 text-violet-400" />
-                      <p className="text-violet-300 font-medium">실천하기</p>
-                    </div>
-
-                    <p className="text-white mb-4">{step.question}</p>
-
-                    <textarea
-                      value={actionText}
-                      onChange={(e) => setActionText(e.target.value)}
-                      placeholder={step.placeholder}
-                      className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-                      rows={3}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        ) : (
-          /* 완료 화면 */
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center min-h-[60vh]"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', duration: 0.6 }}
-              className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-6"
-              style={{ backgroundColor: lessonData.characterColor }}
-            >
-              🎉
-            </motion.div>
-
-            <h2 className="text-2xl font-bold text-white mb-2">챕터 완료!</h2>
-            <p className="text-white/60 text-center mb-6">
-              "{lessonData.title}"를 학습했어요
-            </p>
-
-            <div className="flex items-center gap-2 bg-yellow-500/20 rounded-full px-4 py-2 mb-8">
-              <Zap className="w-5 h-5 text-yellow-400" fill="currentColor" />
-              <span className="text-yellow-300 font-bold">+5 에너지</span>
+      {/* 카드 영역 */}
+      <div className="flex-1 pt-24 pb-36 px-4 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div key={currentCard} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.25 }} className="max-w-lg mx-auto">
+            <div className="text-center mb-6">
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${tier.gradient} text-white/70 border border-white/10`}>
+                {currentCard + 1}/{totalCards} · {CARD_LABELS[card.type] || card.type}
+              </span>
             </div>
-
-            {actionText && (
-              <div className="bg-white/10 rounded-xl p-4 mb-6 w-full max-w-sm">
-                <p className="text-white/60 text-xs mb-1">오늘의 실천</p>
-                <p className="text-white">{actionText}</p>
-              </div>
-            )}
-
-            <button
-              onClick={handleComplete}
-              className="w-full max-w-sm py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold shadow-lg"
-            >
-              실행 관리로 가기
-            </button>
+            {card.type === 'concept' && <ConceptCardView card={card} />}
+            {card.type === 'summary' && <SummaryCardView card={card} />}
+            {card.type === 'example' && <ExampleCardView card={card} />}
+            {card.type === 'ox' && <OXCardView card={card} selected={oxAnswer} onSelect={setOxAnswer} />}
+            {card.type === 'multipleChoice' && <MultipleChoiceCardView card={card} selected={mcAnswer} onSelect={setMcAnswer} />}
+            {card.type === 'feedback' && <FeedbackCardView card={card} />}
+            {card.type === 'mission' && <MissionCardView card={card} checked={missionChecked} onCheck={() => setMissionChecked(!missionChecked)} />}
           </motion.div>
-        )}
+        </AnimatePresence>
       </div>
 
       {/* 하단 버튼 */}
-      {!isComplete && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-4">
-          <div className="max-w-lg mx-auto">
-            {step.type === 'message' && (
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={handleConfirm}
-                className="w-full py-4 rounded-xl font-bold text-white shadow-lg"
-                style={{ backgroundColor: lessonData.characterColor }}
-              >
-                계속
-              </motion.button>
-            )}
-
-            {step.type === 'question' && !showExplanation && (
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={handleConfirm}
-                disabled={selectedOption === null}
-                className="w-full py-4 rounded-xl font-bold text-white shadow-lg disabled:opacity-50"
-                style={{ backgroundColor: lessonData.characterColor }}
-              >
-                확인
-              </motion.button>
-            )}
-
-            {step.type === 'question' && showExplanation && (
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={handleContinue}
-                className="w-full py-4 rounded-xl font-bold text-white shadow-lg"
-                style={{ backgroundColor: isCorrect ? '#22C55E' : lessonData.characterColor }}
-              >
-                계속
-              </motion.button>
-            )}
-
-            {step.type === 'action' && (
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={handleActionSubmit}
-                disabled={!actionText.trim()}
-                className="w-full py-4 rounded-xl font-bold text-white shadow-lg disabled:opacity-50"
-                style={{ backgroundColor: lessonData.characterColor }}
-              >
-                완료하기
-              </motion.button>
-            )}
-          </div>
+      {execStep === 'closed' && !showReward && (
+        <div className="fixed bottom-16 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-4">
+          <button onClick={handleNext} disabled={!canProceed()}
+            className={`w-full py-4 rounded-xl bg-gradient-to-r ${tier.color} text-white font-bold flex items-center justify-center gap-2 disabled:opacity-40 max-w-lg mx-auto transition-opacity`}>
+            {currentCard === totalCards - 1 ? (<><CheckCircle className="w-5 h-5" />학습 완료</>) : (<>다음<ChevronRight className="w-5 h-5" /></>)}
+          </button>
         </div>
       )}
+
+      {/* +2 보상 팝업 */}
+      <AnimatePresence>
+        {showReward && (
+          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl px-12 py-8 text-center">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Zap className="w-8 h-8 text-yellow-400" fill="currentColor" />
+                <span className="text-4xl font-bold text-white">+2</span>
+              </div>
+              <p className="text-white/80">학습 완료!</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 실행 기록 모달 (실행 페이지 + 버튼과 동일) */}
+      <AnimatePresence>
+        {execStep !== 'closed' && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={handleSkipExec} className="fixed inset-0 bg-black/60 z-50" />
+            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-hidden">
+              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 max-h-[85vh] overflow-y-auto">
+                {/* 헤더 */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-white font-bold text-lg">
+                    {execStep === 'write' && !aiMode && '✍️ 실행 계획 작성'}
+                    {execStep === 'write' && aiMode && '✨ AI 기록 남기기'}
+                    {execStep === 'selectWorld' && '🌍 월드 선택'}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {execStep === 'write' && !aiMode && (
+                      <>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+                        <button onClick={() => fileInputRef.current?.click()}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                            photoFile ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'}`}>
+                          <Camera className="w-3.5 h-3.5" />
+                          {photoFile ? '사진 ✓' : '사진'}
+                        </button>
+                        <button onClick={() => setAiMode(true)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-medium hover:from-cyan-500/30 hover:to-violet-500/30 transition-all">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          AI 기록
+                        </button>
+                      </>
+                    )}
+                    <button onClick={handleSkipExec} className="text-white/50 hover:text-white">
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* AI 기록 모드 */}
+                {execStep === 'write' && aiMode && (
+                  <div className="space-y-4">
+                    <button onClick={() => setAiMode(false)} className="text-white/50 text-sm flex items-center gap-1">
+                      <ArrowLeft className="w-4 h-4" />돌아가기
+                    </button>
+                    <div className="bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/20 rounded-xl p-3">
+                      <p className="text-white/60 text-xs">자유롭게 기록하세요. 배운점/느낀점/실행할점과 함께 저장됩니다.</p>
+                    </div>
+                    <textarea value={aiRecordText} onChange={e => setAiRecordText(e.target.value)}
+                      placeholder="AI 코칭에서 나눈 이야기, 떠오르는 생각 등을 자유롭게 적어주세요..."
+                      rows={6} autoFocus
+                      className="w-full bg-white/5 border border-cyan-500/20 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50 resize-none text-sm" />
+                    <button onClick={() => setAiMode(false)}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold flex items-center justify-center gap-2">
+                      <Sparkles className="w-4 h-4" />기록 완료
+                    </button>
+                  </div>
+                )}
+
+                {/* 직접 작성 모드 */}
+                {execStep === 'write' && !aiMode && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">📖</span>
+                        배운 것
+                        {isOcrLoading && (
+                          <span className="flex items-center gap-1 text-cyan-400 text-xs font-normal">
+                            <Loader2 className="w-3 h-3 animate-spin" />사진 텍스트 인식 중...
+                          </span>
+                        )}
+                      </label>
+                      <textarea value={learnedText} onChange={e => setLearnedText(e.target.value)}
+                        placeholder="오늘 배운 내용을 적어주세요"
+                        rows={Math.max(2, Math.min(learnedText.split('\n').length + 1, 8))} autoFocus
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/50 resize-none text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-xs">💭</span>
+                        느낀 것
+                      </label>
+                      <textarea value={feltText} onChange={e => setFeltText(e.target.value)}
+                        placeholder="느낀 점이나 깨달은 것을 적어주세요" rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-amber-500/50 resize-none text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🎯</span>
+                        실행할 것
+                        <span className="text-red-400 text-xs">*필수</span>
+                      </label>
+                      <textarea value={actionText} onChange={e => setActionText(e.target.value)}
+                        placeholder="실행할 구체적인 행동을 적어주세요" rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none text-sm" />
+                    </div>
+                    {photoPreview && (
+                      <div className="relative">
+                        <img src={photoPreview} alt="첨부 사진" className="w-full max-h-40 object-cover rounded-xl border border-white/10" />
+                        <button onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center">
+                          <X className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      </div>
+                    )}
+                    <button onClick={() => setExecStep('selectWorld')} disabled={!actionText.trim()}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                      다음: 월드 선택<ChevronRight className="w-5 h-5" />
+                    </button>
+                    <button onClick={handleSkipExec} className="w-full py-3 text-white/40 text-sm">
+                      나중에 하기
+                    </button>
+                  </div>
+                )}
+
+                {/* 월드 선택 */}
+                {execStep === 'selectWorld' && (
+                  <div className="space-y-4">
+                    <button onClick={() => setExecStep('write')} className="text-white/50 text-sm mb-2 flex items-center gap-1">
+                      ← 돌아가기
+                    </button>
+                    <p className="text-white/60 text-sm">이 실행 계획을 어떤 월드에 추가할까요? (복수 선택 가능)</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {GROWTH_AREAS.map(area => {
+                        const isSelected = selectedWorlds.includes(area.key)
+                        return (
+                          <button key={area.key}
+                            onClick={() => setSelectedWorlds(prev => isSelected ? prev.filter(k => k !== area.key) : [...prev, area.key])}
+                            className={`p-4 rounded-xl border transition-all text-left ${isSelected ? 'bg-white/10 border-2' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                            style={isSelected ? { borderColor: area.color } : undefined}>
+                            <span className="text-2xl mb-2 block">{area.icon}</span>
+                            <span className="text-white font-medium">{area.label}</span>
+                            {isSelected && <span className="block mt-1 text-xs" style={{ color: area.color }}>✓ 선택됨</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {(learnedText.trim() || feltText.trim() || aiRecordText.trim() || photoPreview) && (
+                      <div className="bg-white/5 rounded-xl p-3 space-y-1">
+                        <p className="text-white/40 text-xs font-medium mb-2">미리보기</p>
+                        {photoPreview && <img src={photoPreview} alt="" className="w-16 h-16 object-cover rounded-lg mb-2" />}
+                        {learnedText.trim() && <p className="text-white/70 text-xs">📖 배운 것: {learnedText.trim()}</p>}
+                        {feltText.trim() && <p className="text-white/70 text-xs">💭 느낀 것: {feltText.trim()}</p>}
+                        <p className="text-white/70 text-xs">🎯 실행: {actionText.trim()}</p>
+                        {aiRecordText.trim() && <p className="text-cyan-400/70 text-xs">✨ AI 기록: {aiRecordText.trim()}</p>}
+                      </div>
+                    )}
+                    <div className="bg-white/5 rounded-xl p-3">
+                      <p className="text-white/50 text-xs">⚡ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)</p>
+                    </div>
+                    <button onClick={handleAddTodo} disabled={selectedWorlds.length === 0 || isUploading}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                      {isUploading ? (<><Loader2 className="w-5 h-5 animate-spin" />사진 업로드 중...</>)
+                        : selectedWorlds.length > 0 ? `${selectedWorlds.length}개 월드에 투두 추가하기` : '월드를 선택해주세요'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <BottomTabBar />
     </main>
   )
 }
@@ -403,7 +664,9 @@ function LessonContent() {
 export default function LessonPage() {
   return (
     <AuthGuard>
-      <LessonContent />
+      <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
+        <LessonContent />
+      </Suspense>
     </AuthGuard>
   )
 }
