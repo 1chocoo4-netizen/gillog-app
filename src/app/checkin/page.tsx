@@ -476,7 +476,7 @@ function ExecutionContent() {
       </div>
 
       {/* 성찰 문구 */}
-      <div className="px-4 mt-8 mb-2">
+      <div className="px-4 mt-6">
         <div className="max-w-lg mx-auto">
           <div className="relative py-6 px-5">
             {/* 좌측 세로 라인 */}
@@ -497,125 +497,8 @@ function ExecutionContent() {
         </div>
       </div>
 
-      {/* 실행 현황 그래프 */}
-      {(() => {
-        const worldCounts = GROWTH_AREAS.map(area => ({
-          ...area,
-          count: history.filter(r => r.worldKey === area.key).length,
-        }))
-        // 제곱근 스케일 + 기준점 1000: 5개는 바닥, 1000개에서야 꽉 참
-        const maxRef = Math.max(...worldCounts.map(w => w.count), 1000)
-
-        return (
-          <div className="pt-20 px-4">
-            <div className="max-w-lg mx-auto">
-              <div className="bg-white/5 rounded-2xl px-5 py-4 mt-2 relative">
-                <div className="flex items-end justify-between gap-2" style={{ height: 110 }}>
-                  {worldCounts.map((area, i) => {
-                    const ratio = Math.sqrt(area.count) / Math.sqrt(maxRef)
-                    const barHeight = area.count === 0 ? 4 : Math.max(ratio * 75, 6)
-
-                    return (
-                      <div key={area.key} className="flex-1 flex flex-col items-center gap-1">
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: i * 0.08 + 0.3 }}
-                          className="text-[13px] font-bold"
-                          style={{ color: area.count > 0 ? area.color : 'rgba(255,255,255,0.2)' }}
-                        >
-                          {area.count}
-                        </motion.span>
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: barHeight, opacity: 1 }}
-                          transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
-                          className="w-full max-w-[32px] rounded-lg"
-                          style={{
-                            background: area.count === 0
-                              ? 'rgba(255,255,255,0.05)'
-                              : `linear-gradient(to top, ${area.color}30, ${area.color})`,
-                          }}
-                        />
-                        <span className="text-[14px]">{area.icon}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* 매일 실행 아이콘 (오른쪽 위) */}
-                {items.some(i => i.isDaily) && (
-                  <>
-                    <button
-                      onClick={() => setShowDailyPanel(prev => !prev)}
-                      className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 transition-colors"
-                    >
-                      <span className="text-xs">🔄</span>
-                      <span className="text-[10px] text-emerald-400 font-medium">매일</span>
-                      <span className="text-[10px] text-emerald-300 font-bold">
-                        {items.filter(i => i.isDaily && i.completed && i.lastCompletedDate === getLocalDateStr()).length}
-                        /{items.filter(i => i.isDaily).length}
-                      </span>
-                    </button>
-
-                    {/* 매일 실행 패널 */}
-                    <AnimatePresence>
-                      {showDailyPanel && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute top-10 right-2 z-20 w-64 bg-slate-800 border border-emerald-500/20 rounded-xl p-3 shadow-2xl"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-emerald-400 font-semibold">🔄 매일 실행 항목</span>
-                            <button onClick={() => setShowDailyPanel(false)} className="text-white/40 hover:text-white">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                          <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                            {items.filter(i => i.isDaily).map(item => {
-                              const todayDone = item.completed && item.lastCompletedDate === getLocalDateStr()
-                              return (
-                                <div key={item.id} className="flex items-center gap-2 py-1">
-                                  {todayDone ? (
-                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                      <Check className="w-3 h-3 text-emerald-400" />
-                                    </span>
-                                  ) : (
-                                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/20" />
-                                  )}
-                                  <span className={`flex-1 text-xs truncate ${todayDone ? 'text-white/40 line-through' : 'text-white/80'}`}>
-                                    {item.text.split('\n').pop()?.replace('🎯 실행: ', '') || item.text}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      const updated = items.map(i =>
-                                        i.id === item.id ? { ...i, isDaily: undefined, lastCompletedDate: undefined } : i
-                                      )
-                                      saveItems(updated)
-                                    }}
-                                    className="flex-shrink-0 w-4 h-4 rounded-full hover:bg-red-500/20 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-      })()}
-
       {/* 메인 영역 */}
-      <div className="pt-4 pb-32 px-4">
+      <div className="pt-2 pb-6 px-4">
         <div className="max-w-lg mx-auto">
         {activeAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -728,6 +611,123 @@ function ExecutionContent() {
         )}
         </div>
       </div>
+
+      {/* 실행 현황 그래프 */}
+      {(() => {
+        const worldCounts = GROWTH_AREAS.map(area => ({
+          ...area,
+          count: history.filter(r => r.worldKey === area.key).length,
+        }))
+        // 제곱근 스케일 + 기준점 1000: 5개는 바닥, 1000개에서야 꽉 참
+        const maxRef = Math.max(...worldCounts.map(w => w.count), 1000)
+
+        return (
+          <div className="pt-2 pb-32 px-4">
+            <div className="max-w-lg mx-auto">
+              <div className="bg-white/5 rounded-2xl px-5 py-4 mt-2 relative">
+                <div className="flex items-end justify-between gap-2" style={{ height: 110 }}>
+                  {worldCounts.map((area, i) => {
+                    const ratio = Math.sqrt(area.count) / Math.sqrt(maxRef)
+                    const barHeight = area.count === 0 ? 4 : Math.max(ratio * 75, 6)
+
+                    return (
+                      <div key={area.key} className="flex-1 flex flex-col items-center gap-1">
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: i * 0.08 + 0.3 }}
+                          className="text-[13px] font-bold"
+                          style={{ color: area.count > 0 ? area.color : 'rgba(255,255,255,0.2)' }}
+                        >
+                          {area.count}
+                        </motion.span>
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: barHeight, opacity: 1 }}
+                          transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
+                          className="w-full max-w-[32px] rounded-lg"
+                          style={{
+                            background: area.count === 0
+                              ? 'rgba(255,255,255,0.05)'
+                              : `linear-gradient(to top, ${area.color}30, ${area.color})`,
+                          }}
+                        />
+                        <span className="text-[14px]">{area.icon}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* 매일 실행 아이콘 (오른쪽 위) */}
+                {items.some(i => i.isDaily) && (
+                  <>
+                    <button
+                      onClick={() => setShowDailyPanel(prev => !prev)}
+                      className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 transition-colors"
+                    >
+                      <span className="text-xs">🔄</span>
+                      <span className="text-[10px] text-emerald-400 font-medium">매일</span>
+                      <span className="text-[10px] text-emerald-300 font-bold">
+                        {items.filter(i => i.isDaily && i.completed && i.lastCompletedDate === getLocalDateStr()).length}
+                        /{items.filter(i => i.isDaily).length}
+                      </span>
+                    </button>
+
+                    {/* 매일 실행 패널 */}
+                    <AnimatePresence>
+                      {showDailyPanel && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-10 right-2 z-20 w-64 bg-slate-800 border border-emerald-500/20 rounded-xl p-3 shadow-2xl"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-emerald-400 font-semibold">🔄 매일 실행 항목</span>
+                            <button onClick={() => setShowDailyPanel(false)} className="text-white/40 hover:text-white">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                            {items.filter(i => i.isDaily).map(item => {
+                              const todayDone = item.completed && item.lastCompletedDate === getLocalDateStr()
+                              return (
+                                <div key={item.id} className="flex items-center gap-2 py-1">
+                                  {todayDone ? (
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                      <Check className="w-3 h-3 text-emerald-400" />
+                                    </span>
+                                  ) : (
+                                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/20" />
+                                  )}
+                                  <span className={`flex-1 text-xs truncate ${todayDone ? 'text-white/40 line-through' : 'text-white/80'}`}>
+                                    {item.text.split('\n').pop()?.replace('🎯 실행: ', '') || item.text}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      const updated = items.map(i =>
+                                        i.id === item.id ? { ...i, isDaily: undefined, lastCompletedDate: undefined } : i
+                                      )
+                                      saveItems(updated)
+                                    }}
+                                    className="flex-shrink-0 w-4 h-4 rounded-full hover:bg-red-500/20 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* 플로팅 추가 버튼 */}
       <button

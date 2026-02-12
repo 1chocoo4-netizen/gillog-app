@@ -525,7 +525,7 @@ const TIMER_RADIUS = 54
 const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_RADIUS
 
 function ReportTimer({ recordCount }: { recordCount: number }) {
-  const [countdown, setCountdown] = useState(30)
+  const [countdown, setCountdown] = useState(60)
   const [msgIdx, setMsgIdx] = useState(0)
 
   useEffect(() => {
@@ -542,7 +542,7 @@ function ReportTimer({ recordCount }: { recordCount: number }) {
     return () => clearInterval(msgTimer)
   }, [])
 
-  const progress = 1 - countdown / 30
+  const progress = 1 - countdown / 60
 
   return (
     <motion.div
