@@ -436,7 +436,7 @@ function ExecutionContent() {
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-4">
           <Link href="/checkin/monthly" className="flex items-center gap-1 hover:scale-105 transition-transform">
             <ChevronLeft className="w-5 h-5 text-white" />
             <span className="text-white/50 text-xs font-medium">월 목표</span>
@@ -482,14 +482,14 @@ function ExecutionContent() {
             {/* 좌측 세로 라인 */}
             <div className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full bg-gradient-to-b from-violet-500/0 via-violet-500/40 to-violet-500/0" />
 
-            <div className="space-y-4 pl-4">
-              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+            <div className="space-y-5 pl-4">
+              <p className="text-white/50 text-[15px] leading-relaxed tracking-wide">
                 실행하면 나한테 어떤 <span className="text-white/80 font-medium">도움</span>이 될까?
               </p>
-              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+              <p className="text-white/50 text-[15px] leading-relaxed tracking-wide">
                 오늘의 실행을 해낸 내 모습은 어떤 <span className="text-white/80 font-medium">모습</span>일까?
               </p>
-              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+              <p className="text-white/50 text-[15px] leading-relaxed tracking-wide">
                 그 모습을 가지고 어디로 <span className="text-white/80 font-medium">한발</span> 내딛을까?
               </p>
             </div>
@@ -509,11 +509,11 @@ function ExecutionContent() {
         return (
           <div className="pt-20 px-4">
             <div className="max-w-lg mx-auto">
-              <div className="bg-white/5 rounded-2xl px-4 py-3 mt-2 relative">
-                <div className="flex items-end justify-between gap-1.5" style={{ height: 80 }}>
+              <div className="bg-white/5 rounded-2xl px-5 py-4 mt-2 relative">
+                <div className="flex items-end justify-between gap-2" style={{ height: 110 }}>
                   {worldCounts.map((area, i) => {
                     const ratio = Math.sqrt(area.count) / Math.sqrt(maxRef)
-                    const barHeight = area.count === 0 ? 3 : Math.max(ratio * 52, 4)
+                    const barHeight = area.count === 0 ? 4 : Math.max(ratio * 75, 6)
 
                     return (
                       <div key={area.key} className="flex-1 flex flex-col items-center gap-1">
@@ -521,7 +521,7 @@ function ExecutionContent() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: i * 0.08 + 0.3 }}
-                          className="text-[11px] font-bold"
+                          className="text-[13px] font-bold"
                           style={{ color: area.count > 0 ? area.color : 'rgba(255,255,255,0.2)' }}
                         >
                           {area.count}
@@ -530,14 +530,14 @@ function ExecutionContent() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: barHeight, opacity: 1 }}
                           transition={{ delay: i * 0.08, duration: 0.4, ease: 'easeOut' }}
-                          className="w-full max-w-[28px] rounded-md"
+                          className="w-full max-w-[32px] rounded-lg"
                           style={{
                             background: area.count === 0
                               ? 'rgba(255,255,255,0.05)'
                               : `linear-gradient(to top, ${area.color}30, ${area.color})`,
                           }}
                         />
-                        <span className="text-[12px]">{area.icon}</span>
+                        <span className="text-[14px]">{area.icon}</span>
                       </div>
                     )
                   })}

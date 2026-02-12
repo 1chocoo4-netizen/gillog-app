@@ -124,7 +124,7 @@ function StageMapContent() {
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-4">
           <Link href={`/teaching/${worldKey}`} className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">돌아가기</span>

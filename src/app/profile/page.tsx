@@ -65,7 +65,7 @@ function ProfileContent() {
     <main className="min-h-screen bg-slate-900">
       {/* 상단 HUD */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
