@@ -109,7 +109,7 @@ function randomExecutionExample() {
     // 취미
     () => `${when} ${pick(['기타 코드 3개', '피아노 곡 1절', '그림 1장', '글쓰기 500자', '사진 5장', '새 레시피 1개'])} ${pick(['30분 집중해서', '1시간 동안', '40분간 몰입해서'])} ${pick(['연습하고 기록 남기기', '완성하고 인증하기', '과정 영상 찍어두기', '배운 점 3가지 정리하기'])}`,
   ]
-  return pick(templates)()
+  return templates[Math.floor(Math.random() * templates.length)]()
 }
 
 function ExecutionContent() {

@@ -22,6 +22,20 @@ const GROWTH_AREAS = [
   { key: 'character', label: '인성', icon: '❤️', color: '#fb923c' },
 ]
 
+/** 실행 예문 랜덤 생성 (SMART 목표) */
+function randomExecutionExample() {
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+  const when = pick(['오늘 저녁까지', '오늘 자기 전까지', '오늘 오후까지', '내일 아침까지', '오늘 중으로', '이번 주 금요일까지', '오늘 밤 10시까지', '내일 점심까지'])
+  const templates = [
+    () => `${when} ${pick(['죽음의 수용소에서', '어린 왕자', '데미안', '미움받을 용기', '아몬드', '원씽', '습관의 힘'])} ${pick(['30페이지', '50페이지', '1챕터', '2챕터', '20페이지'])} ${pick(['밑줄 치며 정독하고', '핵심 메모하며 읽고', '비판적으로 읽고'])} ${pick(['배운 점 3가지 정리하기', '핵심 문장 5개 기록하기', '느낀 점 1페이지 쓰기', '요약 노트 작성하기'])}`,
+    () => `${when} ${pick(['달리기 3km', '줄넘기 500개', '스쿼트 50개 3세트', '플랭크 3분 3세트', '팔굽혀펴기 20개 3세트', '걷기 5000보', '자전거 30분', '버피 10개 5세트'])} ${pick(['쉬지 않고 완료하고', '자세 정확하게 하고', '기록 갱신 목표로'])} ${pick(['운동 기록 남기기', '완료 인증 사진 찍기', '세트별 기록 정리하기', '컨디션 변화 기록하기'])}`,
+    () => `${when} ${pick(['수학 문제 20개', '영어 단어 50개', '국어 지문 3개', '과학 개념 5단원', '코딩 문제 3개', '모의고사 1회분'])} ${pick(['오답 노트 작성하며 풀고', '시간 재며 집중해서 풀고', '틀린 부분 3번 복습하고'])} ${pick(['정답률 기록하기', '핵심 정리 노트 만들기', '오답 원인 분석 적기', '취약 유형 3가지 정리하기'])}`,
+    () => `${when} ${pick(['아침 기상 후', '저녁 식사 후', '자기 전', '점심시간에'])} ${pick(['명상 15분', '일기 1페이지', '감사일기 3가지', '독서 20분', '스트레칭 10분'])} ${pick(['집중해서 마치고', '꾸준히 실천하고', '방해 없이 완료하고'])} ${pick(['체크리스트에 기록하기', '실행 완료 인증하기', '느낀 점 한 줄 남기기'])}`,
+    () => `${when} ${pick(['기타 코드 3개', '피아노 곡 1절', '그림 1장', '글쓰기 500자', '사진 5장', '새 레시피 1개'])} ${pick(['30분 집중해서', '1시간 동안', '40분간 몰입해서'])} ${pick(['연습하고 기록 남기기', '완성하고 인증하기', '과정 영상 찍어두기', '배운 점 3가지 정리하기'])}`,
+  ]
+  return templates[Math.floor(Math.random() * templates.length)]()
+}
+
 // ── 개별 카드 컴포넌트 ──
 
 function ConceptCardView({ card }: { card: Extract<LessonCard, { type: 'concept' }> }) {
@@ -258,6 +272,7 @@ function LessonContent() {
   const [learnedText, setLearnedText] = useState('')
   const [feltText, setFeltText] = useState('')
   const [actionText, setActionText] = useState('')
+  const [actionPlaceholder] = useState(() => randomExecutionExample())
   const [aiMode, setAiMode] = useState(false)
   const [aiRecordText, setAiRecordText] = useState('')
 
@@ -630,8 +645,9 @@ function LessonContent() {
                         실행할 것
                         <span className="text-red-400 text-xs">*필수</span>
                       </label>
+                      <p className="text-white/30 text-xs mb-2">내 보이지 않는 성장 기록을 위해 최대한 구체적으로 적어주세요</p>
                       <textarea value={actionText} onChange={e => setActionText(e.target.value)}
-                        placeholder="실행할 구체적인 행동을 적어주세요" rows={2}
+                        placeholder={actionPlaceholder} rows={2}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none text-sm" />
                     </div>
                     {photoPreview && (
