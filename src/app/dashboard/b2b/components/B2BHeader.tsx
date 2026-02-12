@@ -16,9 +16,11 @@ interface SearchResult {
 
 interface B2BHeaderProps {
   onSelectUser?: (user: RegisteredUser) => void
+  institutionName?: string | null
+  onChangeName?: () => void
 }
 
-export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
+export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHeaderProps) {
   const { data: session } = useSession()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
@@ -168,9 +170,22 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
           <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
             길로그
           </span>
+          {institutionName && institutionName !== '없음' && (
+            <>
+              <span className="text-gray-500 sm:hidden">|</span>
+              <span className="text-xs font-medium text-gray-300 sm:hidden truncate max-w-[100px]">{institutionName}</span>
+            </>
+          )}
           <span className="text-gray-500 hidden sm:inline">|</span>
           <span className="text-sm font-medium text-gray-300 hidden sm:inline">실행 DNA 리포트</span>
         </div>
+
+        {/* 가운데: 기관 이름 */}
+        {institutionName && institutionName !== '없음' && (
+          <div className="absolute left-1/2 -translate-x-1/2 hidden sm:block">
+            <span className="text-sm font-semibold text-gray-200">{institutionName}</span>
+          </div>
+        )}
 
         {/* 오른쪽: 리스트 + 등록하기 + ISO */}
         <div className="flex items-center gap-2">
@@ -429,7 +444,16 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="p-2">
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={() => { setIsProfileOpen(false); onChangeName?.() }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      기관 이름 변경
+                    </button>
                     <button
                       onClick={() => signOut({ callbackUrl: '/login' })}
                       className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"

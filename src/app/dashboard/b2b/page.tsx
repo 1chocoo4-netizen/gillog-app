@@ -30,6 +30,32 @@ export default function B2BDashboardPage() {
   const [milestone, setMilestone] = useState<Milestone>('500')
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null)
 
+  // 기관 이름
+  const [institutionName, setInstitutionName] = useState<string | null>(null)
+  const [showNamePopup, setShowNamePopup] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('b2b_institution_name')
+    if (saved !== null) {
+      setInstitutionName(saved)
+    } else {
+      setShowNamePopup(true)
+    }
+  }, [])
+
+  function handleSaveName() {
+    const name = nameInput.trim() || '없음'
+    localStorage.setItem('b2b_institution_name', name)
+    setInstitutionName(name)
+    setShowNamePopup(false)
+  }
+
+  function handleChangeName() {
+    setNameInput(institutionName === '없음' ? '' : institutionName || '')
+    setShowNamePopup(true)
+  }
+
   // 실제 데이터 (API에서 가져옴)
   const [realCurrent, setRealCurrent] = useState<PeriodMetrics | null>(null)
   const [realPrevious, setRealPrevious] = useState<PeriodMetrics | null>(null)
@@ -144,7 +170,7 @@ export default function B2BDashboardPage() {
 
   return (
     <>
-      <B2BHeader onSelectUser={handleSelectUser} />
+      <B2BHeader onSelectUser={handleSelectUser} institutionName={institutionName} onChangeName={handleChangeName} />
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <div className="space-y-8">
@@ -373,6 +399,51 @@ export default function B2BDashboardPage() {
                   </div>
                 </>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 기관 이름 입력 팝업 */}
+      <AnimatePresence>
+        {showNamePopup && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm p-6"
+            >
+              <div className="text-center mb-5">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white">기관 이름을 입력해주세요</h3>
+                <p className="text-sm text-gray-400 mt-1">헤더에 표시됩니다. 없으면 &quot;없음&quot;을 입력하세요.</p>
+              </div>
+              <input
+                type="text"
+                value={nameInput}
+                onChange={e => setNameInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+                placeholder="예: 서울대학교, 삼성전자"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-colors mb-4"
+                autoFocus
+              />
+              <button
+                onClick={handleSaveName}
+                className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-colors"
+              >
+                확인
+              </button>
             </motion.div>
           </div>
         )}
