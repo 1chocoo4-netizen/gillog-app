@@ -476,11 +476,24 @@ function ExecutionContent() {
       </div>
 
       {/* 성찰 문구 */}
-      <div className="px-4 mt-6">
-        <div className="max-w-lg mx-auto space-y-2 text-center">
-          <p className="text-white/40 text-sm">실행하면 나한테 어떤 도움이 될까?</p>
-          <p className="text-white/40 text-sm">오늘의 실행을 해낸 내 모습은 어떤 모습일까?</p>
-          <p className="text-white/40 text-sm">그 모습을 가지고 어디로 한발 내딛을까?</p>
+      <div className="px-4 mt-8 mb-2">
+        <div className="max-w-lg mx-auto">
+          <div className="relative py-6 px-5">
+            {/* 좌측 세로 라인 */}
+            <div className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full bg-gradient-to-b from-violet-500/0 via-violet-500/40 to-violet-500/0" />
+
+            <div className="space-y-4 pl-4">
+              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+                실행하면 나한테 어떤 <span className="text-white/80 font-medium">도움</span>이 될까?
+              </p>
+              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+                오늘의 실행을 해낸 내 모습은 어떤 <span className="text-white/80 font-medium">모습</span>일까?
+              </p>
+              <p className="text-white/50 text-[13px] leading-relaxed tracking-wide">
+                그 모습을 가지고 어디로 <span className="text-white/80 font-medium">한발</span> 내딛을까?
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
