@@ -100,6 +100,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('GET /api/admin/stats error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: 'Internal Server Error', detail: message }, { status: 500 })
   }
 }
