@@ -122,9 +122,11 @@ function ExecutionContent() {
   const [paywallDismissed, setPaywallDismissed] = useState(false)
 
   // 오늘 완료한 실행 수 (구독 상태에 따라 동적 한도)
+  // groupId가 같은 기록은 1회로 카운트 (같은 실행을 여러 월드에 등록한 경우)
   const DAILY_LIMIT = subscriptionInfo.dailyLimit
   const today = getLocalDateStr()
-  const todayCompletedCount = history.filter(r => r.date === today).length
+  const todayRecords = history.filter(r => r.date === today)
+  const todayCompletedCount = new Set(todayRecords.map(r => r.groupId || r.id)).size
   const dailyRemaining = Math.max(0, DAILY_LIMIT - todayCompletedCount)
   const [alarmModal, setAlarmModal] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState('09:00')
@@ -325,6 +327,7 @@ function ExecutionContent() {
   }
 
   // 체크 완료 처리 (하루 최대 5개)
+  // 같은 텍스트+같은 생성시간의 형제 항목은 한번에 완료 (일일 1회 차감)
   function handleComplete(itemId: string) {
     const item = items.find(i => i.id === itemId)
     if (!item || item.completed) return
@@ -336,26 +339,37 @@ function ExecutionContent() {
       return
     }
 
+    // 같은 텍스트+같은 생성시간의 형제 항목 찾기 (여러 월드에 등록된 동일 실행)
+    const siblings = items.filter(i =>
+      !i.completed && i.text === item.text && i.createdAt === item.createdAt
+    )
+    const siblingIds = new Set(siblings.map(s => s.id))
+
     const todayStr = getLocalDateStr()
     const updatedItems = items.map(i =>
-      i.id === itemId
+      siblingIds.has(i.id)
         ? { ...i, completed: true, ...(i.isDaily ? { lastCompletedDate: todayStr } : {}) }
         : i
     )
     saveItems(updatedItems)
 
+    // 에너지는 1회만 +5
     addEnergy(5)
 
-    updateLevelProgress(item.areaKey, 1)
-
-    addHistoryRecord({
-      worldKey: item.areaKey,
-      areaKey: item.areaKey,
-      subjectKey: item.subjectKey,
-      lessonTitle: item.lessonTitle,
-      executionText: item.text,
-      photoUrl: item.photoUrl,
-      energy: 5,
+    // 각 월드별 레벨 진행 + 히스토리 기록 (리포트 데이터용)
+    const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    siblings.forEach(sibling => {
+      updateLevelProgress(sibling.areaKey, 1)
+      addHistoryRecord({
+        worldKey: sibling.areaKey,
+        areaKey: sibling.areaKey,
+        subjectKey: sibling.subjectKey,
+        lessonTitle: sibling.lessonTitle,
+        executionText: sibling.text,
+        photoUrl: sibling.photoUrl,
+        energy: 5,
+        groupId,
+      })
     })
 
     setShowReward(true)

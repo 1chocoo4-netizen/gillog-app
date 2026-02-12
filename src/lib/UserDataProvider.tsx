@@ -38,6 +38,7 @@ export interface ExecutionRecord {
   executionText: string
   photoUrl?: string
   energy: number
+  groupId?: string  // 같은 실행을 여러 월드에 등록 시 그룹 식별
 }
 
 export interface BucketItem {
