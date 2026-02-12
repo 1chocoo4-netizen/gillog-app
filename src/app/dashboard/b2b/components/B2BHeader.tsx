@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSession, signOut } from 'next-auth/react'
 import type { RegisteredUser } from '@/lib/b2b/types'
 
 type SearchStatus = 'idle' | 'searching' | 'found' | 'not_found' | 'consent_sent' | 'error'
@@ -18,6 +19,10 @@ interface B2BHeaderProps {
 }
 
 export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
+  const { data: session } = useSession()
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+
   // 등록하기 패널
   const [isRegOpen, setIsRegOpen] = useState(false)
   const [email, setEmail] = useState('')
@@ -93,12 +98,13 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
     function handleClickOutside(e: MouseEvent) {
       if (regRef.current && !regRef.current.contains(e.target as Node)) setIsRegOpen(false)
       if (listRef.current && !listRef.current.contains(e.target as Node)) setIsListOpen(false)
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setIsProfileOpen(false)
     }
-    if (isRegOpen || isListOpen) {
+    if (isRegOpen || isListOpen || isProfileOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isRegOpen, isListOpen])
+  }, [isRegOpen, isListOpen, isProfileOpen])
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -382,9 +388,62 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
           </div>
 
           {/* ISO 뱃지 */}
-          <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hidden sm:inline">
             ISO 30414
           </span>
+
+          {/* 프로필 */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => { setIsProfileOpen(!isProfileOpen); setIsRegOpen(false); setIsListOpen(false) }}
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden hover:scale-105 transition-transform"
+            >
+              {session?.user?.image ? (
+                <img src={session.user.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                (session?.user?.name || '?').charAt(0)
+              )}
+            </button>
+
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                >
+                  <div className="px-4 py-3 border-b border-gray-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden flex-shrink-0">
+                        {session?.user?.image ? (
+                          <img src={session.user.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        ) : (
+                          (session?.user?.name || '?').charAt(0)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-200 truncate">{session?.user?.name || '코치'}</div>
+                        <div className="text-xs text-gray-500 truncate">{session?.user?.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/login' })}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      로그아웃
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
@@ -400,10 +459,10 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
               className="fixed inset-0 bg-black/60 z-[60]"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-[60] m-auto w-80 h-fit bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-5"
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-[60] sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-80 bg-gray-900 border-t sm:border border-gray-700 rounded-t-2xl sm:rounded-xl shadow-2xl p-5"
             >
               <h3 className="text-white font-semibold mb-1">프리미엄 부여</h3>
               <p className="text-sm text-gray-400 mb-4">{premiumModal.name}님에게 프리미엄을 부여합니다</p>
