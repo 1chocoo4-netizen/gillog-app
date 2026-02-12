@@ -173,7 +173,10 @@ function StageMapContent() {
                     }
                   </p>
                 </div>
-                {!unlocked && <Lock className="w-4 h-4 text-white/30 ml-auto" />}
+                <span className="ml-auto flex items-center gap-0.5 text-amber-400 text-xs font-medium">
+                  <Zap className="w-3.5 h-3.5 fill-amber-400" />-5
+                </span>
+                {!unlocked && <Lock className="w-4 h-4 text-white/30" />}
               </div>
 
               {/* 스테이지 그리드 */}
