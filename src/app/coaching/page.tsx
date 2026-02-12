@@ -16,6 +16,16 @@ interface Message {
 }
 
 
+function randomExecutionExample() {
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+  const books = ['죽음의 수용소에서', '어린 왕자', '데미안', '미움받을 용기', '아몬드', '나미야 잡화점의 기적', '원씽', '습관의 힘']
+  const actions = ['꼼꼼하게 읽으며', '천천히 정독하며', '밑줄 치며 읽으며', '핵심을 요약하며', '메모하며 읽으며']
+  const thinkings = ['비판적으로 생각하고', '깊이 있게 성찰하고', '내 삶에 연결 지어 생각하고', '질문을 던지며 생각하고', '다른 관점으로 생각하고']
+  const attitudes = ['책임감 있게', '성실하게', '꾸준하게', '정성껏', '진심을 담아']
+  const outputs = ['기록으로 남기기', '실행 일지에 정리하기', '한 줄 감상문 남기기', '배운 점 3가지 적기', '느낀 점 기록하기']
+  return `${pick(books)}를 ${pick(actions)} ${pick(thinkings)} ${pick(attitudes)} ${pick(outputs)}`
+}
+
 const COACHES = [
   { name: '김지훈 코치', emoji: '👨‍💼', spec: '자기주도학습 / 습관 설계', career: '교육심리 석사 | 코칭 경력 8년', color: 'from-cyan-500 to-blue-600', bio: '학생들이 스스로 목표를 세우고 실행하는 힘을 키울 수 있도록 돕습니다. 습관 설계와 자기주도학습 전문가로, 수백 명의 학생들과 함께해왔습니다.', method: '목표 설정 → 실행 계획 → 주간 점검 → 피드백', reviews: 127, rating: 4.9 },
   { name: '이서연 코치', emoji: '👩‍🎓', spec: '인지 / 학습전략', career: '인지과학 박사 | 코칭 경력 5년', color: 'from-violet-500 to-purple-600', bio: '어떻게 배우면 더 잘 기억하고 이해할 수 있는지 연구하고 가르칩니다. 과학적인 학습법으로 효율적인 공부를 도와드립니다.', method: '학습 진단 → 맞춤 전략 → 실전 적용 → 성과 분석', reviews: 89, rating: 4.8 },
@@ -32,6 +42,7 @@ function CoachingChat() {
 
   const [showTodoModal, setShowTodoModal] = useState(false)
   const [todoText, setTodoText] = useState('')
+  const [todoPlaceholder] = useState(() => randomExecutionExample())
   const [chatDone, setChatDone] = useState(false)
   const [selectedAreas, setSelectedAreas] = useState<string[]>([])
   const [showTip, setShowTip] = useState(false)
@@ -389,13 +400,13 @@ function CoachingChat() {
                   🧑‍🏫
                 </div>
                 <h3 className="text-white font-bold text-lg">코칭 완료</h3>
-                <p className="text-white/50 text-sm mt-1">실행할 내용을 등록하세요</p>
+                <p className="text-white/50 text-sm mt-1">내 보이지 않는 성장 기록을 위해 최대한 구체적으로 적어주세요</p>
               </div>
 
               <textarea
                 value={todoText}
                 onChange={e => setTodoText(e.target.value)}
-                placeholder="코칭에서 정한 실행 내용을 적어주세요"
+                placeholder={todoPlaceholder}
                 rows={3}
                 autoFocus
                 className="w-full bg-white/10 text-white rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 placeholder:text-white/30 mb-4 resize-none"

@@ -93,6 +93,17 @@ function getLocalDateStr(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+/** 실행 예문 랜덤 생성 */
+function randomExecutionExample() {
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+  const books = ['죽음의 수용소에서', '어린 왕자', '데미안', '미움받을 용기', '아몬드', '나미야 잡화점의 기적', '원씽', '습관의 힘']
+  const actions = ['꼼꼼하게 읽으며', '천천히 정독하며', '밑줄 치며 읽으며', '핵심을 요약하며', '메모하며 읽으며']
+  const thinkings = ['비판적으로 생각하고', '깊이 있게 성찰하고', '내 삶에 연결 지어 생각하고', '질문을 던지며 생각하고', '다른 관점으로 생각하고']
+  const attitudes = ['책임감 있게', '성실하게', '꾸준하게', '정성껏', '진심을 담아']
+  const outputs = ['기록으로 남기기', '실행 일지에 정리하기', '한 줄 감상문 남기기', '배운 점 3가지 적기', '느낀 점 기록하기']
+  return `${pick(books)}를 ${pick(actions)} ${pick(thinkings)} ${pick(attitudes)} ${pick(outputs)}`
+}
+
 function ExecutionContent() {
   const router = useRouter()
   const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history } = useUserData()
@@ -128,6 +139,9 @@ function ExecutionContent() {
   const [isOcrLoading, setIsOcrLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null)
+
+  // 실행 예문 (마운트 시 1회 생성)
+  const [actionPlaceholder] = useState(() => randomExecutionExample())
 
   // AI 기록 모드
   const [aiMode, setAiMode] = useState(false)
@@ -837,10 +851,11 @@ function ExecutionContent() {
                         실행할 것
                         <span className="text-red-400 text-xs">*필수</span>
                       </label>
+                      <p className="text-white/30 text-xs mb-2">내 보이지 않는 성장 기록을 위해 최대한 구체적으로 적어주세요</p>
                       <textarea
                         value={actionText}
                         onChange={e => setActionText(e.target.value)}
-                        placeholder="실행할 구체적인 행동을 적어주세요"
+                        placeholder={actionPlaceholder}
                         rows={2}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none text-sm"
                       />
