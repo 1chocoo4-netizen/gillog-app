@@ -744,6 +744,7 @@ function ExecutionContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="pointer-events-none"
             >
               {/* 펄스 링 */}
               <div className="absolute inset-0 -m-3 rounded-full border-2 border-violet-400/80 animate-ping" />
