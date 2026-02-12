@@ -38,7 +38,11 @@ export async function POST(request: Request) {
   }
 
   const now = new Date()
-  const endDate = new Date(now)
+  // KST 자정 기준으로 만료일 설정
+  const KST_OFFSET = 9 * 60 * 60 * 1000
+  const kstNow = new Date(now.getTime() + KST_OFFSET)
+  const todayKST = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()))
+  const endDate = new Date(todayKST.getTime() - KST_OFFSET)
   endDate.setMonth(endDate.getMonth() + months)
 
   const subscription = await prisma.subscription.create({

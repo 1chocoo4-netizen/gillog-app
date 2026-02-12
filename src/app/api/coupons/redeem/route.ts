@@ -46,7 +46,11 @@ export async function POST(request: Request) {
 
   // 쿠폰 적용: Redemption 생성 + Coupon 사용 수 증가 + Subscription 생성
   const now = new Date()
-  const endDate = new Date(now.getTime() + coupon.durationDays * 24 * 60 * 60 * 1000)
+  // KST 자정 기준: 오늘(KST) + durationDays일 후 자정(KST)에 만료
+  const KST_OFFSET = 9 * 60 * 60 * 1000
+  const kstNow = new Date(now.getTime() + KST_OFFSET)
+  const todayKST = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()))
+  const endDate = new Date(todayKST.getTime() + coupon.durationDays * 24 * 60 * 60 * 1000 - KST_OFFSET)
 
   const redemption = await prisma.couponRedemption.create({
     data: {

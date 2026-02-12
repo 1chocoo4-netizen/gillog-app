@@ -9,7 +9,15 @@ interface SubscriptionBadgeProps {
 export default function SubscriptionBadge({ info }: SubscriptionBadgeProps) {
   if (info.plan === 'premium') {
     const daysLeft = info.expiresAt
-      ? Math.ceil((new Date(info.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      ? (() => {
+          // KST(UTC+9) 자정 기준으로 남은 일수 계산
+          const KST_OFFSET = 9 * 60 * 60 * 1000
+          const now = new Date(Date.now() + KST_OFFSET)
+          const end = new Date(new Date(info.expiresAt).getTime() + KST_OFFSET)
+          const todayKST = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+          const endKST = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())
+          return Math.max(0, Math.round((endKST - todayKST) / (1000 * 60 * 60 * 24)))
+        })()
       : null
 
     return (
