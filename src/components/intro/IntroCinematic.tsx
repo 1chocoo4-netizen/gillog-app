@@ -148,16 +148,23 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-[#0a0a1a]">
       {/* 우주 배경 - Lottie 또는 Fallback */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         {lottieData && !lottieError ? (
-          <Lottie
-            animationData={lottieData}
-            loop
-            autoplay
-            rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
-            className="w-full h-full"
-            style={{ position: 'absolute', inset: 0 }}
-          />
+          <div
+            className="absolute top-1/2 left-1/2"
+            style={{
+              width: 'max(100vw, 180vh)',
+              height: 'max(100vh, 56vw)',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <Lottie
+              animationData={lottieData}
+              loop
+              autoplay
+              className="w-full h-full"
+            />
+          </div>
         ) : (
           // Fallback: CSS 별 배경
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1a] via-[#0f1629] to-[#0a0a1a]">
