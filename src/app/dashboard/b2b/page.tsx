@@ -7,11 +7,13 @@ import { DEMO_MILESTONE_DATA, DEMO_SPARKLINE } from '@/lib/b2b/demoData'
 import { METRIC_DEFINITIONS } from '@/lib/b2b/isoMapping'
 import { generateAllInsights } from '@/lib/b2b/insightGenerator'
 import { B2BHeader } from './components/B2BHeader'
+import { B2BPlanCard } from './components/B2BPlanCard'
 import { ExecutionDNARadar } from './components/ExecutionDNARadar'
 import { MetricCard } from './components/MetricCard'
 import { MilestoneFilter } from './components/PeriodFilter'
 import { PrivacyBadge } from './components/PrivacyBadge'
 import { ISOmappingTable } from './components/ISOmappingTable'
+import type { CoachSubscriptionInfo } from '@/lib/subscription'
 
 /** 실행 횟수 → 도달한 최대 마일스톤 */
 function getMaxMilestone(count: number): Milestone {
@@ -34,6 +36,16 @@ export default function B2BDashboardPage() {
   const [institutionName, setInstitutionName] = useState<string | null>(null)
   const [showNamePopup, setShowNamePopup] = useState(false)
   const [nameInput, setNameInput] = useState('')
+
+  // 기관 구독 상태
+  const [coachSub, setCoachSub] = useState<CoachSubscriptionInfo | null>(null)
+
+  useEffect(() => {
+    fetch('/api/b2b/subscription')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.subscription) setCoachSub(data.subscription) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const saved = localStorage.getItem('b2b_institution_name')
@@ -170,10 +182,19 @@ export default function B2BDashboardPage() {
 
   return (
     <>
-      <B2BHeader onSelectUser={handleSelectUser} institutionName={institutionName} onChangeName={handleChangeName} />
+      <B2BHeader
+        onSelectUser={handleSelectUser}
+        institutionName={institutionName}
+        onChangeName={handleChangeName}
+        coachPlan={coachSub?.plan ?? null}
+        trialDaysLeft={coachSub?.trialDaysLeft}
+      />
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <div className="space-y-8">
+          {/* 기관 플랜 카드 */}
+          <B2BPlanCard subscription={coachSub} />
+
           {/* 선택된 사용자 배너 or 데모 배너 */}
           {selectedUser ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 py-3 px-4 bg-violet-500/10 border border-violet-500/20 rounded-lg">

@@ -2,11 +2,32 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+interface CoachSubscription {
+  plan: 'FREE_TRIAL' | 'PREMIUM' | 'EXPIRED'
+  trialEndDate: string | null
+  premiumStartDate: string | null
+  premiumEndDate: string | null
+}
+
 interface Coach {
   id: string
   email: string
   name: string | null
   createdAt: string
+  subscription: CoachSubscription | null
+}
+
+function getSubStatus(sub: CoachSubscription | null): { label: string; color: string } {
+  if (!sub) return { label: '없음', color: 'text-gray-500' }
+  const now = new Date()
+  if (sub.plan === 'PREMIUM' && sub.premiumEndDate && new Date(sub.premiumEndDate) > now) {
+    return { label: `프리미엄 (~${new Date(sub.premiumEndDate).toLocaleDateString('ko-KR')})`, color: 'text-violet-400' }
+  }
+  if (sub.plan === 'FREE_TRIAL' && sub.trialEndDate && new Date(sub.trialEndDate) > now) {
+    const days = Math.ceil((new Date(sub.trialEndDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    return { label: `체험 D-${days}`, color: 'text-emerald-400' }
+  }
+  return { label: '만료', color: 'text-orange-400' }
 }
 
 export default function AdminCoachesPage() {
@@ -16,6 +37,8 @@ export default function AdminCoachesPage() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [grantingEmail, setGrantingEmail] = useState<string | null>(null)
+  const [grantMsg, setGrantMsg] = useState('')
 
   const fetchCoaches = useCallback(async () => {
     try {
@@ -88,8 +111,30 @@ export default function AdminCoachesPage() {
     fetchCoaches()
   }
 
+  const handleGrantPremium = async (coachEmail: string, months: number) => {
+    setGrantingEmail(coachEmail)
+    setGrantMsg('')
+    try {
+      const res = await fetch('/api/admin/coaches/grant-premium', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: coachEmail, months }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setGrantMsg(`${coachEmail}: ${months}개월 프리미엄 부여 완료`)
+        fetchCoaches()
+      } else {
+        setGrantMsg(`오류: ${data.error}`)
+      }
+    } catch {
+      setGrantMsg('네트워크 오류')
+    }
+    setGrantingEmail(null)
+  }
+
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-5xl">
       <h1 className="text-2xl font-bold text-white mb-1">코치 관리</h1>
       <p className="text-gray-400 text-sm mb-6">기관/코치 로그인이 허용된 이메일을 관리합니다</p>
 
@@ -128,6 +173,13 @@ export default function AdminCoachesPage() {
         {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
       </form>
 
+      {/* 프리미엄 부여 결과 메시지 */}
+      {grantMsg && (
+        <div className="mb-4 px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-lg text-sm text-violet-300">
+          {grantMsg}
+        </div>
+      )}
+
       {/* 코치 목록 */}
       {loading ? (
         <p className="text-gray-500 text-sm">불러오는 중...</p>
@@ -143,28 +195,48 @@ export default function AdminCoachesPage() {
               <tr className="border-b border-gray-700">
                 <th className="text-left text-xs text-gray-400 font-medium px-4 py-3">이메일</th>
                 <th className="text-left text-xs text-gray-400 font-medium px-4 py-3">이름</th>
-                <th className="text-left text-xs text-gray-400 font-medium px-4 py-3">등록일</th>
-                <th className="text-right text-xs text-gray-400 font-medium px-4 py-3">작업</th>
+                <th className="text-left text-xs text-gray-400 font-medium px-4 py-3">구독 상태</th>
+                <th className="text-left text-xs text-gray-400 font-medium px-4 py-3">프리미엄 부여</th>
+                <th className="text-right text-xs text-gray-400 font-medium px-4 py-3">삭제</th>
               </tr>
             </thead>
             <tbody>
-              {coaches.map((coach) => (
-                <tr key={coach.id} className="border-b border-gray-700/50 last:border-0">
-                  <td className="px-4 py-3 text-sm text-white">{coach.email}</td>
-                  <td className="px-4 py-3 text-sm text-gray-300">{coach.name || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-400">
-                    {new Date(coach.createdAt).toLocaleDateString('ko-KR')}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(coach.email)}
-                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      삭제
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {coaches.map((coach) => {
+                const status = getSubStatus(coach.subscription)
+                return (
+                  <tr key={coach.id} className="border-b border-gray-700/50 last:border-0">
+                    <td className="px-4 py-3 text-sm text-white">{coach.email}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{coach.name || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium ${status.color}`}>
+                        {status.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        {[1, 3, 6].map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => handleGrantPremium(coach.email, m)}
+                            disabled={grantingEmail === coach.email}
+                            className="px-2 py-1 text-[11px] font-medium rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 hover:bg-violet-500/30 transition-colors disabled:opacity-50"
+                          >
+                            {grantingEmail === coach.email ? '...' : `${m}개월`}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(coach.email)}
+                        className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        삭제
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           <div className="px-4 py-2 border-t border-gray-700 text-xs text-gray-500">

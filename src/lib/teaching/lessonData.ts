@@ -2,6 +2,7 @@
 import { HUMANITIES_STAGES } from './humanitiesContent'
 import { KOREAN_STAGES } from './koreanContent'
 import { ENGLISH_STAGES } from './englishContent'
+import { MATH_STAGES } from './mathContent'
 
 // ── 카드 타입 정의 ──
 
@@ -125,6 +126,7 @@ export const STAGE_CONTENT: Record<string, Stage> = {
   ...HUMANITIES_STAGES,
   ...KOREAN_STAGES,
   ...ENGLISH_STAGES,
+  ...MATH_STAGES,
 }
 
 // 특정 챕터의 스테이지 가져오기

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import type { RegisteredUser } from '@/lib/b2b/types'
+import type { CoachPlanType } from '@/lib/subscription'
 
 type SearchStatus = 'idle' | 'searching' | 'found' | 'not_found' | 'consent_sent' | 'error'
 
@@ -18,9 +19,11 @@ interface B2BHeaderProps {
   onSelectUser?: (user: RegisteredUser) => void
   institutionName?: string | null
   onChangeName?: () => void
+  coachPlan?: CoachPlanType | null
+  trialDaysLeft?: number
 }
 
-export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHeaderProps) {
+export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPlan, trialDaysLeft }: B2BHeaderProps) {
   const { data: session, update: updateSession } = useSession()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
@@ -419,6 +422,21 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
           <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hidden sm:inline">
             ISO 30414
           </span>
+
+          {/* 플랜 뱃지 */}
+          {coachPlan && (
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium hidden sm:inline ${
+              coachPlan === 'free_trial'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : coachPlan === 'premium'
+                  ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+                  : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+            }`}>
+              {coachPlan === 'free_trial' && `체험 D-${trialDaysLeft ?? 0}`}
+              {coachPlan === 'premium' && '프리미엄'}
+              {coachPlan === 'expired' && '만료'}
+            </span>
+          )}
 
           {/* 프로필 */}
           <div className="relative" ref={profileRef}>

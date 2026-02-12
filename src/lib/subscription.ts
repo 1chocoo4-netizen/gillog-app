@@ -1,5 +1,9 @@
 import { prisma } from './db'
 
+// ========================================
+// 개인 구독
+// ========================================
+
 export type SubscriptionPlan = 'premium' | 'first_day' | 'free'
 
 export interface SubscriptionInfo {
@@ -62,5 +66,76 @@ export async function getUserSubscription(userId: string): Promise<SubscriptionI
   return {
     plan: 'free',
     dailyLimit: 1,
+  }
+}
+
+// ========================================
+// B2B 코치 구독
+// ========================================
+
+export type CoachPlanType = 'free_trial' | 'premium' | 'expired'
+
+export interface CoachSubscriptionInfo {
+  plan: CoachPlanType
+  trialDaysLeft: number
+  premiumExpiresAt: string | null
+  canUpgrade: boolean
+  monthlyPrice: number
+}
+
+/**
+ * 코치(기관)의 구독 상태를 판별한다.
+ * 1. premiumEndDate > now → premium
+ * 2. trialEndDate > now → free_trial
+ * 3. 그 외 → expired
+ */
+export async function getCoachSubscription(coachEmail: string): Promise<CoachSubscriptionInfo> {
+  const now = new Date()
+
+  const sub = await prisma.coachSubscription.findUnique({
+    where: { coachEmail },
+  })
+
+  if (!sub) {
+    return {
+      plan: 'expired',
+      trialDaysLeft: 0,
+      premiumExpiresAt: null,
+      canUpgrade: true,
+      monthlyPrice: 99000,
+    }
+  }
+
+  // 1. 프리미엄 활성 확인
+  if (sub.premiumEndDate && sub.premiumEndDate > now) {
+    return {
+      plan: 'premium',
+      trialDaysLeft: 0,
+      premiumExpiresAt: sub.premiumEndDate.toISOString(),
+      canUpgrade: false,
+      monthlyPrice: sub.monthlyPrice,
+    }
+  }
+
+  // 2. 무료체험 활성 확인
+  if (sub.trialEndDate > now) {
+    const diffMs = sub.trialEndDate.getTime() - now.getTime()
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    return {
+      plan: 'free_trial',
+      trialDaysLeft: daysLeft,
+      premiumExpiresAt: null,
+      canUpgrade: true,
+      monthlyPrice: sub.monthlyPrice,
+    }
+  }
+
+  // 3. 만료
+  return {
+    plan: 'expired',
+    trialDaysLeft: 0,
+    premiumExpiresAt: null,
+    canUpgrade: true,
+    monthlyPrice: sub.monthlyPrice,
   }
 }

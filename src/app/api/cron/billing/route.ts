@@ -41,7 +41,7 @@ export async function GET(request: Request) {
         },
         body: JSON.stringify({
           customerKey: sub.tossCustomerKey,
-          amount: 9900,
+          amount: 7900,
           orderId,
           orderName: '길로그 프리미엄 월간 구독 갱신',
         }),
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           data: {
             userId: sub.userId,
             tossPaymentKey: paymentData.paymentKey,
-            amount: 9900,
+            amount: 7900,
             status: 'DONE',
             orderId,
             receiptUrl: paymentData.receipt?.url || null,

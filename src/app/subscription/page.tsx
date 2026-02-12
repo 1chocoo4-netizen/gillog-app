@@ -35,7 +35,7 @@ function SubscriptionContent() {
         const widgets = tossPayments.widgets({ customerKey: `gillog-${Date.now()}` })
         paymentWidgetRef.current = widgets
 
-        await widgets.setAmount({ currency: 'KRW', value: 9900 })
+        await widgets.setAmount({ currency: 'KRW', value: 7900 })
 
         await Promise.all([
           widgets.renderPaymentMethods({
@@ -178,7 +178,7 @@ function SubscriptionContent() {
             >
               <div className="text-white/50 text-sm">월간 구독</div>
               <div className="text-3xl font-bold text-white mt-1">
-                9,900<span className="text-lg text-white/60">원/월</span>
+                7,900<span className="text-lg text-white/60">원/월</span>
               </div>
             </motion.div>
 
@@ -198,7 +198,7 @@ function SubscriptionContent() {
               disabled={loading || !widgetReady}
               className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg shadow-lg hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 transition-all"
             >
-              {loading ? '결제 진행 중...' : '월 9,900원으로 시작하기'}
+              {loading ? '결제 진행 중...' : '월 7,900원으로 시작하기'}
             </button>
           </>
         )}

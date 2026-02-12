@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server'
 import { requireCoachAPI } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
+import { getCoachSubscription } from '@/lib/subscription'
 
 export async function POST(request: Request) {
   const coachAuth = await requireCoachAPI()
   if (!coachAuth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // 코치 구독 상태 확인 — 만료 시 차단
+  const coachSub = await getCoachSubscription(coachAuth.coachEmail)
+  if (coachSub.plan === 'expired') {
+    return NextResponse.json(
+      { error: '기관 구독이 만료되었습니다. 프리미엄 부여를 위해 구독을 갱신해주세요.' },
+      { status: 403 }
+    )
   }
 
   const { userId, months } = await request.json()
