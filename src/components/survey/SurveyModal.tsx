@@ -14,6 +14,8 @@ interface SurveyScores {
   career: number
   community: number
   nonCognitive: number
+  learning: number
+  habit: number
   total: number
 }
 
@@ -130,8 +132,8 @@ export function SurveyModal({
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3 text-sm text-gray-600">
-              <p>이 설문은 <strong>진로 탐색</strong>, <strong>공동체 의식</strong>, <strong>인성 역량</strong> 3개 영역의 자기 성찰 질문으로 구성되어 있어요.</p>
-              <p>총 <strong>30문항</strong>이며, 약 5~10분 정도 소요됩니다.</p>
+              <p>이 설문은 <strong>진로 탐색</strong>, <strong>공동체 의식</strong>, <strong>인성 역량</strong>, <strong>학습</strong>, <strong>습관</strong> 5개 영역의 자기 성찰 질문으로 구성되어 있어요.</p>
+              <p>총 <strong>50문항</strong>이며, 약 10~15분 정도 소요됩니다.</p>
               <p>정답은 없어요. 지금 느끼는 그대로 솔직하게 답해주세요.</p>
               <p className="text-xs text-gray-400">
                 응답은 암호화되어 안전하게 저장되며, 개인정보는 수집되지 않습니다.
@@ -201,8 +203,10 @@ export function SurveyModal({
                 className="space-y-5"
               >
                 {pageQuestions.map((q, idx) => {
+                  const previousAreasCount = SURVEY_AREAS.slice(0, currentAreaIndex)
+                    .reduce((sum, a) => sum + getQuestionsByArea(a.key).length, 0)
                   const questionNumber =
-                    currentAreaIndex * 10 + currentPage * QUESTIONS_PER_PAGE + idx + 1
+                    previousAreasCount + currentPage * QUESTIONS_PER_PAGE + idx + 1
                   return (
                     <div key={q.id} className="space-y-2">
                       <p className="text-sm font-medium text-gray-800">

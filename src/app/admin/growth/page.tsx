@@ -14,7 +14,7 @@ interface DescriptiveStats {
   n: number; mean: number; sd: number; median: number; min: number; max: number; q1: number; q3: number
 }
 
-type Area = 'career' | 'community' | 'nonCognitive' | 'total'
+type Area = 'career' | 'community' | 'nonCognitive' | 'learning' | 'habit' | 'total'
 
 interface PairedAreaResult {
   n: number; preMean: number; postMean: number; meanDiff: number; sdDiff: number; cohenD: number; interpretation: string
@@ -22,7 +22,7 @@ interface PairedAreaResult {
 
 interface PairedAnalysis {
   from: number; to: number
-  career: PairedAreaResult; community: PairedAreaResult; nonCognitive: PairedAreaResult; total: PairedAreaResult
+  career: PairedAreaResult; community: PairedAreaResult; nonCognitive: PairedAreaResult; learning: PairedAreaResult; habit: PairedAreaResult; total: PairedAreaResult
 }
 
 interface AttritionFunnel {
@@ -36,7 +36,7 @@ interface AttritionFunnel {
 
 interface Trajectory {
   id: string
-  milestones: { milestone: number; career: number; community: number; nonCognitive: number; total: number }[]
+  milestones: { milestone: number; career: number; community: number; nonCognitive: number; learning: number; habit: number; total: number }[]
 }
 
 interface GrowthResponse {
@@ -57,11 +57,11 @@ interface GrowthResponse {
 // ========================================
 
 const AREA_LABELS: Record<Area, string> = {
-  career: '진로', community: '공동체', nonCognitive: '인성', total: '총점',
+  career: '진로', community: '공동체', nonCognitive: '인성', learning: '학습', habit: '습관', total: '총점',
 }
 
 const AREA_COLORS: Record<Area, string> = {
-  career: '#3B82F6', community: '#10B981', nonCognitive: '#F59E0B', total: '#8B5CF6',
+  career: '#3B82F6', community: '#10B981', nonCognitive: '#F59E0B', learning: '#8B5CF6', habit: '#22C55E', total: '#A855F7',
 }
 
 function CohenDBadge({ d, interpretation }: { d: number; interpretation: string }) {
@@ -140,7 +140,7 @@ export default function GrowthAnalysisPage() {
             <div className="text-xs text-gray-400">측정 시점 (회)</div>
           </div>
           <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xl font-bold text-white">3</div>
+            <div className="text-xl font-bold text-white">5</div>
             <div className="text-xs text-gray-400">측정 영역</div>
           </div>
         </div>
@@ -182,13 +182,13 @@ export default function GrowthAnalysisPage() {
                   {milestones.map((ms) => {
                     const msData = data.descriptiveByMilestone[ms]
                     if (!msData) return null
-                    return (['career', 'community', 'nonCognitive', 'total'] as Area[]).map((area, areaIdx) => {
+                    return (['career', 'community', 'nonCognitive', 'learning', 'habit', 'total'] as Area[]).map((area, areaIdx) => {
                       const s = msData[area]
                       if (!s || s.n === 0) return null
                       return (
                         <tr key={`${ms}-${area}`} className={`border-b border-gray-800/30 ${areaIdx === 0 ? 'border-t border-gray-700' : ''}`}>
                           {areaIdx === 0 && (
-                            <td rowSpan={4} className="py-2 px-2 text-gray-200 font-semibold align-top">
+                            <td rowSpan={6} className="py-2 px-2 text-gray-200 font-semibold align-top">
                               {ms}회
                             </td>
                           )}
@@ -225,6 +225,8 @@ export default function GrowthAnalysisPage() {
                       진로: data.descriptiveByMilestone[ms]?.career?.mean || 0,
                       공동체: data.descriptiveByMilestone[ms]?.community?.mean || 0,
                       인성: data.descriptiveByMilestone[ms]?.nonCognitive?.mean || 0,
+                      학습: data.descriptiveByMilestone[ms]?.learning?.mean || 0,
+                      습관: data.descriptiveByMilestone[ms]?.habit?.mean || 0,
                     }))}
                   barCategoryGap="20%"
                 >
@@ -236,6 +238,8 @@ export default function GrowthAnalysisPage() {
                   <Bar dataKey="진로" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="공동체" fill="#10B981" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="인성" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="학습" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="습관" fill="#22C55E" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -266,12 +270,12 @@ export default function GrowthAnalysisPage() {
                   </thead>
                   <tbody>
                     {data.pairedAnalysis.filter((p) => p.total.n > 0).map((p) =>
-                      (['career', 'community', 'nonCognitive', 'total'] as Area[]).map((area, areaIdx) => {
+                      (['career', 'community', 'nonCognitive', 'learning', 'habit', 'total'] as Area[]).map((area, areaIdx) => {
                         const a = p[area]
                         return (
                           <tr key={`${p.from}-${p.to}-${area}`} className={`border-b border-gray-800/30 ${areaIdx === 0 ? 'border-t border-gray-700' : ''}`}>
                             {areaIdx === 0 && (
-                              <td rowSpan={4} className="py-2 px-2 text-gray-200 font-semibold align-top">
+                              <td rowSpan={6} className="py-2 px-2 text-gray-200 font-semibold align-top">
                                 {p.from}회 → {p.to}회
                               </td>
                             )}
@@ -348,7 +352,7 @@ export default function GrowthAnalysisPage() {
             <SectionTitle sub="Figure 3. Score Distribution by Milestone">점수 분포</SectionTitle>
             {/* 영역 선택 탭 */}
             <div className="flex gap-2 mb-4">
-              {(['total', 'career', 'community', 'nonCognitive'] as Area[]).map((area) => (
+              {(['total', 'career', 'community', 'nonCognitive', 'learning', 'habit'] as Area[]).map((area) => (
                 <button
                   key={area}
                   onClick={() => setSelectedArea(area)}

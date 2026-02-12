@@ -101,6 +101,8 @@ export async function GET() {
         careerScore: true,
         communityScore: true,
         nonCognitiveScore: true,
+        learningScore: true,
+        habitScore: true,
         totalScore: true,
         createdAt: true,
       },
@@ -111,13 +113,15 @@ export async function GET() {
     // 1. 마일스톤별 기술통계 (Descriptive Statistics)
     // ========================================
     const MILESTONES = [5, 100, 500]
-    const areas = ['career', 'community', 'nonCognitive', 'total'] as const
+    const areas = ['career', 'community', 'nonCognitive', 'learning', 'habit', 'total'] as const
     type Area = typeof areas[number]
 
-    const scoreKey: Record<Area, 'careerScore' | 'communityScore' | 'nonCognitiveScore' | 'totalScore'> = {
+    const scoreKey: Record<Area, 'careerScore' | 'communityScore' | 'nonCognitiveScore' | 'learningScore' | 'habitScore' | 'totalScore'> = {
       career: 'careerScore',
       community: 'communityScore',
       nonCognitive: 'nonCognitiveScore',
+      learning: 'learningScore',
+      habit: 'habitScore',
       total: 'totalScore',
     }
 
@@ -137,7 +141,7 @@ export async function GET() {
     //    같은 userHash가 여러 마일스톤에 응답한 경우 추적
     // ========================================
     const userMilestoneMap: Record<string, Record<number, {
-      career: number; community: number; nonCognitive: number; total: number
+      career: number; community: number; nonCognitive: number; learning: number; habit: number; total: number
     }>> = {}
 
     for (const r of allResponses) {
@@ -148,6 +152,8 @@ export async function GET() {
         career: r.careerScore,
         community: r.communityScore,
         nonCognitive: r.nonCognitiveScore,
+        learning: r.learningScore,
+        habit: r.habitScore,
         total: r.totalScore,
       }
     }
@@ -279,7 +285,7 @@ export async function GET() {
             }
           : null,
         milestones: MILESTONES,
-        areas: ['진로(career)', '공동체(community)', '인성(nonCognitive)', '총점(total)'],
+        areas: ['진로(career)', '공동체(community)', '인성(nonCognitive)', '학습(learning)', '습관(habit)', '총점(total)'],
       },
     })
   } catch (error) {

@@ -42,6 +42,20 @@ export const SURVEY_AREAS: SurveyArea[] = [
     bgColor: '#fffbeb',
     icon: '💪',
   },
+  {
+    key: 'learning',
+    label: '학습',
+    color: '#8b5cf6',
+    bgColor: '#f5f3ff',
+    icon: '🧠',
+  },
+  {
+    key: 'habit',
+    label: '습관',
+    color: '#22c55e',
+    bgColor: '#f0fdf4',
+    icon: '📚',
+  },
 ]
 
 export const SURVEY_QUESTIONS: SurveyQuestion[] = [
@@ -80,6 +94,30 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
   { id: 'n8', areaKey: 'nonCognitive', text: '나는 스트레스를 받을 때 나만의 해소법이 있다.' },
   { id: 'n9', areaKey: 'nonCognitive', text: '나는 목표를 위해 꾸준히 노력하는 편이다.' },
   { id: 'n10', areaKey: 'nonCognitive', text: '나는 나의 성장 가능성을 믿는다.' },
+
+  // ========== 학습 역량 (learning) ==========
+  { id: 'l1', areaKey: 'learning', text: '나는 새로운 내용을 배우는 것이 즐겁다.' },
+  { id: 'l2', areaKey: 'learning', text: '나는 모르는 것이 있으면 스스로 찾아서 공부한다.' },
+  { id: 'l3', areaKey: 'learning', text: '나는 수업 시간에 집중을 잘 하는 편이다.' },
+  { id: 'l4', areaKey: 'learning', text: '나는 나만의 공부 방법을 알고 있다.' },
+  { id: 'l5', areaKey: 'learning', text: '나는 배운 내용을 다른 사람에게 설명할 수 있다.' },
+  { id: 'l6', areaKey: 'learning', text: '나는 어려운 문제도 끝까지 풀어보려고 노력한다.' },
+  { id: 'l7', areaKey: 'learning', text: '나는 공부 계획을 세우고 실천하는 편이다.' },
+  { id: 'l8', areaKey: 'learning', text: '나는 실수에서 배우고 같은 실수를 반복하지 않으려 한다.' },
+  { id: 'l9', areaKey: 'learning', text: '나는 다양한 분야에 호기심이 있다.' },
+  { id: 'l10', areaKey: 'learning', text: '나는 학습한 내용을 실생활에 적용해 보려고 한다.' },
+
+  // ========== 습관 역량 (habit) ==========
+  { id: 'h1', areaKey: 'habit', text: '나는 매일 일정한 시간에 일어나고 잠자리에 든다.' },
+  { id: 'h2', areaKey: 'habit', text: '나는 하루 일과를 규칙적으로 보내는 편이다.' },
+  { id: 'h3', areaKey: 'habit', text: '나는 해야 할 일을 미루지 않으려고 노력한다.' },
+  { id: 'h4', areaKey: 'habit', text: '나는 건강을 위해 꾸준히 운동이나 활동을 한다.' },
+  { id: 'h5', areaKey: 'habit', text: '나는 정리정돈을 잘 하는 편이다.' },
+  { id: 'h6', areaKey: 'habit', text: '나는 작은 일이라도 매일 꾸준히 하는 것이 있다.' },
+  { id: 'h7', areaKey: 'habit', text: '나는 나쁜 습관을 고치려고 노력한 적이 있다.' },
+  { id: 'h8', areaKey: 'habit', text: '나는 약속이나 일정을 잘 지키는 편이다.' },
+  { id: 'h9', areaKey: 'habit', text: '나는 스마트폰 사용 시간을 스스로 조절할 수 있다.' },
+  { id: 'h10', areaKey: 'habit', text: '나는 좋은 습관을 만들면 오래 유지하는 편이다.' },
 ]
 
 export function getQuestionsByArea(areaKey: string): SurveyQuestion[] {

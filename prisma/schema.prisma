@@ -346,10 +346,12 @@ model SurveyResponse {
   userHash        String
   milestone       Int    @default(5)
   encryptedData   String
-  careerScore     Float
-  communityScore  Float
+  careerScore       Float
+  communityScore    Float
   nonCognitiveScore Float
-  totalScore      Float
+  learningScore     Float   @default(0)
+  habitScore        Float   @default(0)
+  totalScore        Float
 
   createdAt DateTime @default(now())
 
