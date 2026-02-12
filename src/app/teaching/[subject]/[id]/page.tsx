@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Lock, Zap } from 'lucide-react'
+import { ArrowLeft, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
@@ -99,7 +99,7 @@ function StageMapContent() {
       return
     }
 
-    // locked 상태 - 콘텐츠가 있으면 10⚡ 시작 팝업
+    // locked 상태 - 콘텐츠가 있으면 10⭐ 시작 팝업
     const hasContent = !!STAGE_CONTENT[stageId]
     if (hasContent) {
       setUnlockTarget({ tierKey, stageNumber })
@@ -136,7 +136,7 @@ function StageMapContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60">{energy}</span>
             </div>
           </div>
@@ -174,7 +174,7 @@ function StageMapContent() {
                   </p>
                 </div>
                 <span className="ml-auto flex items-center gap-0.5 text-amber-400 text-xs font-medium">
-                  <Zap className="w-3.5 h-3.5 fill-amber-400" />-5
+                  <Star className="w-3.5 h-3.5 fill-amber-400" />-5
                 </span>
                 {!unlocked && <Lock className="w-4 h-4 text-white/30" />}
               </div>
@@ -230,7 +230,7 @@ function StageMapContent() {
         })}
       </div>
 
-      {/* 10⚡ 시작 확인 팝업 */}
+      {/* 10⭐ 시작 확인 팝업 */}
       <AnimatePresence>
         {unlockTarget && (
           <>
@@ -241,16 +241,16 @@ function StageMapContent() {
               <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-white/10 shadow-2xl">
                 <div className="text-center mb-5">
                   <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-3">
-                    <Zap className="w-7 h-7 text-yellow-400" />
+                    <Star className="w-7 h-7 text-yellow-400" />
                   </div>
                   <h3 className="text-white font-bold text-lg mb-1">스테이지 시작</h3>
                   <p className="text-white/50 text-sm">
-                    10⚡ 에너지를 사용해서<br />이 스테이지를 바로 열 수 있어요
+                    10⭐ 에너지를 사용해서<br />이 스테이지를 바로 열 수 있어요
                   </p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-3 mb-5 flex items-center justify-between">
                   <span className="text-white/60 text-sm">현재 에너지</span>
-                  <span className={`font-bold ${energy >= 10 ? 'text-yellow-400' : 'text-red-400'}`}>{energy}⚡</span>
+                  <span className={`font-bold ${energy >= 10 ? 'text-yellow-400' : 'text-red-400'}`}>{energy}⭐</span>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setUnlockTarget(null)}
@@ -259,7 +259,7 @@ function StageMapContent() {
                   </button>
                   <button onClick={handleUnlockConfirm} disabled={energy < 10}
                     className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-1.5">
-                    <Zap className="w-4 h-4" />10⚡ 시작
+                    <Star className="w-4 h-4" />10⭐ 시작
                   </button>
                 </div>
               </div>
@@ -277,8 +277,8 @@ function StageMapContent() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-20 left-4 right-4 z-50 bg-red-500/90 backdrop-blur-lg rounded-xl px-4 py-3 flex items-center gap-3 max-w-md mx-auto"
           >
-            <Zap className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-            <p className="text-white text-sm font-medium">에너지가 부족해요! (현재: {energy}⚡)</p>
+            <Star className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+            <p className="text-white text-sm font-medium">에너지가 부족해요! (현재: {energy}⭐)</p>
           </motion.div>
         )}
       </AnimatePresence>

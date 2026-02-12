@@ -149,7 +149,7 @@ export const ENGLISH_STAGES: Record<string, Stage> = {
       { type: 'concept', title: '청크(Chunk) 학습법', description: '영어를 잘하는 사람은 단어를 하나씩 조합하지 않아.\n"덩어리(Chunk)"로 말해.\n\n예를 들어:\n"I\'d like to~" (저는 ~하고 싶어요)\n"It depends on~" (그건 ~에 달려 있어요)\n"The thing is~" (사실은요~)\n\n이런 청크를 많이 알수록\n머릿속에서 조합하지 않고 바로 입에서 나와.\n\n연구에 따르면 원어민 발화의 약 50~60%가\n이런 고정된 청크로 이루어져 있어.' },
       { type: 'summary', keywords: [
         { icon: '🧱', label: '청크(Chunk)', description: '단어 덩어리를 통째로 익히기' },
-        { icon: '⚡', label: '자동화', description: '생각 없이 바로 입에서 나오게 반복' },
+        { icon: '⭐', label: '자동화', description: '생각 없이 바로 입에서 나오게 반복' },
         { icon: '🔗', label: '연결', description: '청크 + 청크를 이어서 긴 문장 만들기' },
         { icon: '🎬', label: '실제 상황', description: '드라마·영화에서 자주 쓰는 표현 수집' },
       ]},

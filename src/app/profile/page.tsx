@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, LogOut, Mail, ShieldOff } from 'lucide-react'
+import { Star, LogOut, Mail, ShieldOff } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -75,7 +75,7 @@ function ProfileContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
                 <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
@@ -176,7 +176,7 @@ function ProfileContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/checkin" icon="⭐" label="실행" />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />

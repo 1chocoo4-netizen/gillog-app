@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Zap, X } from 'lucide-react'
+import { ArrowLeft, Send, Star, X } from 'lucide-react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
 
@@ -249,7 +249,7 @@ function CoachingChat() {
             {coach.avatar}
           </div>
           <div className="flex items-center gap-1 bg-white/5 rounded-full px-2.5 py-1">
-            <Zap className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
+            <Star className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
             <span className="text-xs text-white/60">{energy}</span>
           </div>
         </div>
@@ -336,7 +336,7 @@ function CoachingChat() {
                 disabled={!todoText.trim()}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold disabled:opacity-50"
               >
-                실행에 추가하기 ⚡+5
+                실행에 추가하기 ⭐+5
               </button>
             </motion.div>
           </motion.div>
@@ -371,7 +371,7 @@ function CoachingChat() {
       {/* 하단 네비게이션 */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <NavItem href="/checkin" icon="⚡" label="실행" />
+          <NavItem href="/checkin" icon="⭐" label="실행" />
           <NavItem href="/coaching" icon="💬" label="코칭" />
           <NavItem href="/app" icon="🗺️" label="월드" />
           <NavItem href="/dashboard" icon="📊" label="리포트" />

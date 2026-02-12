@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
         <StatCard
           title="총 실행 횟수"
           value={stats.totalExecutions.toLocaleString()}
-          icon="⚡"
+          icon="⭐"
           subtitle={`1인 평균 ${stats.avgExecutions}회`}
         />
         <StatCard

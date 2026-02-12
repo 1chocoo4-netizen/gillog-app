@@ -1707,7 +1707,7 @@ export const HUMANITIES_STAGES: Record<string, Stage> = {
         { icon: '🎯', label: '자기 통제', description: '즉각적 유혹을 조절하는 힘' },
         { icon: '🔮', label: '장기적 사고', description: '미래의 더 큰 보상을 상상' },
         { icon: '🧠', label: '전략 사용', description: '유혹에서 주의를 돌리는 방법' },
-        { icon: '⚡', label: '의지력 관리', description: '의지력도 에너지처럼 관리' },
+        { icon: '⭐', label: '의지력 관리', description: '의지력도 에너지처럼 관리' },
       ]},
       { type: 'example', bad: { label: '즉각적 만족', story: '공부해야 하는데 게임이 하고 싶다.\n"잠깐만"이라며 시작한 게임이 3시간.\n시험 전날 밤새는 악순환이 반복됐다.' }, good: { label: '지연 만족', story: '"지금 참으면 시험 끝나고 마음껏 할 수 있어."\n공부 끝낸 후 게임이 더 즐겁다는 걸 알았다.\n참은 후의 보상이 2배로 달콤했다.' }},
       { type: 'ox', statement: '의지력은 무한하다.', answer: false, feedback: '의지력도 에너지처럼 쓰면 줄어들어!\n그래서 "전략"이 중요해.\n유혹 자체를 멀리하는 게 가장 좋은 방법이야.' },

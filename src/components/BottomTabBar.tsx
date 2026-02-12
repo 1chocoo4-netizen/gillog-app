@@ -18,7 +18,7 @@ export function BottomTabBar() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
       <div className="flex justify-around py-2">
-        <TabItem href="/checkin" icon="⚡" label="실행" />
+        <TabItem href="/checkin" icon="⭐" label="실행" />
         <TabItem href="/coaching" icon="💬" label="코칭" />
         <TabItem href="/app" icon="🗺️" label="월드" />
         <TabItem href="/dashboard" icon="📊" label="리포트" />

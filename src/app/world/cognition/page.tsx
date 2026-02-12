@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap, ArrowLeft, BookOpen, MessageCircle } from 'lucide-react'
+import { Star, ArrowLeft, BookOpen, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { useUserData } from '@/lib/UserDataProvider'
@@ -35,7 +35,7 @@ export default function CognitionWorldPage() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60">{energy}</span>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function CognitionWorldPage() {
               <p className="text-white/50 text-sm">1:1 대화로 성장하기</p>
             </div>
             <div className="flex items-center gap-1 text-violet-400">
-              <Zap className="w-4 h-4" fill="currentColor" />
+              <Star className="w-4 h-4" fill="currentColor" />
               <span className="text-sm font-medium">2</span>
             </div>
           </motion.button>

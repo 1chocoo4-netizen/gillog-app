@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Star, ArrowUp, Sparkles } from 'lucide-react'
+import { Star, ArrowUp, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
 interface RewardAnimationProps {
@@ -77,7 +77,7 @@ export function RewardAnimation({
               className="bg-[var(--gl-accent)]/10 rounded-2xl p-4 mb-4"
             >
               <div className="flex items-center justify-center gap-2 text-[var(--gl-accent)]">
-                <Zap className="w-6 h-6" />
+                <Star className="w-6 h-6" />
                 <span className="text-3xl font-bold">+{xpEarned} XP</span>
               </div>
               <p className="text-sm text-[var(--gl-text-muted)] mt-1">

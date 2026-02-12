@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Zap, ChevronRight, Camera, X } from 'lucide-react'
+import { Star, ChevronRight, Camera, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -47,7 +47,7 @@ function DashboardContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1">
                 <div className="w-20 h-2.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
@@ -181,7 +181,7 @@ function DashboardContent() {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-white/50 text-xs">{formatDate(record.date)}</span>
                         <span className="text-white/30 text-xs">·</span>
-                        <span className="text-violet-400 text-xs">+{record.energy}⚡</span>
+                        <span className="text-violet-400 text-xs">+{record.energy}⭐</span>
                         {(record as ExecutionRecord & { photoUrl?: string }).photoUrl && (
                           <button
                             onClick={() => setViewingPhoto((record as ExecutionRecord & { photoUrl?: string }).photoUrl!)}
@@ -251,7 +251,7 @@ function DashboardContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/checkin" icon="⭐" label="실행" />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" active />

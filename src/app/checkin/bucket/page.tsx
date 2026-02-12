@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, Zap, Check, Plus, X, Trash2 } from 'lucide-react'
+import { ChevronRight, Star, Check, Plus, X, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -100,7 +100,7 @@ function BucketContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60 font-medium">{energy}</span>
             </div>
           </div>
@@ -220,7 +220,7 @@ function BucketContent() {
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl px-8 py-6 text-center shadow-2xl"
           >
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Zap className="w-8 h-8 text-yellow-200" fill="currentColor" />
+              <Star className="w-8 h-8 text-yellow-200" fill="currentColor" />
               <span className="text-3xl font-bold text-white">+15</span>
             </div>
             <p className="text-white/80">버킷리스트 달성!</p>
@@ -231,7 +231,7 @@ function BucketContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/checkin" icon="⚡" label="실행" active />
+          <TabItem href="/checkin" icon="⭐" label="실행" active />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />

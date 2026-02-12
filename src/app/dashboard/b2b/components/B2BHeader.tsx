@@ -163,6 +163,7 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
   }
 
   return (
+    <>
     <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         {/* 왼쪽: 로고 */}
@@ -471,7 +472,9 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
         </div>
       </div>
 
-      {/* 프리미엄 부여 모달 */}
+    </header>
+
+      {/* 프리미엄 부여 모달 — header 바깥에서 렌더링 */}
       <AnimatePresence>
         {premiumModal && (
           <>
@@ -480,13 +483,13 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setPremiumModal(null)}
-              className="fixed inset-0 bg-black/60 z-[60]"
+              className="fixed inset-0 bg-black/60 z-[9999]"
             />
             <motion.div
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
-              className="fixed bottom-0 left-0 right-0 z-[60] sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-80 bg-gray-900 border-t sm:border border-gray-700 rounded-t-2xl sm:rounded-xl shadow-2xl p-5"
+              className="fixed bottom-0 left-0 right-0 z-[9999] sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-80 bg-gray-900 border-t sm:border border-gray-700 rounded-t-2xl sm:rounded-xl shadow-2xl p-5"
             >
               <h3 className="text-white font-semibold mb-1">프리미엄 부여</h3>
               <p className="text-sm text-gray-400 mb-4">{premiumModal.name}님에게 프리미엄을 부여합니다</p>
@@ -532,6 +535,6 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
           </>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }

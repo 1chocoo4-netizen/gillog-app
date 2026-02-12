@@ -171,7 +171,7 @@ function HistoryContent() {
                             {WORLD_LABELS[record.worldKey] || record.worldKey}
                           </span>
                           <span className="text-white/30 text-xs">{formatTime(record.completedAt)}</span>
-                          <span className="text-violet-400 text-xs">+{record.energy}⚡</span>
+                          <span className="text-violet-400 text-xs">+{record.energy}⭐</span>
                           {(record as ExecutionRecord & { photoUrl?: string }).photoUrl && (
                             <button
                               onClick={() => setViewingPhoto((record as ExecutionRecord & { photoUrl?: string }).photoUrl!)}

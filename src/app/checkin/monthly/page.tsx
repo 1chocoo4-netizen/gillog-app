@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Zap, Check, Plus, X, Lightbulb, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, Check, Plus, X, Lightbulb, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -353,7 +353,7 @@ function MonthlyContent() {
                         return (
                           <div key={item.id} className="bg-white/5 rounded-xl p-3">
                             <div className="flex items-start gap-2">
-                              <span className="text-sm">{area?.icon || '⚡'}</span>
+                              <span className="text-sm">{area?.icon || '⭐'}</span>
                               <div className="flex-1">
                                 <span className="text-xs font-medium" style={{ color: area?.color || '#8b5cf6' }}>
                                   {area?.label || '기타'}
@@ -468,7 +468,7 @@ function MonthlyContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/checkin" icon="⚡" label="실행" active />
+          <TabItem href="/checkin" icon="⭐" label="실행" active />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />

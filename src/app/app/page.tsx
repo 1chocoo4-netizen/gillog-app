@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Zap } from 'lucide-react'
+import { Star } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { QuestBanner } from '@/components/map/QuestBanner'
@@ -41,7 +41,7 @@ function AppHomeContent() {
           <div className="flex items-center gap-2.5">
             <LevelBadge />
             <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <div className="flex items-center gap-1.5">
                 <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
@@ -76,7 +76,7 @@ function AppHomeContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t border-white/5">
         <div className="flex justify-around py-1.5 pb-safe">
-          <TabItem href="/checkin" icon="⚡" label="실행" />
+          <TabItem href="/checkin" icon="⭐" label="실행" />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" active />
           <TabItem href="/dashboard" icon="📊" label="리포트" />

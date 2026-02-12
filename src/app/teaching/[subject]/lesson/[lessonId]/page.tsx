@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ChevronRight, Check, X, Sparkles, CheckCircle, Zap, Camera, Loader2 } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Check, X, Sparkles, CheckCircle, Star, Camera, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { getStage, parseStageId, getTierConfig, LessonCard, markStageCompleted, isStageCompleted } from '@/lib/teaching/lessonData'
@@ -455,7 +455,7 @@ function LessonContent() {
     const combinedParts: string[] = []
     if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
     if (feltText.trim()) combinedParts.push(`💭 느낀 것: ${feltText.trim()}`)
-    combinedParts.push(`🎯 실행: ${actionText.trim()}`)
+    combinedParts.push(`🚀 실행:${actionText.trim()}`)
     const combinedText = combinedParts.join('\n')
 
     const newItems = selectedWorlds.map(wk => ({
@@ -495,7 +495,7 @@ function LessonContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60">{energy}</span>
             </div>
           </div>
@@ -544,7 +544,7 @@ function LessonContent() {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
             <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl px-12 py-8 text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
-                <Zap className="w-8 h-8 text-yellow-400" fill="currentColor" />
+                <Star className="w-8 h-8 text-yellow-400" fill="currentColor" />
                 <span className="text-4xl font-bold text-white">+2</span>
               </div>
               <p className="text-white/80">학습 완료!</p>
@@ -641,7 +641,7 @@ function LessonContent() {
                     </div>
                     <div>
                       <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🎯</span>
+                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🚀</span>
                         실행할 것
                         <span className="text-red-400 text-xs">*필수</span>
                       </label>
@@ -697,12 +697,12 @@ function LessonContent() {
                         {photoPreview && <img src={photoPreview} alt="" className="w-16 h-16 object-cover rounded-lg mb-2" />}
                         {learnedText.trim() && <p className="text-white/70 text-xs">📖 배운 것: {learnedText.trim()}</p>}
                         {feltText.trim() && <p className="text-white/70 text-xs">💭 느낀 것: {feltText.trim()}</p>}
-                        <p className="text-white/70 text-xs">🎯 실행: {actionText.trim()}</p>
+                        <p className="text-white/70 text-xs">🚀 실행:{actionText.trim()}</p>
                         {aiRecordText.trim() && <p className="text-cyan-400/70 text-xs">✨ AI 기록: {aiRecordText.trim()}</p>}
                       </div>
                     )}
                     <div className="bg-white/5 rounded-xl p-3">
-                      <p className="text-white/50 text-xs">⚡ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)</p>
+                      <p className="text-white/50 text-xs">⭐ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)</p>
                     </div>
                     <button onClick={handleAddTodo} disabled={selectedWorlds.length === 0 || isUploading}
                       className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2">
