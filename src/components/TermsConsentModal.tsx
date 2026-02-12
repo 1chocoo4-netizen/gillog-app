@@ -139,13 +139,13 @@ export function TermsConsentModal() {
                           <p className="font-semibold text-gray-300">제1조 (목적)</p>
                           <p>이 약관은 길로그(이하 &quot;서비스&quot;)의 이용 조건 및 절차, 이용자와 서비스 제공자의 권리·의무를 규정합니다.</p>
                           <p className="font-semibold text-gray-300">제2조 (서비스 내용)</p>
-                          <p>길로그는 청소년의 자기주도 학습 실행 기록, AI 코칭, 성장 리포트 작성을 지원하는 비영리 교육 서비스입니다.</p>
+                          <p>길로그는 청소년의 자기주도 학습 실행 기록, AI 코칭, 성장 리포트 작성을 지원하는 교육 서비스입니다.</p>
                           <p className="font-semibold text-gray-300">제3조 (이용자 의무)</p>
                           <p>이용자는 타인의 개인정보를 도용하거나 부정한 목적으로 서비스를 이용할 수 없습니다.</p>
                           <p className="font-semibold text-gray-300">제4조 (서비스 변경 및 중단)</p>
                           <p>서비스 제공자는 운영상 필요에 따라 서비스의 일부 또는 전부를 변경하거나 중단할 수 있습니다.</p>
                           <p className="font-semibold text-gray-300">제5조 (면책)</p>
-                          <p>무료로 제공되는 서비스이므로, 서비스 이용으로 발생하는 어떠한 손해에 대해서도 법적 책임을 지지 않습니다.</p>
+                          <p>서비스 제공자는 천재지변, 시스템 장애 등 불가항력으로 인한 서비스 중단 및 이용 장애에 대해 책임을 지지 않습니다. 유료 서비스의 경우 별도의 환불 정책에 따릅니다.</p>
                         </div>
                       </motion.div>
                     )}

@@ -44,22 +44,24 @@ export function ParentalConsentModal({ isOpen, onClose, onComplete }: Props) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] overflow-y-auto">
           {/* 배경 */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => !submitting && onClose()}
           />
 
+          {/* 스크롤 + 중앙 정렬 래퍼 */}
+          <div className="min-h-full flex items-center justify-center p-4">
           {/* 모달 */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto"
+            className="relative bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-sm my-4"
           >
             {done ? (
               <div className="p-8 text-center">
@@ -181,6 +183,7 @@ export function ParentalConsentModal({ isOpen, onClose, onComplete }: Props) {
               </>
             )}
           </motion.div>
+          </div>
         </div>
       )}
     </AnimatePresence>

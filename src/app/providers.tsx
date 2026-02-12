@@ -6,6 +6,7 @@ import { SurveyWrapper } from '@/components/survey/SurveyWrapper'
 import { ConsentRequestModal } from '@/components/ConsentRequestModal'
 import { DirectMessageModal } from '@/components/DirectMessageModal'
 import { TermsConsentModal } from '@/components/TermsConsentModal'
+import { ParentalConsentGuard } from '@/components/ParentalConsentGuard'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <UserDataProvider>
         {children}
         <TermsConsentModal />
+        <ParentalConsentGuard />
         <SurveyWrapper />
         <ConsentRequestModal />
         <DirectMessageModal />

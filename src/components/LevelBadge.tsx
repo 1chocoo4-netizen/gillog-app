@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, LogOut, Mail, ClipboardCheck, Gift, ShieldCheck } from 'lucide-react'
+import { X, LogOut, Mail, ClipboardCheck, Gift, ShieldCheck, ShieldOff } from 'lucide-react'
 import { useUserData } from '@/lib/UserDataProvider'
 import { useSession, signOut } from 'next-auth/react'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
@@ -26,7 +26,7 @@ const AREA_CONFIG = [
 export function LevelBadge() {
   const [isOpen, setIsOpen] = useState(false)
   const { levelData, subscriptionInfo, refreshSubscription } = useUserData()
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [surveyResults, setSurveyResults] = useState<SurveyResult[]>([])
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -34,6 +34,18 @@ export function LevelBadge() {
 
   // 부모님 동의
   const [showParentalModal, setShowParentalModal] = useState(false)
+  const [revoking, setRevoking] = useState(false)
+
+  async function handleRevokeParental() {
+    if (!confirm('부모님(보호자) 동의를 철회하시겠습니까?\n철회 시 서비스 이용이 제한됩니다.')) return
+    setRevoking(true)
+    try {
+      const res = await fetch('/api/consent', { method: 'DELETE' })
+      if (res.ok) await update()
+    } catch {} finally {
+      setRevoking(false)
+    }
+  }
 
   // 쿠폰 관련
   const [couponCode, setCouponCode] = useState('')
@@ -257,11 +269,21 @@ export function LevelBadge() {
                     <span className="text-white/80 text-xs font-semibold">보호자 동의</span>
                   </div>
                   {session?.user?.parentalConsent ? (
-                    <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                      <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                      </svg>
-                      <span className="text-emerald-400 text-xs font-medium">부모님 동의 완료</span>
+                    <div className="flex items-center justify-between gap-2 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        </svg>
+                        <span className="text-emerald-400 text-xs font-medium">부모님 동의 완료</span>
+                      </div>
+                      <button
+                        onClick={handleRevokeParental}
+                        disabled={revoking}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-medium transition-colors disabled:opacity-50 flex-shrink-0"
+                      >
+                        <ShieldOff className="w-3 h-3" />
+                        철회
+                      </button>
                     </div>
                   ) : (
                     <button

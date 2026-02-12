@@ -67,3 +67,18 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ error: '잘못된 요청' }, { status: 400 })
 }
+
+// DELETE: 부모님 동의 철회
+export async function DELETE() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: '로그인 필요' }, { status: 401 })
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { parentalConsentAt: null },
+  })
+
+  return NextResponse.json({ ok: true })
+}
