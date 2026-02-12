@@ -71,17 +71,32 @@ export async function POST(req: Request) {
   return NextResponse.json({ error: '잘못된 요청' }, { status: 400 })
 }
 
-// DELETE: 부모님 동의 철회
-export async function DELETE() {
+// DELETE: 동의 철회
+export async function DELETE(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: '로그인 필요' }, { status: 401 })
   }
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { parentalConsentAt: null },
-  })
+  let type = 'parental'
+  try {
+    const body = await req.json()
+    if (body.type) type = body.type
+  } catch {}
 
-  return NextResponse.json({ ok: true })
+  if (type === 'terms') {
+    // 약관 + 개인정보 동의 철회
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { termsAgreedAt: null, privacyAgreedAt: null },
+    })
+  } else {
+    // 부모님 동의 철회
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { parentalConsentAt: null },
+    })
+  }
+
+  return NextResponse.json({ ok: true, type })
 }

@@ -21,9 +21,21 @@ interface B2BHeaderProps {
 }
 
 export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHeaderProps) {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
+  const [revokingTerms, setRevokingTerms] = useState(false)
+
+  async function handleRevokeTerms() {
+    if (!confirm('개인정보 동의를 철회하시겠습니까?')) return
+    setRevokingTerms(true)
+    try {
+      const res = await fetch('/api/consent', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'terms' }) })
+      if (res.ok) await updateSession()
+    } catch {} finally {
+      setRevokingTerms(false)
+    }
+  }
 
   // 등록하기 패널
   const [isRegOpen, setIsRegOpen] = useState(false)
@@ -445,6 +457,30 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName }: B2BHe
                       </div>
                     </div>
                   </div>
+                  {/* 개인정보 동의 상태 */}
+                  {session?.user?.termsAgreed && (
+                    <div className="px-3 py-2 border-b border-gray-800">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                          </svg>
+                          <span className="text-indigo-400 text-[11px] font-medium">개인정보 동의 완료</span>
+                        </div>
+                        <button
+                          onClick={handleRevokeTerms}
+                          disabled={revokingTerms}
+                          className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-medium transition-colors disabled:opacity-50"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
+                          </svg>
+                          철회
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="p-2 space-y-1">
                     <button
                       onClick={() => { setIsProfileOpen(false); onChangeName?.() }}
