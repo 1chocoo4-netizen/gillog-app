@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 
@@ -93,6 +93,7 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
   const [currentTime, setCurrentTime] = useState(0)
   const [lottieData, setLottieData] = useState<object | null>(null)
   const [lottieError, setLottieError] = useState(false)
+  const lottieRef = useRef<any>(null)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   // 현재 씬 계산
@@ -160,8 +161,10 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
           >
             <Lottie
               animationData={lottieData}
-              loop
+              loop={false}
               autoplay={false}
+              lottieRef={lottieRef}
+              onDOMLoaded={() => lottieRef.current?.goToAndStop(0, true)}
               className="w-full h-full"
             />
           </div>
