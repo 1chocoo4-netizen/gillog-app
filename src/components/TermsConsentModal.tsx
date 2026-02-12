@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -40,7 +40,7 @@ const B2B_PRIVACY = [
 ]
 
 export function TermsConsentModal() {
-  const { data: session, update } = useSession()
+  const { data: session, update, status } = useSession()
   const pathname = usePathname()
   const [show, setShow] = useState(false)
   const [termsChecked, setTermsChecked] = useState(false)
@@ -55,22 +55,16 @@ export function TermsConsentModal() {
   // B2B 페이지 여부
   const isB2B = pathname?.startsWith('/dashboard/b2b') || pathname?.startsWith('/coach-verify')
 
-  const checkConsent = useCallback(async () => {
-    try {
-      const res = await fetch('/api/consent')
-      if (!res.ok) return
-      const data = await res.json()
-      if (!data.termsAgreed) {
-        setShow(true)
-      }
-    } catch {}
-  }, [])
-
   useEffect(() => {
+    // 세션 로딩 중이면 대기
+    if (status !== 'authenticated') return
+    // 로그인 안 되어 있으면 스킵
     if (!session?.user) return
-    if (session.user.termsAgreed) return
-    checkConsent()
-  }, [session?.user, checkConsent])
+    // 이미 동의했으면 스킵
+    if (session.user.termsAgreed === true) return
+    // 동의 안 했으면 모달 표시
+    setShow(true)
+  }, [status, session?.user])
 
   async function handleAgree() {
     if (!termsChecked || !privacyChecked || submitting) return
