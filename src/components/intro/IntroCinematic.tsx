@@ -154,7 +154,8 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
             animationData={lottieData}
             loop
             autoplay
-            className="w-full h-full object-cover"
+            rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+            className="w-full h-full"
             style={{ position: 'absolute', inset: 0 }}
           />
         ) : (
