@@ -156,14 +156,14 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
 
   return (
     <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         {/* 왼쪽: 로고 */}
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
             길로그
           </span>
-          <span className="text-gray-500">|</span>
-          <span className="text-sm font-medium text-gray-300">실행 DNA 리포트</span>
+          <span className="text-gray-500 hidden sm:inline">|</span>
+          <span className="text-sm font-medium text-gray-300 hidden sm:inline">실행 DNA 리포트</span>
         </div>
 
         {/* 오른쪽: 리스트 + 등록하기 + ISO */}
@@ -191,7 +191,7 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                  className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
                 >
                   <div className="px-4 py-3 border-b border-gray-800">
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-200">
@@ -279,7 +279,7 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                  className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto top-16 sm:top-full sm:mt-2 w-auto sm:w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
                 >
                   <div className="px-4 py-3 border-b border-gray-800">
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-200">
@@ -403,7 +403,7 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-80 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-5"
+              className="fixed inset-0 z-[60] m-auto w-80 h-fit bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-5"
             >
               <h3 className="text-white font-semibold mb-1">프리미엄 부여</h3>
               <p className="text-sm text-gray-400 mb-4">{premiumModal.name}님에게 프리미엄을 부여합니다</p>

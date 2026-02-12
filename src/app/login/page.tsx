@@ -76,7 +76,7 @@ export default function LoginPage() {
                   />
                 </svg>
                 <div className="text-left">
-                  <div className="text-sm font-bold">개인 사용자</div>
+                  <div className="text-sm font-bold">개인</div>
                   <div className="text-xs text-gray-500 font-normal">Google 계정으로 시작하기</div>
                 </div>
               </button>
@@ -94,7 +94,6 @@ export default function LoginPage() {
                 </svg>
                 <div className="text-left">
                   <div className="text-sm font-bold">기관 / 코치</div>
-                  <div className="text-xs text-white/60 font-normal">사전 등록된 이메일로 접속</div>
                 </div>
               </button>
             </div>

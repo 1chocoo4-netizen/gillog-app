@@ -146,11 +146,11 @@ export default function B2BDashboardPage() {
     <>
       <B2BHeader onSelectUser={handleSelectUser} />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <div className="space-y-8">
           {/* 선택된 사용자 배너 or 데모 배너 */}
           {selectedUser ? (
-            <div className="flex items-center justify-between py-2 px-4 bg-violet-500/10 border border-violet-500/20 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 py-3 px-4 bg-violet-500/10 border border-violet-500/20 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
                   {selectedUser.name.charAt(0)}
@@ -201,7 +201,7 @@ export default function B2BDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-100 mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-100 mb-2">
               실행 DNA 리포트
             </h1>
             <p className="text-sm text-gray-400 max-w-xl mx-auto">
@@ -222,7 +222,7 @@ export default function B2BDashboardPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6"
+            className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6 flex flex-col md:flex-row items-center gap-4 sm:gap-6"
           >
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
@@ -273,7 +273,7 @@ export default function B2BDashboardPage() {
           {/* 8개 메트릭 카드 그리드 */}
           <div>
             <h2 className="text-lg font-semibold text-gray-200 mb-4">역량별 상세 분석</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {METRIC_DEFINITIONS.map((def, i) => (
                 <motion.div
                   key={def.key}
