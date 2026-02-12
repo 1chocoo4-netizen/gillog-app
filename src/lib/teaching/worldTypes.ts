@@ -53,7 +53,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
   habit: {
     key: 'habit',
     label: '습관',
-    icon: '🔄',
+    icon: '📚',
     description: '좋은 습관을 만들고 나쁜 습관을 바꾸는 힘',
     color: 'from-green-500 to-emerald-600',
     chapters: [

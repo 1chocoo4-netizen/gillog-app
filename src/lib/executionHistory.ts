@@ -220,7 +220,7 @@ export const WORLD_LABELS: Record<string, string> = {
 export const WORLD_ICONS: Record<string, string> = {
   cognition: '🧠',
   selfDirected: '🎯',
-  habit: '🔄',
+  habit: '📚',
   attitude: '💪',
   relationship: '🤝',
   character: '❤️',

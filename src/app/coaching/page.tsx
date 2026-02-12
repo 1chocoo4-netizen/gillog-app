@@ -421,7 +421,7 @@ function CoachingChat() {
                 {[
                   { key: 'cognition', label: '인지(학습)', icon: '🧠' },
                   { key: 'selfDirected', label: '자기주도', icon: '🎯' },
-                  { key: 'habit', label: '습관', icon: '🔄' },
+                  { key: 'habit', label: '습관', icon: '📚' },
                   { key: 'attitude', label: '태도', icon: '💪' },
                   { key: 'relationship', label: '관계', icon: '🤝' },
                   { key: 'character', label: '인성', icon: '❤️' },

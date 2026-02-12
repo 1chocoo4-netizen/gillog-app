@@ -14,7 +14,7 @@ interface QuestCardProps {
 
 const CATEGORY_CONFIG: Record<string, { icon: string; color: string }> = {
   attitude: { icon: '🎯', color: 'bg-red-100 text-red-600' },
-  habit: { icon: '🔄', color: 'bg-orange-100 text-orange-600' },
+  habit: { icon: '📚', color: 'bg-orange-100 text-orange-600' },
   selfControl: { icon: '🧘', color: 'bg-yellow-100 text-yellow-600' },
   relationship: { icon: '🤝', color: 'bg-pink-100 text-pink-600' },
   execution: { icon: '⚡', color: 'bg-blue-100 text-blue-600' },

@@ -30,7 +30,7 @@ interface ExecutionItem {
 const GROWTH_AREAS: Record<string, { label: string; icon: string; color: string }> = {
   cognition: { label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
   selfDirected: { label: '자기주도', icon: '🎯', color: '#06b6d4' },
-  habit: { label: '습관', icon: '🔄', color: '#22c55e' },
+  habit: { label: '습관', icon: '📚', color: '#22c55e' },
   attitude: { label: '태도', icon: '💪', color: '#f59e0b' },
   relationship: { label: '관계', icon: '🤝', color: '#ec4899' },
   character: { label: '인성', icon: '❤️', color: '#fb923c' },

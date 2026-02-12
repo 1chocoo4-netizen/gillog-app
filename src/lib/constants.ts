@@ -31,7 +31,7 @@ export const WORLDS = {
     description: '좋은 습관을 형성하고 유지하는 능력',
     color: 'var(--gl-world-habit)',
     colorHex: '#22c55e',
-    icon: '🔄',
+    icon: '📚',
     order: 3,
   },
   attitude: {

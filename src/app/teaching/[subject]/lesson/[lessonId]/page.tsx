@@ -16,7 +16,7 @@ import { BottomTabBar } from '@/components/BottomTabBar'
 const GROWTH_AREAS = [
   { key: 'cognition', label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
   { key: 'selfDirected', label: '자기주도', icon: '🎯', color: '#06b6d4' },
-  { key: 'habit', label: '습관', icon: '🔄', color: '#22c55e' },
+  { key: 'habit', label: '습관', icon: '📚', color: '#22c55e' },
   { key: 'attitude', label: '태도', icon: '💪', color: '#f59e0b' },
   { key: 'relationship', label: '관계', icon: '🤝', color: '#ec4899' },
   { key: 'character', label: '인성', icon: '❤️', color: '#fb923c' },
