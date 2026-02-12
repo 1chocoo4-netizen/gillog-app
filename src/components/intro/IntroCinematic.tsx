@@ -162,7 +162,7 @@ export function IntroCinematic({ onFinish }: IntroCinematicProps) {
               animationData={lottieData}
               loop
               autoplay
-              speed={0.3}
+              speed={0.05}
               className="w-full h-full"
             />
           </div>
