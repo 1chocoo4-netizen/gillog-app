@@ -148,6 +148,13 @@ function ExecutionContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null)
 
+  // 첫 방문 온보딩 툴팁
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  useEffect(() => {
+    const seen = localStorage.getItem('gillog-onboarding-checkin')
+    if (!seen) setShowOnboarding(true)
+  }, [])
+
   // 실행 예문 (마운트 시 1회 생성)
   const [actionPlaceholder] = useState(() => randomExecutionExample())
 
@@ -730,12 +737,34 @@ function ExecutionContent() {
       })()}
 
       {/* 플로팅 추가 버튼 */}
-      <button
-        onClick={() => setAddStep('write')}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
+      <div className="fixed bottom-24 right-4 z-40">
+        {showOnboarding && (
+          <>
+            {/* 펄스 링 */}
+            <div className="absolute inset-0 -m-2 rounded-full border-2 border-violet-400 animate-ping" />
+            <div className="absolute inset-0 -m-2 rounded-full border-2 border-violet-400/60" />
+            {/* 툴팁 */}
+            <div className="absolute bottom-[calc(100%+12px)] right-0 w-56 bg-slate-800 border border-violet-500/30 rounded-xl px-4 py-3 shadow-2xl">
+              <p className="text-white text-sm font-medium leading-relaxed">
+                오늘의 실행을 추가해<br />보이지 않는 내 성장을<br />보이게 기록해 보세요
+              </p>
+              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-slate-800 border-r border-b border-violet-500/30 rotate-45" />
+            </div>
+          </>
+        )}
+        <button
+          onClick={() => {
+            if (showOnboarding) {
+              setShowOnboarding(false)
+              localStorage.setItem('gillog-onboarding-checkin', 'true')
+            }
+            setAddStep('write')
+          }}
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      </div>
 
       {/* 투두 추가 모달 */}
       <AnimatePresence>
