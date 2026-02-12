@@ -99,7 +99,7 @@ function StageMapContent() {
       return
     }
 
-    // locked 상태 - 콘텐츠가 있으면 10⚡ 해금 팝업
+    // locked 상태 - 콘텐츠가 있으면 10⚡ 시작 팝업
     const hasContent = !!STAGE_CONTENT[stageId]
     if (hasContent) {
       setUnlockTarget({ tierKey, stageNumber })
@@ -230,7 +230,7 @@ function StageMapContent() {
         })}
       </div>
 
-      {/* 10⚡ 해금 확인 팝업 */}
+      {/* 10⚡ 시작 확인 팝업 */}
       <AnimatePresence>
         {unlockTarget && (
           <>
@@ -243,7 +243,7 @@ function StageMapContent() {
                   <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-3">
                     <Zap className="w-7 h-7 text-yellow-400" />
                   </div>
-                  <h3 className="text-white font-bold text-lg mb-1">스테이지 해금</h3>
+                  <h3 className="text-white font-bold text-lg mb-1">스테이지 시작</h3>
                   <p className="text-white/50 text-sm">
                     10⚡ 에너지를 사용해서<br />이 스테이지를 바로 열 수 있어요
                   </p>
@@ -259,7 +259,7 @@ function StageMapContent() {
                   </button>
                   <button onClick={handleUnlockConfirm} disabled={energy < 10}
                     className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-1.5">
-                    <Zap className="w-4 h-4" />10⚡ 해금
+                    <Zap className="w-4 h-4" />10⚡ 시작
                   </button>
                 </div>
               </div>
