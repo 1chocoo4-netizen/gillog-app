@@ -22,6 +22,8 @@ export async function GET(request: NextRequest) {
         careerScore: true,
         communityScore: true,
         nonCognitiveScore: true,
+        learningScore: true,
+        habitScore: true,
         totalScore: true,
         createdAt: true,
       },
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
     const questionIds = SURVEY_QUESTIONS.map((q) => q.id)
 
     // CSV 헤더
-    let header = 'userHash,milestone,careerScore,communityScore,nonCognitiveScore,totalScore,createdAt'
+    let header = 'userHash,milestone,careerScore,communityScore,nonCognitiveScore,learningScore,habitScore,totalScore,createdAt'
     if (includeRaw) {
       header += ',' + questionIds.join(',')
     }
@@ -44,6 +46,8 @@ export async function GET(request: NextRequest) {
         r.careerScore,
         r.communityScore,
         r.nonCognitiveScore,
+        r.learningScore,
+        r.habitScore,
         r.totalScore,
         r.createdAt.toISOString(),
       ]

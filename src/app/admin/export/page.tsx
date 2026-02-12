@@ -14,6 +14,8 @@ interface RawResponse {
   careerScore: number
   communityScore: number
   nonCognitiveScore: number
+  learningScore: number
+  habitScore: number
   totalScore: number
   createdAt: string
   answers: Record<string, number> | null
@@ -30,12 +32,16 @@ const AREA_LABELS: Record<string, string> = {
   career: '진로',
   community: '공동체',
   nonCognitive: '인성',
+  learning: '학습',
+  habit: '습관',
 }
 
 const AREA_COLORS: Record<string, string> = {
   career: 'text-blue-400',
   community: 'text-green-400',
   nonCognitive: 'text-yellow-400',
+  learning: 'text-purple-400',
+  habit: 'text-emerald-400',
 }
 
 function downloadBlob(url: string, filename: string) {
@@ -101,10 +107,10 @@ export default function ExportPage() {
         {/* 요약 CSV */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-2">요약 CSV</h3>
-          <p className="text-xs text-gray-400 mb-3">영역별 점수만 포함 (7컬럼)</p>
+          <p className="text-xs text-gray-400 mb-3">영역별 점수만 포함 (9컬럼)</p>
           <div className="text-xs text-gray-500 mb-4 space-y-0.5">
             <div>userHash, milestone, careerScore, communityScore,</div>
-            <div>nonCognitiveScore, totalScore, createdAt</div>
+            <div>nonCognitiveScore, learningScore, habitScore, totalScore, createdAt</div>
           </div>
           <button
             onClick={() => handleDownload(false)}
@@ -118,9 +124,9 @@ export default function ExportPage() {
         {/* 전체 CSV (원본 문항 포함) */}
         <div className="bg-gray-900 border border-blue-800/50 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-blue-300 mb-2">전체 CSV (원본 문항 포함)</h3>
-          <p className="text-xs text-gray-400 mb-3">개별 30문항 응답(1~5점) 포함 (37컬럼)</p>
+          <p className="text-xs text-gray-400 mb-3">개별 50문항 응답(1~5점) 포함 (59컬럼)</p>
           <div className="text-xs text-gray-500 mb-4 space-y-0.5">
-            <div>...기본 7컬럼 + c1~c10, m1~m10, n1~n10</div>
+            <div>...기본 9컬럼 + c1~c10, m1~m10, n1~n10, l1~l10, h1~h10</div>
             <div>각 문항: 1(전혀 그렇지 않다) ~ 5(매우 그렇다)</div>
           </div>
           <button
@@ -178,6 +184,26 @@ export default function ExportPage() {
                 { id: 'n8', area: '인성', color: 'text-yellow-400', text: '나는 스트레스를 받을 때 나만의 해소법이 있다.' },
                 { id: 'n9', area: '인성', color: 'text-yellow-400', text: '나는 목표를 위해 꾸준히 노력하는 편이다.' },
                 { id: 'n10', area: '인성', color: 'text-yellow-400', text: '나는 나의 성장 가능성을 믿는다.' },
+                { id: 'l1', area: '학습', color: 'text-purple-400', text: '나는 새로운 내용을 배우는 것이 즐겁다.' },
+                { id: 'l2', area: '학습', color: 'text-purple-400', text: '나는 모르는 것이 있으면 스스로 찾아서 공부한다.' },
+                { id: 'l3', area: '학습', color: 'text-purple-400', text: '나는 수업 시간에 집중을 잘 하는 편이다.' },
+                { id: 'l4', area: '학습', color: 'text-purple-400', text: '나는 나만의 공부 방법을 알고 있다.' },
+                { id: 'l5', area: '학습', color: 'text-purple-400', text: '나는 배운 내용을 다른 사람에게 설명할 수 있다.' },
+                { id: 'l6', area: '학습', color: 'text-purple-400', text: '나는 어려운 문제도 끝까지 풀어보려고 노력한다.' },
+                { id: 'l7', area: '학습', color: 'text-purple-400', text: '나는 공부 계획을 세우고 실천하는 편이다.' },
+                { id: 'l8', area: '학습', color: 'text-purple-400', text: '나는 실수에서 배우고 같은 실수를 반복하지 않으려 한다.' },
+                { id: 'l9', area: '학습', color: 'text-purple-400', text: '나는 다양한 분야에 호기심이 있다.' },
+                { id: 'l10', area: '학습', color: 'text-purple-400', text: '나는 학습한 내용을 실생활에 적용해 보려고 한다.' },
+                { id: 'h1', area: '습관', color: 'text-emerald-400', text: '나는 매일 일정한 시간에 일어나고 잠자리에 든다.' },
+                { id: 'h2', area: '습관', color: 'text-emerald-400', text: '나는 하루 일과를 규칙적으로 보내는 편이다.' },
+                { id: 'h3', area: '습관', color: 'text-emerald-400', text: '나는 해야 할 일을 미루지 않으려고 노력한다.' },
+                { id: 'h4', area: '습관', color: 'text-emerald-400', text: '나는 건강을 위해 꾸준히 운동이나 활동을 한다.' },
+                { id: 'h5', area: '습관', color: 'text-emerald-400', text: '나는 정리정돈을 잘 하는 편이다.' },
+                { id: 'h6', area: '습관', color: 'text-emerald-400', text: '나는 작은 일이라도 매일 꾸준히 하는 것이 있다.' },
+                { id: 'h7', area: '습관', color: 'text-emerald-400', text: '나는 나쁜 습관을 고치려고 노력한 적이 있다.' },
+                { id: 'h8', area: '습관', color: 'text-emerald-400', text: '나는 약속이나 일정을 잘 지키는 편이다.' },
+                { id: 'h9', area: '습관', color: 'text-emerald-400', text: '나는 스마트폰 사용 시간을 스스로 조절할 수 있다.' },
+                { id: 'h10', area: '습관', color: 'text-emerald-400', text: '나는 좋은 습관을 만들면 오래 유지하는 편이다.' },
               ].map((q) => (
                 <tr key={q.id} className="border-b border-gray-800/30">
                   <td className="py-1.5 px-2 font-mono text-white">{q.id}</td>
@@ -242,7 +268,9 @@ export default function ExportPage() {
                     <th className="py-1.5 px-1.5 text-blue-400 text-center">진로</th>
                     <th className="py-1.5 px-1.5 text-green-400 text-center">공동체</th>
                     <th className="py-1.5 px-1.5 text-yellow-400 text-center">인성</th>
-                    <th className="py-1.5 px-1.5 text-purple-400 text-center">총점</th>
+                    <th className="py-1.5 px-1.5 text-purple-400 text-center">학습</th>
+                    <th className="py-1.5 px-1.5 text-emerald-400 text-center">습관</th>
+                    <th className="py-1.5 px-1.5 text-violet-400 text-center">총점</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -267,7 +295,9 @@ export default function ExportPage() {
                       <td className="py-1 px-1.5 text-center text-blue-300">{r.careerScore}</td>
                       <td className="py-1 px-1.5 text-center text-green-300">{r.communityScore}</td>
                       <td className="py-1 px-1.5 text-center text-yellow-300">{r.nonCognitiveScore}</td>
-                      <td className="py-1 px-1.5 text-center text-purple-300 font-semibold">{r.totalScore}</td>
+                      <td className="py-1 px-1.5 text-center text-purple-300">{r.learningScore}</td>
+                      <td className="py-1 px-1.5 text-center text-emerald-300">{r.habitScore}</td>
+                      <td className="py-1 px-1.5 text-center text-violet-300 font-semibold">{r.totalScore}</td>
                     </tr>
                   ))}
                 </tbody>
