@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, LogOut, Mail, ClipboardCheck, Gift } from 'lucide-react'
+import { X, LogOut, Mail, ClipboardCheck, Gift, ShieldCheck } from 'lucide-react'
 import { useUserData } from '@/lib/UserDataProvider'
 import { useSession, signOut } from 'next-auth/react'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
+import { ParentalConsentModal } from '@/components/ParentalConsentModal'
 
 interface SurveyResult {
   milestone: number
@@ -30,6 +31,9 @@ export function LevelBadge() {
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // 부모님 동의
+  const [showParentalModal, setShowParentalModal] = useState(false)
 
   // 쿠폰 관련
   const [couponCode, setCouponCode] = useState('')
@@ -246,6 +250,30 @@ export function LevelBadge() {
                   )}
                 </div>
 
+                {/* 부모님(보호자) 동의 */}
+                <div className="mt-5 pt-4 border-t border-white/10 pb-4">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-white/80 text-xs font-semibold">보호자 동의</span>
+                  </div>
+                  {session?.user?.parentalConsent ? (
+                    <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                      </svg>
+                      <span className="text-emerald-400 text-xs font-medium">부모님 동의 완료</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowParentalModal(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-xs font-medium hover:bg-blue-500/20 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      부모님(보호자) 동의하기
+                    </button>
+                  )}
+                </div>
+
                 </div>
 
                 {/* 하단 고정 영역 */}
@@ -314,6 +342,12 @@ export function LevelBadge() {
           </>
         )}
       </AnimatePresence>
+
+      <ParentalConsentModal
+        isOpen={showParentalModal}
+        onClose={() => setShowParentalModal(false)}
+        onComplete={() => setShowParentalModal(false)}
+      />
     </>
   )
 }

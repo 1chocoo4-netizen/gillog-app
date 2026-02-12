@@ -52,6 +52,11 @@ model User {
   image         String?
   role          Role      @default(USER)
 
+  // 약관 동의
+  termsAgreedAt      DateTime?  // 서비스 이용약관 동의 시각
+  privacyAgreedAt    DateTime?  // 개인정보 수집·이용 동의 시각
+  parentalConsentAt  DateTime?  // 부모님(법정대리인) 동의 시각
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

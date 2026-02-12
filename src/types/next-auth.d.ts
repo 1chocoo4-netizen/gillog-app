@@ -14,6 +14,8 @@ declare module 'next-auth' {
       email?: string | null
       image?: string | null
       role?: string
+      termsAgreed?: boolean
+      parentalConsent?: boolean
     }
   }
 }
