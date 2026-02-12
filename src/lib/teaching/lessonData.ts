@@ -1,6 +1,7 @@
 // 레슨 시스템 - 티어/스테이지 기반 학습 카드
 import { HUMANITIES_STAGES } from './humanitiesContent'
 import { KOREAN_STAGES } from './koreanContent'
+import { ENGLISH_STAGES } from './englishContent'
 
 // ── 카드 타입 정의 ──
 
@@ -123,6 +124,7 @@ export function makeStageId(chapterKey: string, tierKey: TierKey, stageNumber: n
 export const STAGE_CONTENT: Record<string, Stage> = {
   ...HUMANITIES_STAGES,
   ...KOREAN_STAGES,
+  ...ENGLISH_STAGES,
 }
 
 // 특정 챕터의 스테이지 가져오기
