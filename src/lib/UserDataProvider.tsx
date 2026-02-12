@@ -52,6 +52,13 @@ export interface MonthlyGoal {
   completed: boolean
 }
 
+export interface SubscriptionInfo {
+  plan: 'premium' | 'first_day' | 'free'
+  dailyLimit: number
+  source?: string
+  expiresAt?: string
+}
+
 const DEFAULT_LEVEL_DATA: LevelData = {
   level: 1,
   progress: {
@@ -104,6 +111,10 @@ interface UserDataContextType {
   surveyMilestones: number[]
   pendingMilestone: number | null
   completeMilestone: () => void
+
+  // 구독
+  subscriptionInfo: SubscriptionInfo
+  refreshSubscription: () => Promise<void>
 }
 
 const UserDataContext = createContext<UserDataContextType | null>(null)
@@ -128,6 +139,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const [surveyMilestones, setSurveyMilestonesState] = useState<number[]>([])
   const [showSurvey, setShowSurvey] = useState(false)
   const [pendingMilestone, setPendingMilestone] = useState<number | null>(null)
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>({
+    plan: 'free',
+    dailyLimit: 1,
+  })
 
   // 디바운스 타이머
   const syncTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -166,6 +181,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
         const sm = Array.isArray(data.surveyMilestones) ? data.surveyMilestones as number[] : []
         setSurveyMilestonesState(sm)
+
+        if (data.subscriptionInfo) {
+          setSubscriptionInfo(data.subscriptionInfo)
+        }
 
         // 초기 로딩 시: 미완료 마일스톤 중 도달한 것이 있으면 트리거
         const histArr = Array.isArray(hist) ? hist : []
@@ -378,6 +397,23 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   }, [syncToServer, pendingMilestone, surveyMilestones])
 
   // ========================================
+  // 구독 정보 새로고침
+  // ========================================
+
+  const refreshSubscription = useCallback(async () => {
+    try {
+      const res = await fetch('/api/user-data')
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.subscriptionInfo) {
+        setSubscriptionInfo(data.subscriptionInfo)
+      }
+    } catch (e) {
+      console.error('Failed to refresh subscription:', e)
+    }
+  }, [])
+
+  // ========================================
   // Context Value
   // ========================================
 
@@ -402,6 +438,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     surveyMilestones,
     pendingMilestone,
     completeMilestone,
+    subscriptionInfo,
+    refreshSubscription,
   }
 
   return (

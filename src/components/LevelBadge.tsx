@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, LogOut, Mail, ClipboardCheck } from 'lucide-react'
+import { X, LogOut, Mail, ClipboardCheck, Gift } from 'lucide-react'
 import { useUserData } from '@/lib/UserDataProvider'
 import { useSession, signOut } from 'next-auth/react'
+import SubscriptionBadge from '@/components/SubscriptionBadge'
 
 interface SurveyResult {
   milestone: number
@@ -23,12 +24,48 @@ const AREA_CONFIG = [
 
 export function LevelBadge() {
   const [isOpen, setIsOpen] = useState(false)
-  const { levelData } = useUserData()
+  const { levelData, subscriptionInfo, refreshSubscription } = useUserData()
   const { data: session } = useSession()
   const [surveyResults, setSurveyResults] = useState<SurveyResult[]>([])
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // 쿠폰 관련
+  const [couponCode, setCouponCode] = useState('')
+  const [couponMsg, setCouponMsg] = useState('')
+  const [couponError, setCouponError] = useState(false)
+  const [couponSubmitting, setCouponSubmitting] = useState(false)
+
+  async function handleCouponRedeem() {
+    if (!couponCode.trim() || couponSubmitting) return
+    setCouponSubmitting(true)
+    setCouponMsg('')
+    setCouponError(false)
+
+    try {
+      const res = await fetch('/api/coupons/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim() }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setCouponMsg(data.message)
+        setCouponError(false)
+        setCouponCode('')
+        refreshSubscription()
+      } else {
+        setCouponMsg(data.error || '쿠폰 적용 실패')
+        setCouponError(true)
+      }
+    } catch {
+      setCouponMsg('네트워크 오류')
+      setCouponError(true)
+    } finally {
+      setCouponSubmitting(false)
+    }
+  }
 
   useEffect(() => {
     if (!isOpen) return
@@ -116,6 +153,9 @@ export function LevelBadge() {
                     )}
                   </div>
                   <p className="text-white font-bold text-lg">{session?.user?.name || '사용자'}</p>
+                  <div className="mt-2">
+                    <SubscriptionBadge info={subscriptionInfo} />
+                  </div>
                   {session?.user?.email && (
                     <div className="flex items-center gap-1.5 mt-1">
                       <Mail className="w-3.5 h-3.5 text-white/40" />
@@ -173,6 +213,36 @@ export function LevelBadge() {
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+
+                {/* 쿠폰 입력 */}
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <Gift className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="text-white/80 text-xs font-semibold">쿠폰 등록</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="쿠폰 코드 입력"
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500"
+                      onKeyDown={e => e.key === 'Enter' && handleCouponRedeem()}
+                    />
+                    <button
+                      onClick={handleCouponRedeem}
+                      disabled={couponSubmitting}
+                      className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50"
+                    >
+                      {couponSubmitting ? '...' : '적용'}
+                    </button>
+                  </div>
+                  {couponMsg && (
+                    <p className={`mt-2 text-xs ${couponError ? 'text-red-400' : 'text-green-400'}`}>
+                      {couponMsg}
+                    </p>
                   )}
                 </div>
 

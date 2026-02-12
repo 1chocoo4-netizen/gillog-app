@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Zap, X, Lightbulb } from 'lucide-react'
+import { Send, Star, X, Lightbulb } from 'lucide-react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LevelBadge } from '@/components/LevelBadge'
 import { useUserData } from '@/lib/UserDataProvider'
+import PaywallBanner from '@/components/PaywallBanner'
 
 interface Message {
   id: string
@@ -38,10 +39,16 @@ const COACHES = [
 
 function CoachingChat() {
   const router = useRouter()
-  const { energy, addEnergy, useEnergy, executions, saveExecutions, updateLevelProgress } = useUserData()
+  const { energy, addEnergy, useEnergy, executions, saveExecutions, updateLevelProgress, subscriptionInfo } = useUserData()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [showPaywall, setShowPaywall] = useState(false)
+
+  // 무료 사용자: 하루 3메시지 제한
+  const FREE_MESSAGE_LIMIT = 3
+  const userMessageCount = messages.filter(m => m.role === 'user').length
+  const isFreeLimited = subscriptionInfo.plan === 'free' && userMessageCount >= FREE_MESSAGE_LIMIT
 
   const [showTodoModal, setShowTodoModal] = useState(false)
   const [todoText, setTodoText] = useState('')
@@ -145,6 +152,12 @@ function CoachingChat() {
 
   async function handleSend() {
     if (!input.trim() || isTyping || chatDone) return
+
+    // 무료 사용자 메시지 제한 체크
+    if (isFreeLimited) {
+      setShowPaywall(true)
+      return
+    }
 
     // 첫 메시지: 코칭 시작 확인 모달
     if (!coachingStarted) {
@@ -298,7 +311,7 @@ function CoachingChat() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60 font-medium">{energy}</span>
             </div>
           </div>
@@ -755,11 +768,11 @@ function CoachingChat() {
               onClick={e => e.stopPropagation()}
             >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-8 h-8 text-white" fill="currentColor" />
+                <Star className="w-8 h-8 text-white" fill="currentColor" />
               </div>
               <h3 className="text-white font-bold text-lg mb-1">코칭 시작하기</h3>
               <div className="flex items-center justify-center gap-1 mb-4">
-                <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+                <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
                 <span className="text-yellow-400 font-bold text-lg">-10</span>
               </div>
               {energy < 10 ? (
@@ -796,7 +809,7 @@ function CoachingChat() {
                 onClick={() => setShowTodoModal(true)}
                 className="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               >
-                <Zap className="w-4 h-4" />
+                <Star className="w-4 h-4" />
                 실행 등록하기
               </button>
             ) : (
@@ -824,10 +837,39 @@ function CoachingChat() {
         </div>
       )}
 
+      {/* 무료 사용자 페이월 모달 */}
+      <AnimatePresence>
+        {showPaywall && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPaywall(false)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-50"
+            >
+              <PaywallBanner message={`무료 코칭 ${FREE_MESSAGE_LIMIT}회를 모두 사용했습니다`} />
+              <button
+                onClick={() => setShowPaywall(false)}
+                className="w-full py-4 text-center text-gray-400 text-sm bg-gray-900"
+              >
+                닫기
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <NavItem href="/checkin" icon="⚡" label="실행" />
+          <NavItem href="/checkin" icon="⭐" label="실행" />
           <NavItem href="/coaching" icon="💬" label="코칭" active />
           <NavItem href="/app" icon="🗺️" label="월드" />
           <NavItem href="/dashboard" icon="📊" label="리포트" />

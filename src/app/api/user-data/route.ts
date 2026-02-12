@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-config'
 import { prisma } from '@/lib/db'
+import { getUserSubscription } from '@/lib/subscription'
 
 // GET: 현재 사용자의 모든 데이터 반환
 export async function GET() {
@@ -14,11 +15,13 @@ export async function GET() {
       where: { userId: session.user.id },
     })
 
+    const subscriptionInfo = await getUserSubscription(session.user.id)
+
     if (!userData) {
       const newData = await prisma.userData.create({
         data: { userId: session.user.id },
       })
-      return NextResponse.json(newData)
+      return NextResponse.json({ ...newData, subscriptionInfo })
     }
 
     // 경과 시간 기반 에너지 자동 회복 (10분당 +1, 최대 100)
@@ -32,10 +35,10 @@ export async function GET() {
         where: { userId: session.user.id },
         data: { energy: newEnergy, energyUpdatedAt: now },
       })
-      return NextResponse.json(updated)
+      return NextResponse.json({ ...updated, subscriptionInfo })
     }
 
-    return NextResponse.json(userData)
+    return NextResponse.json({ ...userData, subscriptionInfo })
   } catch (error) {
     console.error('GET /api/user-data error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

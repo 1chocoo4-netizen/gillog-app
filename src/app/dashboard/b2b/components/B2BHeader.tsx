@@ -31,6 +31,39 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
   const [users, setUsers] = useState<RegisteredUser[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
 
+  // 프리미엄 부여
+  const [premiumModal, setPremiumModal] = useState<{ userId: string; name: string } | null>(null)
+  const [premiumMonths, setPremiumMonths] = useState(1)
+  const [premiumSubmitting, setPremiumSubmitting] = useState(false)
+  const [premiumMsg, setPremiumMsg] = useState('')
+
+  async function handleGrantPremium() {
+    if (!premiumModal) return
+    setPremiumSubmitting(true)
+    setPremiumMsg('')
+    try {
+      const res = await fetch('/api/b2b/premium-grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: premiumModal.userId, months: premiumMonths }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPremiumMsg(data.message)
+        setTimeout(() => {
+          setPremiumModal(null)
+          setPremiumMsg('')
+        }, 2000)
+      } else {
+        setPremiumMsg(data.error || '부여 실패')
+      }
+    } catch {
+      setPremiumMsg('네트워크 오류')
+    } finally {
+      setPremiumSubmitting(false)
+    }
+  }
+
   // 실제 DB에서 동의한 사용자 목록 불러오기
   const fetchUsers = useCallback(async () => {
     setUsersLoading(true)
@@ -192,15 +225,27 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
                               <div className="text-[10px] text-gray-600 mt-0.5">실행 {u.executionCount.toLocaleString()}회</div>
                             </div>
                             {u.consentStatus === 'APPROVED' && (
-                              <button
-                                onClick={() => {
-                                  onSelectUser?.(u)
-                                  setIsListOpen(false)
-                                }}
-                                className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-medium rounded-lg transition-colors flex-shrink-0"
-                              >
-                                조회하기
-                              </button>
+                              <div className="flex gap-1.5 flex-shrink-0">
+                                <button
+                                  onClick={() => {
+                                    onSelectUser?.(u)
+                                    setIsListOpen(false)
+                                  }}
+                                  className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-medium rounded-lg transition-colors"
+                                >
+                                  조회
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setPremiumModal({ userId: u.userId, name: u.name })
+                                    setPremiumMonths(1)
+                                    setPremiumMsg('')
+                                  }}
+                                  className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-medium rounded-lg transition-colors"
+                                >
+                                  프리미엄
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -342,6 +387,68 @@ export function B2BHeader({ onSelectUser }: B2BHeaderProps) {
           </span>
         </div>
       </div>
+
+      {/* 프리미엄 부여 모달 */}
+      <AnimatePresence>
+        {premiumModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPremiumModal(null)}
+              className="fixed inset-0 bg-black/60 z-[60]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-80 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-5"
+            >
+              <h3 className="text-white font-semibold mb-1">프리미엄 부여</h3>
+              <p className="text-sm text-gray-400 mb-4">{premiumModal.name}님에게 프리미엄을 부여합니다</p>
+
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {[1, 3, 6, 12].map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setPremiumMonths(m)}
+                    className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                      premiumMonths === m
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    }`}
+                  >
+                    {m}개월
+                  </button>
+                ))}
+              </div>
+
+              {premiumMsg && (
+                <p className={`text-sm mb-3 ${premiumMsg.includes('실패') || premiumMsg.includes('오류') || premiumMsg.includes('않은') ? 'text-red-400' : 'text-green-400'}`}>
+                  {premiumMsg}
+                </p>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPremiumModal(null)}
+                  className="flex-1 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm hover:bg-gray-700"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleGrantPremium}
+                  disabled={premiumSubmitting}
+                  className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {premiumSubmitting ? '처리 중...' : '부여하기'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

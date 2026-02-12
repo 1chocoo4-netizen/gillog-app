@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Check, Bell, X, Plus, ChevronRight, ChevronLeft, Sparkles, ArrowLeft, Trash2, Lightbulb, Camera, Loader2, ImageIcon } from 'lucide-react'
+import { Star, Check, Bell, X, Plus, ChevronRight, ChevronLeft, Sparkles, ArrowLeft, Trash2, Lightbulb, Camera, Loader2, ImageIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
+import PaywallBanner from '@/components/PaywallBanner'
 
 // 6개 성장 영역
 const GROWTH_AREAS = [
@@ -114,13 +115,14 @@ function randomExecutionExample() {
 
 function ExecutionContent() {
   const router = useRouter()
-  const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history } = useUserData()
+  const { energy, addEnergy, executions, saveExecutions, updateLevelProgress, addHistoryRecord, history, subscriptionInfo } = useUserData()
   const [items, setItems] = useState<ExecutionItem[]>([])
   const [showReward, setShowReward] = useState(false)
   const [showDailyLimit, setShowDailyLimit] = useState(false)
+  const [paywallDismissed, setPaywallDismissed] = useState(false)
 
-  // 오늘 완료한 실행 수 (하루 최대 5개)
-  const DAILY_LIMIT = 5
+  // 오늘 완료한 실행 수 (구독 상태에 따라 동적 한도)
+  const DAILY_LIMIT = subscriptionInfo.dailyLimit
   const today = getLocalDateStr()
   const todayCompletedCount = history.filter(r => r.date === today).length
   const dailyRemaining = Math.max(0, DAILY_LIMIT - todayCompletedCount)
@@ -372,7 +374,7 @@ function ExecutionContent() {
     const combinedParts: string[] = []
     if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
     if (feltText.trim()) combinedParts.push(`💭 느낀 것: ${feltText.trim()}`)
-    combinedParts.push(`🎯 실행: ${actionText.trim()}`)
+    combinedParts.push(`🚀 실행:${actionText.trim()}`)
     const combinedText = combinedParts.join('\n')
 
     const isDaily = actionText.includes('매일')
@@ -460,7 +462,7 @@ function ExecutionContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60 font-medium">{energy}</span>
             </div>
           </div>
@@ -509,7 +511,7 @@ function ExecutionContent() {
         {activeAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-4xl mb-4">
-              ⚡
+              ⭐
             </div>
             <p className="text-white/60 text-sm mb-2">실행 항목이 없습니다</p>
             <p className="text-white/40 text-xs mb-6">아래 + 버튼을 눌러 직접 추가해보세요!</p>
@@ -574,7 +576,7 @@ function ExecutionContent() {
                               </button>
                             )}
                             <p className="text-white/50 text-sm">
-                              완료 시 +5 ⚡
+                              완료 시 +5 ⭐
                             </p>
                             {item.alarmTime ? (
                               <button
@@ -707,7 +709,7 @@ function ExecutionContent() {
                                     <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/20" />
                                   )}
                                   <span className={`flex-1 text-xs truncate ${todayDone ? 'text-white/40 line-through' : 'text-white/80'}`}>
-                                    {item.text.split('\n').pop()?.replace('🎯 실행: ', '') || item.text}
+                                    {item.text.split('\n').pop()?.replace('🚀 실행:', '') || item.text}
                                   </span>
                                   <button
                                     onClick={() => {
@@ -925,7 +927,7 @@ function ExecutionContent() {
 
                     <div>
                       <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🎯</span>
+                        <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🚀</span>
                         실행할 것
                         <span className="text-red-400 text-xs">*필수</span>
                       </label>
@@ -1026,7 +1028,7 @@ function ExecutionContent() {
                         {feltText.trim() && (
                           <p className="text-white/70 text-xs">💭 느낀 것: {feltText.trim()}</p>
                         )}
-                        <p className="text-white/70 text-xs">🎯 실행: {actionText.trim()}</p>
+                        <p className="text-white/70 text-xs">🚀 실행:{actionText.trim()}</p>
                         {aiRecordText.trim() && (
                           <p className="text-cyan-400/70 text-xs">✨ AI 기록: {aiRecordText.trim()}</p>
                         )}
@@ -1035,7 +1037,7 @@ function ExecutionContent() {
 
                     <div className="bg-white/5 rounded-xl p-3">
                       <p className="text-white/50 text-xs">
-                        ⚡ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)
+                        ⭐ 각 월드별로 투두가 생성됩니다 (완료 시 월드당 +5 에너지)
                       </p>
                     </div>
 
@@ -1135,7 +1137,7 @@ function ExecutionContent() {
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl px-8 py-6 text-center shadow-2xl"
           >
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Zap className="w-8 h-8 text-yellow-400" fill="currentColor" />
+              <Star className="w-8 h-8 text-yellow-400" fill="currentColor" />
               <span className="text-3xl font-bold text-white">+5</span>
             </div>
             <p className="text-white/80">실행 완료!</p>
@@ -1192,6 +1194,21 @@ function ExecutionContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 무료 사용자 페이월 */}
+      {subscriptionInfo.plan === 'free' && dailyRemaining <= 0 && !paywallDismissed && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50">
+          <div className="w-full max-w-lg mx-auto">
+            <PaywallBanner />
+            <button
+              onClick={() => setPaywallDismissed(true)}
+              className="w-full py-4 text-center text-gray-400 text-sm"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 도움말 모달 */}
       <AnimatePresence>
@@ -1283,7 +1300,7 @@ function ExecutionContent() {
       {/* 하단 탭바 */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
         <div className="flex justify-around py-2">
-          <TabItem href="/checkin" icon="⚡" label="실행" active />
+          <TabItem href="/checkin" icon="⭐" label="실행" active />
           <TabItem href="/coaching" icon="💬" label="코칭" />
           <TabItem href="/app" icon="🗺️" label="월드" />
           <TabItem href="/dashboard" icon="📊" label="리포트" />

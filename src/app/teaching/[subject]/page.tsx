@@ -1,21 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Zap, ArrowLeft } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Star, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { LevelBadge } from '@/components/LevelBadge'
 import { WORLD_CONFIGS, WorldKey } from '@/lib/teaching/worldTypes'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
 import { BottomTabBar } from '@/components/BottomTabBar'
+import PaywallBanner from '@/components/PaywallBanner'
 
 function WorldTeachingContent() {
   const params = useParams()
   const router = useRouter()
   const worldKey = params.subject as WorldKey
 
-  const { energy } = useUserData()
+  const { energy, subscriptionInfo } = useUserData()
+  const [showPaywall, setShowPaywall] = useState(false)
+  const isFreeUser = subscriptionInfo.plan === 'free'
 
   const worldConfig = WORLD_CONFIGS[worldKey]
 
@@ -23,7 +27,12 @@ function WorldTeachingContent() {
     return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">월드를 찾을 수 없습니다</div>
   }
 
-  const handleChapterClick = (chapterKey: string) => {
+  const handleChapterClick = (chapterKey: string, index: number) => {
+    // 무료 사용자: 첫 레슨만 접근 가능
+    if (isFreeUser && index > 0) {
+      setShowPaywall(true)
+      return
+    }
     router.push(`/teaching/${worldKey}/${chapterKey}`)
   }
 
@@ -40,7 +49,7 @@ function WorldTeachingContent() {
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="text-xs text-white/60">{energy}</span>
             </div>
           </div>
@@ -85,12 +94,12 @@ function WorldTeachingContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => handleChapterClick(chapter.key)}
-              className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all bg-gradient-to-br ${chapter.gradient} border-white/20 hover:border-white/30`}
+              onClick={() => handleChapterClick(chapter.key, index)}
+              className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all bg-gradient-to-br ${chapter.gradient} ${isFreeUser && index > 0 ? 'opacity-50 border-white/10' : 'border-white/20 hover:border-white/30'}`}
             >
               {/* 챕터 아이콘 */}
               <div className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center bg-gradient-to-br ${chapter.color}`}>
-                <span className="text-2xl">{chapter.icon}</span>
+                <span className="text-2xl">{isFreeUser && index > 0 ? '🔒' : chapter.icon}</span>
               </div>
 
               {/* 챕터 정보 */}
@@ -98,11 +107,43 @@ function WorldTeachingContent() {
                 <h3 className="font-bold text-sm text-white">
                   {chapter.label}
                 </h3>
+                {isFreeUser && index > 0 && (
+                  <p className="text-xs text-white/40 mt-0.5">프리미엄 전용</p>
+                )}
               </div>
             </motion.button>
           ))}
         </div>
       </div>
+
+      {/* 무료 사용자 페이월 모달 */}
+      <AnimatePresence>
+        {showPaywall && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPaywall(false)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-50"
+            >
+              <PaywallBanner message="이 레슨은 프리미엄 전용입니다" />
+              <button
+                onClick={() => setShowPaywall(false)}
+                className="w-full py-4 text-center text-gray-400 text-sm bg-gray-900"
+              >
+                닫기
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <BottomTabBar />
     </main>
