@@ -103,7 +103,13 @@ export default function GrowthAnalysisPage() {
 
   useEffect(() => {
     fetch('/api/admin/growth')
-      .then((res) => { if (!res.ok) throw new Error('Failed to fetch'); return res.json() })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => '')
+          throw new Error(`HTTP ${res.status}: ${text || res.statusText}`)
+        }
+        return res.json()
+      })
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))

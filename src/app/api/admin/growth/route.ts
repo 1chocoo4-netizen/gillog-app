@@ -89,7 +89,7 @@ function descriptive(arr: number[]): DescriptiveStats {
 export async function GET() {
   const session = await requireAdminAPI()
   if (!session) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ error: 'Forbidden - 관리자 권한이 필요합니다' }, { status: 403 })
   }
 
   try {
