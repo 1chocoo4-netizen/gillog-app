@@ -779,7 +779,7 @@ function ExecutionContent() {
             }
             setAddStep('write')
           }}
-          className={`w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform ${showOnboarding ? 'shadow-violet-500/40 shadow-xl' : ''}`}
+          className={`relative z-10 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform ${showOnboarding ? 'shadow-violet-500/40 shadow-xl' : ''}`}
         >
           <Plus className="w-7 h-7" />
         </button>
