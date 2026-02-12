@@ -269,7 +269,7 @@ function LessonContent() {
   // 실행 기록 모달 상태
   const [execStep, setExecStep] = useState<ExecStep>('closed')
   const [selectedWorlds, setSelectedWorlds] = useState<string[]>([])
-  const [learnedText, setLearnedText] = useState('')
+  const [learnedText, setLearnedText] = useState(stage?.title ? `${stage.title}` : '')
   const [feltText, setFeltText] = useState('')
   const [actionText, setActionText] = useState('')
   const [actionPlaceholder] = useState(() => randomExecutionExample())
