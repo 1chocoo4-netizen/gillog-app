@@ -9,6 +9,7 @@ export function TermsConsentModal() {
   const [show, setShow] = useState(false)
   const [termsChecked, setTermsChecked] = useState(false)
   const [privacyChecked, setPrivacyChecked] = useState(false)
+  const [isAdult, setIsAdult] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -43,7 +44,7 @@ export function TermsConsentModal() {
       const res = await fetch('/api/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'terms' }),
+        body: JSON.stringify({ type: 'terms', isAdult }),
       })
       if (res.ok) {
         setDone(true)
@@ -201,11 +202,24 @@ export function TermsConsentModal() {
                 </div>
               </div>
 
-              {/* 안내 문구 */}
-              <div className="mx-6 mt-3 p-3 bg-violet-500/10 border border-violet-500/20 rounded-lg">
-                <p className="text-xs text-violet-300 leading-relaxed text-center">
-                  동의 후 <strong>무료 1일 체험</strong>이 제공됩니다.
-                </p>
+              {/* 성인 여부 */}
+              <div className="mx-6 mt-3">
+                <label className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 rounded-xl border border-white/5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isAdult}
+                    onChange={() => setIsAdult(!isAdult)}
+                    className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-violet-500 focus:ring-violet-500 focus:ring-offset-0 cursor-pointer accent-violet-500"
+                  />
+                  <span className="text-sm text-gray-200 font-medium">
+                    만 18세 이상입니다 <span className="text-gray-500">(선택)</span>
+                  </span>
+                </label>
+                {!isAdult && (
+                  <p className="text-[11px] text-gray-500 mt-1.5 px-1">
+                    미성년자는 무료 1일 체험 후 보호자 동의가 필요합니다.
+                  </p>
+                )}
               </div>
 
               {/* 동의 버튼 */}

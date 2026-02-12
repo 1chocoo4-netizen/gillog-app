@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { ParentalConsentModal } from '@/components/ParentalConsentModal'
 
 /**
  * 하루 무료 체험 후 부모님 동의를 받지 않은 사용자에게
  * 자동으로 부모님 동의 모달을 표시하는 가드 컴포넌트
+ * - B2B 관리자(ADMIN/RESEARCHER)는 스킵
+ * - B2B 페이지(/dashboard/b2b, /coach-verify)에서는 스킵
  */
 export function ParentalConsentGuard() {
   const { data: session } = useSession()
+  const pathname = usePathname()
   const [show, setShow] = useState(false)
 
   const checkParental = useCallback(async () => {
@@ -41,8 +45,12 @@ export function ParentalConsentGuard() {
     if (!session?.user) return
     // 세션에서 이미 동의 완료면 스킵
     if (session.user.parentalConsent) return
+    // ADMIN, RESEARCHER 역할은 성인이므로 스킵
+    if (session.user.role === 'ADMIN' || session.user.role === 'RESEARCHER') return
+    // B2B 관련 페이지에서는 스킵
+    if (pathname?.startsWith('/dashboard/b2b') || pathname?.startsWith('/coach-verify')) return
     checkParental()
-  }, [session?.user, checkParental])
+  }, [session?.user, pathname, checkParental])
 
   return (
     <ParentalConsentModal

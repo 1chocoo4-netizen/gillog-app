@@ -40,15 +40,18 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { type } = body as { type: 'terms' | 'parental' }
+  const { type, isAdult } = body as { type: 'terms' | 'parental'; isAdult?: boolean }
 
   if (type === 'terms') {
+    const now = new Date()
     // 서비스 이용약관 + 개인정보 수집·이용 동시 동의
+    // 성인이면 보호자 동의도 불필요하므로 같이 처리
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        termsAgreedAt: new Date(),
-        privacyAgreedAt: new Date(),
+        termsAgreedAt: now,
+        privacyAgreedAt: now,
+        ...(isAdult ? { parentalConsentAt: now } : {}),
       },
     })
     return NextResponse.json({ ok: true, type: 'terms' })
