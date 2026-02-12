@@ -19,7 +19,7 @@ export const WORLD_TOKENS = {
   habit: {
     key: 'habit',
     label: '습관',
-    icon: '🔁',
+    icon: '📚',
     color: '#4ADE80', // green
     bgGlow: 'rgba(74, 222, 128, 0.3)',
     order: 3,
