@@ -148,12 +148,11 @@ function ExecutionContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null)
 
-  // 첫 방문 온보딩 툴팁
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  useEffect(() => {
-    const seen = localStorage.getItem('gillog-onboarding-checkin')
-    if (!seen) setShowOnboarding(true)
-  }, [])
+  // 첫 방문 온보딩 툴팁 (useState 초기화로 첫 렌더에서 바로 표시)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !localStorage.getItem('gillog-onboarding-checkin')
+  })
 
   // 실행 예문 (마운트 시 1회 생성)
   const [actionPlaceholder] = useState(() => randomExecutionExample())
@@ -738,20 +737,39 @@ function ExecutionContent() {
 
       {/* 플로팅 추가 버튼 */}
       <div className="fixed bottom-24 right-4 z-40">
-        {showOnboarding && (
-          <>
-            {/* 펄스 링 */}
-            <div className="absolute inset-0 -m-2 rounded-full border-2 border-violet-400 animate-ping" />
-            <div className="absolute inset-0 -m-2 rounded-full border-2 border-violet-400/60" />
-            {/* 툴팁 */}
-            <div className="absolute bottom-[calc(100%+12px)] right-0 w-56 bg-slate-800 border border-violet-500/30 rounded-xl px-4 py-3 shadow-2xl">
-              <p className="text-white text-sm font-medium leading-relaxed">
-                오늘의 실행을 추가해<br />보이지 않는 내 성장을<br />보이게 기록해 보세요
-              </p>
-              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-slate-800 border-r border-b border-violet-500/30 rotate-45" />
-            </div>
-          </>
-        )}
+        <AnimatePresence>
+          {showOnboarding && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
+              {/* 펄스 링 */}
+              <div className="absolute inset-0 -m-3 rounded-full border-2 border-violet-400/80 animate-ping" />
+              <div className="absolute inset-0 -m-3 rounded-full border border-violet-400/40" />
+
+              {/* 툴팁 */}
+              <div className="absolute bottom-[calc(100%+16px)] right-0 w-64">
+                <div className="relative bg-gradient-to-br from-slate-800 to-slate-800/95 border border-violet-500/20 rounded-2xl p-4 shadow-2xl shadow-violet-500/10 backdrop-blur-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
+                      <span className="text-lg">✨</span>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold text-sm mb-1">실행을 기록해보세요</p>
+                      <p className="text-white/50 text-xs leading-relaxed">
+                        보이지 않는 내 성장을<br />보이게 만들어 드릴게요
+                      </p>
+                    </div>
+                  </div>
+                  {/* 꼬리 화살표 */}
+                  <div className="absolute -bottom-[6px] right-7 w-3 h-3 bg-slate-800 border-r border-b border-violet-500/20 rotate-45" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <button
           onClick={() => {
             if (showOnboarding) {
@@ -760,7 +778,7 @@ function ExecutionContent() {
             }
             setAddStep('write')
           }}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+          className={`w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform ${showOnboarding ? 'shadow-violet-500/40 shadow-xl' : ''}`}
         >
           <Plus className="w-7 h-7" />
         </button>
