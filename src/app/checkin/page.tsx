@@ -475,6 +475,15 @@ function ExecutionContent() {
         </div>
       </div>
 
+      {/* 성찰 문구 */}
+      <div className="px-4 mt-6">
+        <div className="max-w-lg mx-auto space-y-2 text-center">
+          <p className="text-white/40 text-sm">실행하면 나한테 어떤 도움이 될까?</p>
+          <p className="text-white/40 text-sm">오늘의 실행을 해낸 내 모습은 어떤 모습일까?</p>
+          <p className="text-white/40 text-sm">그 모습을 가지고 어디로 한발 내딛을까?</p>
+        </div>
+      </div>
+
       {/* 실행 현황 그래프 */}
       {(() => {
         const worldCounts = GROWTH_AREAS.map(area => ({
