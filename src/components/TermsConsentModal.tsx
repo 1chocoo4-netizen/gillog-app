@@ -58,12 +58,24 @@ export function TermsConsentModal() {
   useEffect(() => {
     // 세션 로딩 중이면 대기
     if (status !== 'authenticated') return
-    // 로그인 안 되어 있으면 스킵
     if (!session?.user) return
-    // 이미 동의했으면 스킵
+    // 세션에서 이미 동의 확인되면 스킵
     if (session.user.termsAgreed === true) return
-    // 동의 안 했으면 모달 표시
-    setShow(true)
+    // 세션에서 false면 바로 표시
+    if (session.user.termsAgreed === false) {
+      setShow(true)
+      return
+    }
+    // undefined인 경우 (세션에 필드 자체가 없을 때) API로 재확인
+    fetch('/api/consent')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && !data.termsAgreed) setShow(true)
+      })
+      .catch(() => {
+        // API도 실패하면 안전하게 모달 표시
+        setShow(true)
+      })
   }, [status, session?.user])
 
   async function handleAgree() {

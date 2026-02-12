@@ -39,13 +39,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = user.id
         session.user.role = (user as { role?: string }).role as 'USER' | 'ADMIN' | 'RESEARCHER' ?? 'USER'
-        // PrismaAdapter가 커스텀 필드를 안 넘길 수 있으므로 직접 조회
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { termsAgreedAt: true, parentalConsentAt: true },
-        })
-        session.user.termsAgreed = !!dbUser?.termsAgreedAt
-        session.user.parentalConsent = !!dbUser?.parentalConsentAt
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { termsAgreedAt: true, parentalConsentAt: true },
+          })
+          session.user.termsAgreed = !!dbUser?.termsAgreedAt
+          session.user.parentalConsent = !!dbUser?.parentalConsentAt
+        } catch {
+          // DB 조회 실패 시 기본값 (모달이 뜨도록 false)
+          session.user.termsAgreed = false
+          session.user.parentalConsent = false
+        }
       }
       return session
     },
