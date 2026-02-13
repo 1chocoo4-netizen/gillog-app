@@ -240,7 +240,17 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPl
                   </div>
 
                   <div className="max-h-72 overflow-y-auto">
-                    {usersLoading ? (
+                    {coachPlan === 'expired' ? (
+                      <div className="py-8 text-center px-4">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-500/10 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </div>
+                        <p className="text-sm font-medium text-orange-300">프리미엄 권한이 필요합니다</p>
+                        <p className="text-xs text-gray-500 mt-1">무료체험 또는 프리미엄 기간이 만료되었습니다.<br />관리자에게 문의하세요.</p>
+                      </div>
+                    ) : usersLoading ? (
                       <div className="py-8 text-center text-sm text-gray-500">불러오는 중...</div>
                     ) : users.length === 0 ? (
                       <div className="py-8 text-center text-sm text-gray-500">등록된 사용자가 없습니다.<br /><span className="text-xs text-gray-600">등록하기에서 사용자를 추가하세요.</span></div>
