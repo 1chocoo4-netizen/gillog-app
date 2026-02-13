@@ -14,6 +14,7 @@ import { MilestoneFilter } from './components/PeriodFilter'
 import { PrivacyBadge } from './components/PrivacyBadge'
 import { ISOmappingTable } from './components/ISOmappingTable'
 import type { CoachSubscriptionInfo } from '@/lib/subscription'
+import { GrowthReportModal } from './components/GrowthReportModal'
 
 /** 실행 횟수 → 도달한 최대 마일스톤 */
 function getMaxMilestone(count: number): Milestone {
@@ -73,6 +74,9 @@ export default function B2BDashboardPage() {
   const [realPrevious, setRealPrevious] = useState<PeriodMetrics | null>(null)
   const [realEvidence, setRealEvidence] = useState<MetricEvidenceMap | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // 리포트 모달
+  const [reportOpen, setReportOpen] = useState(false)
 
   // 메시지 전송
   const [msgOpen, setMsgOpen] = useState(false)
@@ -218,6 +222,15 @@ export default function B2BDashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                   메시지
+                </button>
+                <button
+                  onClick={() => setReportOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  리포트
                 </button>
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -424,6 +437,24 @@ export default function B2BDashboardPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* 성장 리포트 모달 */}
+      {selectedUser && (
+        <GrowthReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          studentName={selectedUser.name}
+          email={selectedUser.email}
+          institutionName={institutionName || ''}
+          executionCount={selectedUser.executionCount}
+          milestone={milestone}
+          currentScores={current.scores}
+          previousScores={effectivePrevious?.scores ?? null}
+          overallScore={current.overallScore}
+          previousOverallScore={effectivePrevious?.overallScore ?? null}
+          insights={insights}
+        />
+      )}
 
       {/* 기관 이름 입력 팝업 */}
       <AnimatePresence>

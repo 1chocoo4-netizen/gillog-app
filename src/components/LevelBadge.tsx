@@ -13,6 +13,8 @@ interface SurveyResult {
   careerScore: number
   communityScore: number
   nonCognitiveScore: number
+  learningScore: number
+  habitScore: number
   totalScore: number
   createdAt: string
 }
@@ -21,6 +23,8 @@ const AREA_CONFIG = [
   { key: 'careerScore' as const, label: '진로', color: '#6366f1', icon: '🧭' },
   { key: 'communityScore' as const, label: '공동체', color: '#10b981', icon: '🤝' },
   { key: 'nonCognitiveScore' as const, label: '인성', color: '#f59e0b', icon: '💪' },
+  { key: 'learningScore' as const, label: '학습', color: '#8b5cf6', icon: '📖' },
+  { key: 'habitScore' as const, label: '습관', color: '#22c55e', icon: '🔄' },
 ]
 
 export function LevelBadge() {

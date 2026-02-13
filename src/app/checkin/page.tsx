@@ -1194,7 +1194,13 @@ function ExecutionContent() {
       {/* 무료 사용자 페이월 */}
       {subscriptionInfo.plan === 'free' && dailyRemaining <= 0 && !paywallDismissed && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/50">
-          <div className="w-full max-w-lg mx-auto">
+          <div className="w-full max-w-lg mx-auto relative">
+            <button
+              onClick={() => setPaywallDismissed(true)}
+              className="absolute -top-2 right-6 w-8 h-8 rounded-full bg-white/10 backdrop-blur flex items-center justify-center z-10 hover:bg-white/20 transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
             <PaywallBanner />
             <button
               onClick={() => setPaywallDismissed(true)}
