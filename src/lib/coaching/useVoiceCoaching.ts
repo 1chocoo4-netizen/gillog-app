@@ -125,7 +125,11 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     try {
       updateState('connecting')
 
+      // 디버깅: 각 단계를 document.title에 표시 (원인 파악 후 제거)
+      const dbg = (step: string) => { document.title = step }
+
       // 1. 마이크 권한을 먼저 획득 → iOS PWA에서 오디오 세션 활성화
+      dbg('1.마이크요청')
       let stream: MediaStream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -139,23 +143,29 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
         throw new Error(`[1단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
       }
       streamRef.current = stream
+      dbg('1.완료')
 
       // 2. 마이크로 오디오 세션이 활성화된 후 AudioContext 생성
+      dbg('2.AudioCtx')
       audioCtx = new AudioContext()
       await audioCtx.resume()
+      dbg('2.완료')
 
       // 3. 토큰 가져오기
+      dbg('3.토큰')
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
-      if (!tokenRes.ok) throw new Error('[2단계] 토큰 요청 실패')
+      if (!tokenRes.ok) throw new Error('[3단계] 토큰 요청 실패')
       const { apiKey } = await tokenRes.json()
+      dbg('3.완료')
 
-      // 4. 재생 큐 (AudioContext 하나로 재생/마이크 공유)
+      // 4. 재생 큐
       playbackRef.current = new AudioPlaybackQueue(audioCtx, (playing) => {
         if (playing) updateState('speaking')
         else updateState('listening')
       })
 
-      // 4. SDK로 Live 세션 연결
+      // 5. SDK로 Live 세션 연결
+      dbg('5.Gemini연결')
       const ai = new GoogleGenAI({ apiKey })
 
       const session = await ai.live.connect({
@@ -262,7 +272,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       sessionRef.current = session
 
       // connect() 완료 후 = 세션 준비 완료
-      console.log('[Voice] 세션 준비 완료, 마이크 시작')
+      dbg('6.연결완료')
       updateState('listening')
       startMicCapture(stream, audioCtx)
 
