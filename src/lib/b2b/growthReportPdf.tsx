@@ -2,6 +2,8 @@ import React from 'react'
 import {
   Document, Page, Text, View, StyleSheet, Svg, Polygon, Line, Circle, Font,
 } from '@react-pdf/renderer'
+import fs from 'fs'
+import path from 'path'
 import type { GrowthReportData } from './reportTypes'
 import type { MetricKey } from './types'
 import { METRIC_DEFINITIONS } from './isoMapping'
@@ -10,14 +12,20 @@ import {
   getLabelPositions, getAxisLines, METRIC_ORDER,
 } from './radarSvgPath'
 
-// --- 한글 폰트 등록 (Noto Sans KR from Google Fonts CDN) ---
-Font.register({
-  family: 'NotoSansKR',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/public/static/Pretendard-Regular.otf', fontWeight: 400 },
-    { src: 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/public/static/Pretendard-Bold.otf', fontWeight: 700 },
-  ],
-})
+// --- 한글 폰트 등록 (로컬 TTF 파일) ---
+let fontsRegistered = false
+export function registerFonts() {
+  if (fontsRegistered) return
+  const fontDir = path.join(process.cwd(), 'public', 'fonts')
+  Font.register({
+    family: 'NotoSansKR',
+    fonts: [
+      { src: path.join(fontDir, 'NotoSansKR-Regular.ttf'), fontWeight: 400 },
+      { src: path.join(fontDir, 'NotoSansKR-Bold.ttf'), fontWeight: 700 },
+    ],
+  })
+  fontsRegistered = true
+}
 
 const colors = {
   primary: '#6366f1',     // indigo-500
@@ -271,8 +279,10 @@ export function GrowthReportDocument({ data }: { data: GrowthReportData }) {
         <View style={s.radarContainer}>
           <RadarChart data={data} />
         </View>
+      </Page>
 
-        {/* 역량별 상세 */}
+      {/* 2페이지: 역량별 상세 분석 */}
+      <Page size="A4" style={s.page}>
         <Text style={s.sectionTitle}>역량별 상세 분석</Text>
         <View style={s.metricGrid}>
           {METRIC_DEFINITIONS.map((def) => {
@@ -297,7 +307,7 @@ export function GrowthReportDocument({ data }: { data: GrowthReportData }) {
         </View>
       </Page>
 
-      {/* 2페이지: 담당자 코멘트 */}
+      {/* 3페이지: 담당자 코멘트 */}
       <Page size="A4" style={s.page}>
         <Text style={s.sectionTitle}>담당자 코멘트</Text>
 

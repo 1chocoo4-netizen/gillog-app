@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireCoachAPI } from '@/lib/admin-auth'
 import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
-import { GrowthReportDocument } from '@/lib/b2b/growthReportPdf'
+import { GrowthReportDocument, registerFonts } from '@/lib/b2b/growthReportPdf'
 import type { GrowthReportData } from '@/lib/b2b/reportTypes'
 
 export async function POST(request: Request) {
@@ -18,6 +18,9 @@ export async function POST(request: Request) {
     if (!body.studentName || !body.currentScores || body.overallScore === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
+    // 폰트 등록 (최초 1회)
+    registerFonts()
 
     // PDF 생성
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

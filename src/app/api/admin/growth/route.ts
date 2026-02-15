@@ -112,7 +112,7 @@ export async function GET() {
     // ========================================
     // 1. 마일스톤별 기술통계 (Descriptive Statistics)
     // ========================================
-    const MILESTONES = [5, 100, 500]
+    const MILESTONES = [1, 100, 500, 1000]
     const areas = ['career', 'community', 'nonCognitive', 'learning', 'habit', 'total'] as const
     type Area = typeof areas[number]
 
@@ -158,8 +158,8 @@ export async function GET() {
       }
     }
 
-    // 대응표본 쌍 생성: 5→100, 100→500, 5→500
-    const pairs: [number, number][] = [[5, 100], [100, 500], [5, 500]]
+    // 대응표본 쌍 생성: 1→100, 100→500, 1→500
+    const pairs: [number, number][] = [[1, 100], [100, 500], [1, 500]]
 
     const pairedAnalysis = pairs.map(([from, to]) => {
       // 두 마일스톤 모두 완료한 사용자 찾기
@@ -202,30 +202,30 @@ export async function GET() {
     // 3. 참여자 추적 퍼널 (Attrition Funnel)
     // ========================================
     const uniqueUsers = new Set(allResponses.map((r) => r.userHash))
-    const usersAt5 = new Set(allResponses.filter((r) => r.milestone === 5).map((r) => r.userHash))
+    const usersAt1 = new Set(allResponses.filter((r) => r.milestone === 1).map((r) => r.userHash))
     const usersAt100 = new Set(allResponses.filter((r) => r.milestone === 100).map((r) => r.userHash))
     const usersAt500 = new Set(allResponses.filter((r) => r.milestone === 500).map((r) => r.userHash))
 
     // 연속 참여 추적
-    const usersAt5and100 = [...usersAt5].filter((h) => usersAt100.has(h))
+    const usersAt1and100 = [...usersAt1].filter((h) => usersAt100.has(h))
     const usersAt100and500 = [...usersAt100].filter((h) => usersAt500.has(h))
-    const usersAllThree = [...usersAt5].filter((h) => usersAt100.has(h) && usersAt500.has(h))
+    const usersAllThree = [...usersAt1].filter((h) => usersAt100.has(h) && usersAt500.has(h))
 
     const attritionFunnel = {
       totalParticipants: uniqueUsers.size,
-      milestone5: { n: usersAt5.size, rate: 100 },
+      milestone1: { n: usersAt1.size, rate: 100 },
       milestone100: {
         n: usersAt100.size,
-        retentionFrom5: usersAt5.size > 0 ? round2((usersAt5and100.length / usersAt5.size) * 100) : 0,
-        pairedWith5: usersAt5and100.length,
+        retentionFrom1: usersAt1.size > 0 ? round2((usersAt1and100.length / usersAt1.size) * 100) : 0,
+        pairedWith1: usersAt1and100.length,
       },
       milestone500: {
-        n: usersAt500.size,
+        n: usersAt100.size,
         retentionFrom100: usersAt100.size > 0 ? round2((usersAt100and500.length / usersAt100.size) * 100) : 0,
         pairedWith100: usersAt100and500.length,
       },
       completedAll: usersAllThree.length,
-      overallRetention: usersAt5.size > 0 ? round2((usersAllThree.length / usersAt5.size) * 100) : 0,
+      overallRetention: usersAt1.size > 0 ? round2((usersAllThree.length / usersAt1.size) * 100) : 0,
     }
 
     // ========================================

@@ -443,6 +443,7 @@ export default function B2BDashboardPage() {
         <GrowthReportModal
           open={reportOpen}
           onClose={() => setReportOpen(false)}
+          userId={selectedUser.userId}
           studentName={selectedUser.name}
           email={selectedUser.email}
           institutionName={institutionName || ''}

@@ -9,6 +9,7 @@ import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
 import PaywallBanner from '@/components/PaywallBanner'
+import DailyQuoteOverlay from './components/DailyQuoteOverlay'
 
 // 6개 성장 영역
 const GROWTH_AREAS = [
@@ -118,6 +119,7 @@ function ExecutionContent() {
   const [selectedWorlds, setSelectedWorlds] = useState<string[]>([])
   const [learnedText, setLearnedText] = useState('')
   const [feltText, setFeltText] = useState('')
+  const [missedText, setMissedText] = useState('')
   const [actionText, setActionText] = useState('')
 
   // 팁 모달
@@ -308,6 +310,19 @@ function ExecutionContent() {
     saveExecutions(newItems)
   }
 
+  // 매일 명언 → 오늘의 실행 등록 (선택한 월드별로 아이템 생성)
+  function handleDailyQuoteRegister(text: string, worlds: string[]) {
+    const createdAt = new Date().toISOString()
+    const newItems: ExecutionItem[] = worlds.map(worldKey => ({
+      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${worldKey}`,
+      areaKey: worldKey,
+      text: `🚀 실행:${text}`,
+      completed: false,
+      createdAt,
+    }))
+    saveItems([...items, ...newItems])
+  }
+
   // 체크 완료 처리 (하루 최대 5개)
   // 같은 텍스트+같은 생성시간의 형제 항목은 한번에 완료 (일일 1회 차감)
   function handleComplete(itemId: string) {
@@ -370,10 +385,12 @@ function ExecutionContent() {
     const combinedParts: string[] = []
     if (learnedText.trim()) combinedParts.push(`📖 배운 것: ${learnedText.trim()}`)
     if (feltText.trim()) combinedParts.push(`💭 느낀 것: ${feltText.trim()}`)
+    if (missedText.trim()) combinedParts.push(`⚡ 놓친 것: ${missedText.trim()}`)
     combinedParts.push(`🚀 실행:${actionText.trim()}`)
     const combinedText = combinedParts.join('\n')
 
     const isDaily = actionText.includes('매일')
+    const createdAt = new Date().toISOString()
     const newItems: ExecutionItem[] = selectedWorlds.map(worldKey => ({
       id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${worldKey}`,
       areaKey: worldKey,
@@ -381,7 +398,7 @@ function ExecutionContent() {
       aiRecord: aiRecordText.trim() || undefined,
       photoUrl: photoUrl || undefined,
       completed: false,
-      createdAt: new Date().toISOString(),
+      createdAt,
       ...(isDaily ? { isDaily: true } : {}),
     }))
 
@@ -392,6 +409,7 @@ function ExecutionContent() {
     setSelectedWorlds([])
     setLearnedText('')
     setFeltText('')
+    setMissedText('')
     setActionText('')
     setAiRecordText('')
     setAiMode(false)
@@ -438,6 +456,9 @@ function ExecutionContent() {
 
   return (
     <main className="min-h-screen bg-slate-900">
+      {/* 매일 명언 오버레이 (하루 1회) */}
+      <DailyQuoteOverlay onRegister={handleDailyQuoteRegister} />
+
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between px-4 py-4">
@@ -923,6 +944,20 @@ function ExecutionContent() {
 
                     <div>
                       <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-xs">⚡</span>
+                        놓친 것, 방해하는 것, 규칙을 어긴 것
+                      </label>
+                      <textarea
+                        value={missedText}
+                        onChange={e => setMissedText(e.target.value)}
+                        placeholder="실패를 기념하고 자원 삼아 기록하는 차원으로 실패 경험을 적어주세요"
+                        rows={2}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-rose-500/50 resize-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-xs">🚀</span>
                         실행할 것
                         <span className="text-red-400 text-xs">*필수</span>
@@ -1012,7 +1047,7 @@ function ExecutionContent() {
                     </div>
 
                     {/* 미리보기 */}
-                    {(learnedText.trim() || feltText.trim() || aiRecordText.trim() || photoPreview) && (
+                    {(learnedText.trim() || feltText.trim() || missedText.trim() || aiRecordText.trim() || photoPreview) && (
                       <div className="bg-white/5 rounded-xl p-3 space-y-1">
                         <p className="text-white/40 text-xs font-medium mb-2">미리보기</p>
                         {photoPreview && (
@@ -1023,6 +1058,9 @@ function ExecutionContent() {
                         )}
                         {feltText.trim() && (
                           <p className="text-white/70 text-xs">💭 느낀 것: {feltText.trim()}</p>
+                        )}
+                        {missedText.trim() && (
+                          <p className="text-white/70 text-xs">⚡ 놓친 것: {missedText.trim()}</p>
                         )}
                         <p className="text-white/70 text-xs">🚀 실행:{actionText.trim()}</p>
                         {aiRecordText.trim() && (

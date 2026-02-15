@@ -27,8 +27,8 @@ interface PairedAnalysis {
 
 interface AttritionFunnel {
   totalParticipants: number
-  milestone5: { n: number; rate: number }
-  milestone100: { n: number; retentionFrom5: number; pairedWith5: number }
+  milestone1: { n: number; rate: number }
+  milestone100: { n: number; retentionFrom1: number; pairedWith1: number }
   milestone500: { n: number; retentionFrom100: number; pairedWith100: number }
   completedAll: number
   overallRetention: number
@@ -61,7 +61,7 @@ const AREA_LABELS: Record<Area, string> = {
 }
 
 const AREA_COLORS: Record<Area, string> = {
-  career: '#3B82F6', community: '#10B981', nonCognitive: '#F59E0B', learning: '#8B5CF6', habit: '#22C55E', total: '#A855F7',
+  career: '#3B82F6', community: '#EC4899', nonCognitive: '#F59E0B', learning: '#8B5CF6', habit: '#22C55E', total: '#A855F7',
 }
 
 function CohenDBadge({ d, interpretation }: { d: number; interpretation: string }) {
@@ -242,7 +242,7 @@ export default function GrowthAnalysisPage() {
                   <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F3F4F6' }} formatter={(value, name) => [`${value}점`, name]} />
                   <Legend formatter={(value) => <span style={{ color: '#D1D5DB', fontSize: '12px' }}>{value}</span>} />
                   <Bar dataKey="진로" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="공동체" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="공동체" fill="#EC4899" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="인성" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="학습" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="습관" fill="#22C55E" radius={[4, 4, 0, 0]} />
@@ -308,17 +308,17 @@ export default function GrowthAnalysisPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <SectionTitle sub="Figure 2. Participant Retention Funnel">참여자 유지율</SectionTitle>
             <div className="flex items-center justify-center gap-2 py-4">
-              {/* 5회 */}
+              {/* 1회 */}
               <div className="text-center">
                 <div className="bg-blue-600/20 border border-blue-600/40 rounded-lg px-6 py-4 min-w-[120px]">
-                  <div className="text-2xl font-bold text-blue-400">{data.attritionFunnel.milestone5.n}</div>
-                  <div className="text-xs text-gray-400 mt-1">5회 설문</div>
+                  <div className="text-2xl font-bold text-blue-400">{data.attritionFunnel.milestone1.n}</div>
+                  <div className="text-xs text-gray-400 mt-1">1회 설문</div>
                 </div>
               </div>
               {/* 화살표 + 유지율 */}
               <div className="text-center px-2">
                 <div className="text-xs text-gray-500">→</div>
-                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone100.retentionFrom5}%</div>
+                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone100.retentionFrom1}%</div>
                 <div className="text-[10px] text-gray-600">유지율</div>
               </div>
               {/* 100회 */}
@@ -326,7 +326,7 @@ export default function GrowthAnalysisPage() {
                 <div className="bg-green-600/20 border border-green-600/40 rounded-lg px-6 py-4 min-w-[120px]">
                   <div className="text-2xl font-bold text-green-400">{data.attritionFunnel.milestone100.n}</div>
                   <div className="text-xs text-gray-400 mt-1">100회 설문</div>
-                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone100.pairedWith5}</div>
+                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone100.pairedWith1}</div>
                 </div>
               </div>
               {/* 화살표 + 유지율 */}
@@ -389,7 +389,7 @@ export default function GrowthAnalysisPage() {
                   <YAxis tick={{ fill: '#9CA3AF', fontSize: 11 }} allowDecimals={false} label={{ value: '인원(명)', angle: -90, position: 'insideLeft', fill: '#6B7280', fontSize: 10 }} />
                   <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F3F4F6' }} />
                   <Legend formatter={(value) => <span style={{ color: '#D1D5DB', fontSize: '12px' }}>{value}</span>} />
-                  <Bar dataKey="5회" fill="#3B82F6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="1회" fill="#3B82F6" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="100회" fill="#10B981" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="500회" fill="#8B5CF6" radius={[2, 2, 0, 0]} />
                 </BarChart>

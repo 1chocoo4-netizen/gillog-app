@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const NAV_ITEMS = [
   { href: '/admin', label: '대시보드', icon: '📊' },
   { href: '/admin/growth', label: '성장 분석', icon: '📈' },
+  { href: '/admin/research', label: '연구 분석', icon: '🔬' },
   { href: '/admin/export', label: '데이터 내보내기', icon: '📥' },
   { href: '/admin/coaches', label: '코치 관리', icon: '👥' },
   { href: '/admin/coupons', label: '쿠폰 관리', icon: '🎟️' },

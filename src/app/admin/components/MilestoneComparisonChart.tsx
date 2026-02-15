@@ -8,6 +8,8 @@ interface MilestoneData {
   avgCareer: number
   avgCommunity: number
   avgNonCognitive: number
+  avgLearning: number
+  avgHabit: number
   avgTotal: number
 }
 
@@ -17,6 +19,8 @@ export function MilestoneComparisonChart({ data }: { data: MilestoneData[] }) {
     진로: d.avgCareer,
     공동체: d.avgCommunity,
     인성: d.avgNonCognitive,
+    학습: d.avgLearning,
+    습관: d.avgHabit,
     참여인원: d.count,
   }))
 
@@ -42,8 +46,10 @@ export function MilestoneComparisonChart({ data }: { data: MilestoneData[] }) {
               formatter={(value) => <span style={{ color: '#D1D5DB', fontSize: '12px' }}>{value}</span>}
             />
             <Bar dataKey="진로" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="공동체" fill="#10B981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="공동체" fill="#EC4899" radius={[4, 4, 0, 0]} />
             <Bar dataKey="인성" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="학습" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="습관" fill="#22C55E" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
