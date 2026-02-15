@@ -121,13 +121,14 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
   }
 
   const start = useCallback(async () => {
+    let playbackCtx: AudioContext | null = null
+    let micCtx: AudioContext | null = null
     try {
       updateState('connecting')
 
       // PWA standalone: AudioContext는 사용자 제스처 내(await 전)에 생성 + resume 해야 함
-      // iOS는 sampleRate 지정 시 실패할 수 있으므로 기본값 사용 (리샘플링은 소프트웨어로 처리)
-      const playbackCtx = new AudioContext()
-      const micCtx = new AudioContext()
+      playbackCtx = new AudioContext()
+      micCtx = new AudioContext()
       await playbackCtx.resume()
       await micCtx.resume()
 
@@ -140,17 +141,22 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
 
       // 1. 토큰 가져오기
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
-      if (!tokenRes.ok) throw new Error('Token fetch failed')
+      if (!tokenRes.ok) throw new Error('[1단계] 토큰 요청 실패')
       const { apiKey } = await tokenRes.json()
 
       // 2. 마이크 권한
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      })
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        })
+      } catch (micErr) {
+        throw new Error(`[2단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
+      }
       streamRef.current = stream
 
       // 3. 재생 큐
@@ -278,10 +284,12 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     } catch (err) {
       console.error('[Voice] 시작 에러:', err)
       const msg = err instanceof Error ? err.message : String(err)
-      if (msg.includes('Permission') || msg.includes('NotAllowed')) {
-        alert('마이크 권한이 필요합니다. 설정에서 마이크 권한을 허용해주세요.')
-      }
+      // 디버깅용 alert (원인 파악 후 제거)
+      alert(`음성 코칭 오류: ${msg}`)
       updateState('error')
+      // 생성된 AudioContext 정리
+      playbackCtx?.close().catch(() => {})
+      micCtx?.close().catch(() => {})
       cleanup()
     }
   }, [])
