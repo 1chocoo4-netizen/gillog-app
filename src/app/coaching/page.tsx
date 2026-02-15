@@ -359,7 +359,7 @@ function CoachingChat() {
       </header>
 
       {/* 채팅 */}
-      <div className="flex-1 pt-24 pb-36 px-4 overflow-y-auto">
+      <div className="flex-1 pt-28 pb-32 px-4 overflow-y-auto">
         <div className="max-w-md mx-auto space-y-3">
           {/* 실제 코치 연결 배너 */}
           <motion.button
@@ -842,7 +842,7 @@ function CoachingChat() {
 
       {/* 입력창 / 실행 등록 버튼 */}
       {!showTodoModal && (
-        <div className="fixed bottom-14 left-0 right-0 z-40 bg-slate-900 border-t border-white/5 p-3" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="fixed left-0 right-0 z-40 bg-slate-900 border-t border-white/5 p-3" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
           <div className="max-w-md mx-auto">
             {chatDone ? (
               <button

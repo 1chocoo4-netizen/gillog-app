@@ -648,7 +648,7 @@ function ExecutionContent() {
         const maxRef = Math.max(...worldCounts.map(w => w.count), 1000)
 
         return (
-          <div className="pt-2 pb-24 px-4">
+          <div className="pt-2 pb-20 px-4">
             <div className="max-w-lg mx-auto">
               <div className="bg-white/5 rounded-2xl px-5 py-4 mt-2 relative">
                 <div className="flex items-end justify-between gap-2" style={{ height: 110 }}>
@@ -756,7 +756,7 @@ function ExecutionContent() {
       })()}
 
       {/* 플로팅 추가 버튼 */}
-      <div className="fixed bottom-20 right-4 z-40" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="fixed bottom-16 right-4 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <AnimatePresence>
           {showOnboarding && (
             <motion.div

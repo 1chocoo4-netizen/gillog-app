@@ -33,8 +33,8 @@ function AppHomeContent() {
         {/* 로고 + 에너지 바 */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <span className="text-white font-bold text-sm">G</span>
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <span className="text-white font-bold text-[11px]">G</span>
             </div>
             <span className="text-white font-bold text-base">길로그</span>
           </div>
@@ -66,7 +66,7 @@ function AppHomeContent() {
       </header>
 
       {/* 맵 영역 */}
-      <div className="pt-[140px] pb-28">
+      <div className="pt-[140px] pb-28 overflow-y-auto">
         <MapArea
           selectedWorld={selectedWorld}
           onNodeClick={handleNodeClick}

@@ -40,8 +40,8 @@ function DashboardContent() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">G</span>
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold text-[11px]">G</span>
             </div>
             <span className="text-white font-semibold">길로그</span>
           </div>
@@ -66,7 +66,7 @@ function DashboardContent() {
       </header>
 
       {/* 메인 영역 */}
-      <div className="pt-24 pb-28 px-4">
+      <div className="pt-28 pb-28 px-4">
         <div className="max-w-lg mx-auto space-y-6">
 
           {/* 리포트 내보내기 */}
