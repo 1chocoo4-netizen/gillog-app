@@ -195,8 +195,8 @@ function MonthlyContent() {
   return (
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-4">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
+        <div className="flex items-center justify-between px-4 py-3">
           <Link href="/checkin/bucket" className="flex items-center gap-1 hover:scale-105 transition-transform">
             <ChevronLeft className="w-5 h-5 text-white" />
             <span className="text-white/50 text-xs font-medium">버킷리스트</span>
@@ -219,7 +219,7 @@ function MonthlyContent() {
       </header>
 
       {/* 메인 */}
-      <div className="pt-20 pb-24 px-4">
+      <div className="pt-24 pb-28 px-4">
         <div className="max-w-md mx-auto">
           {/* 월 표시 */}
           <div className="text-center mb-4">

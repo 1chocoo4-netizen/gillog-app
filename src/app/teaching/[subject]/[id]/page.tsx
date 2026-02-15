@@ -123,7 +123,7 @@ function StageMapContent() {
   return (
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-4">
           <Link href={`/teaching/${worldKey}`} className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
@@ -144,7 +144,7 @@ function StageMapContent() {
       </header>
 
       {/* 티어 맵 */}
-      <div className="pt-20 pb-24 px-4 max-w-md mx-auto">
+      <div className="pt-24 pb-28 px-4 max-w-md mx-auto">
         {TIERS.map((tier, tierIndex) => {
           const unlocked = isTierUnlocked(tier.key)
           const completedCount = getTierCompletedCount(tier.key)

@@ -335,8 +335,8 @@ function CoachingChat() {
   return (
     <main className="min-h-screen bg-slate-900 flex flex-col">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-4">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 pt-safe">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="w-16" />
           <div className="flex items-center gap-2">
             <span className="text-white font-semibold">코칭</span>
@@ -359,7 +359,7 @@ function CoachingChat() {
       </header>
 
       {/* 채팅 */}
-      <div className="flex-1 pt-20 pb-40 px-4 overflow-y-auto">
+      <div className="flex-1 pt-24 pb-36 px-4 overflow-y-auto">
         <div className="max-w-md mx-auto space-y-3">
           {/* 실제 코치 연결 배너 */}
           <motion.button
@@ -842,7 +842,7 @@ function CoachingChat() {
 
       {/* 입력창 / 실행 등록 버튼 */}
       {!showTodoModal && (
-        <div className="fixed bottom-16 left-0 right-0 bg-slate-900 border-t border-white/5 p-3">
+        <div className="fixed bottom-14 left-0 right-0 z-40 bg-slate-900 border-t border-white/5 p-3" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="max-w-md mx-auto">
             {chatDone ? (
               <button

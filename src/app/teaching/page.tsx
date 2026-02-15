@@ -39,7 +39,7 @@ function TeachingContent() {
   return (
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-4">
           <Link href="/world/cognition" className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
@@ -57,7 +57,7 @@ function TeachingContent() {
       </header>
 
       {/* 메인 영역 */}
-      <div className="pt-20 pb-24 px-4">
+      <div className="pt-24 pb-28 px-4">
         {/* 타이틀 */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

@@ -96,8 +96,8 @@ function BucketContent() {
   return (
     <main className="min-h-screen bg-slate-900">
       {/* 헤더 */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center justify-between px-4 py-4">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <LevelBadge />
             <div className="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1.5">
@@ -114,7 +114,7 @@ function BucketContent() {
       </header>
 
       {/* 메인 */}
-      <div className="pt-20 pb-32 px-4">
+      <div className="pt-24 pb-28 px-4">
         <div className="max-w-md mx-auto">
           {/* 진행 상황 */}
           <div className="text-center mb-6">
