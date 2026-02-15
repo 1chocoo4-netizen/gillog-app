@@ -121,22 +121,20 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
   }
 
   const start = useCallback(async () => {
-    let playbackCtx: AudioContext | null = null
-    let micCtx: AudioContext | null = null
+    let audioCtx: AudioContext | null = null
     try {
       updateState('connecting')
 
-      // PWA standalone: AudioContext는 사용자 제스처 내(await 전)에 생성 + resume 해야 함
-      playbackCtx = new AudioContext()
-      micCtx = new AudioContext()
-      await playbackCtx.resume()
-      await micCtx.resume()
+      // iOS PWA는 AudioContext를 1개만 허용 → 재생/마이크 공유
+      // 사용자 제스처 내(await 전)에 생성해야 함
+      audioCtx = new AudioContext()
+      await audioCtx.resume()
 
       // iOS PWA 오디오 잠금 해제: 무음 버퍼 재생
-      const silent = playbackCtx.createBuffer(1, 1, playbackCtx.sampleRate)
-      const src = playbackCtx.createBufferSource()
+      const silent = audioCtx.createBuffer(1, 1, audioCtx.sampleRate)
+      const src = audioCtx.createBufferSource()
       src.buffer = silent
-      src.connect(playbackCtx.destination)
+      src.connect(audioCtx.destination)
       src.start()
 
       // 1. 토큰 가져오기
@@ -159,8 +157,8 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       }
       streamRef.current = stream
 
-      // 3. 재생 큐
-      playbackRef.current = new AudioPlaybackQueue(playbackCtx, (playing) => {
+      // 3. 재생 큐 (같은 AudioContext 공유)
+      playbackRef.current = new AudioPlaybackQueue(audioCtx, (playing) => {
         if (playing) updateState('speaking')
         else updateState('listening')
       })
@@ -274,7 +272,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       // connect() 완료 후 = 세션 준비 완료
       console.log('[Voice] 세션 준비 완료, 마이크 시작')
       updateState('listening')
-      startMicCapture(stream, micCtx)
+      startMicCapture(stream, audioCtx)
 
       // 코치가 먼저 인사하도록 트리거
       session.sendClientContent({
@@ -287,9 +285,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       // 디버깅용 alert (원인 파악 후 제거)
       alert(`음성 코칭 오류: ${msg}`)
       updateState('error')
-      // 생성된 AudioContext 정리
-      playbackCtx?.close().catch(() => {})
-      micCtx?.close().catch(() => {})
+      audioCtx?.close().catch(() => {})
       cleanup()
     }
   }, [])
@@ -373,10 +369,8 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       processorRef.current.disconnect()
       processorRef.current = null
     }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close()
-      audioCtxRef.current = null
-    }
+    // AudioContext는 재생/마이크 공유 → playbackRef에서 닫으므로 여기선 ref만 해제
+    audioCtxRef.current = null
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
       streamRef.current = null
@@ -386,7 +380,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       sessionRef.current = null
     }
     if (playbackRef.current) {
-      playbackRef.current.close()
+      playbackRef.current.close() // AudioContext도 여기서 닫힘
       playbackRef.current = null
     }
     coachTextRef.current = ''
