@@ -125,7 +125,21 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     try {
       updateState('connecting')
 
-      // 1. 마이크 권한을 먼저 획득 → iOS PWA에서 오디오 세션 활성화
+      // 1. 무음 <audio> 재생으로 iOS PWA 오디오 세션 강제 활성화
+      // WKWebView에서 AudioContext보다 <audio> 태그가 오디오 세션 활성화에 더 안정적
+      const silentWav = new Uint8Array([
+        0x52,0x49,0x46,0x46,0x25,0x00,0x00,0x00,0x57,0x41,0x56,0x45,
+        0x66,0x6D,0x74,0x20,0x10,0x00,0x00,0x00,0x01,0x00,0x01,0x00,
+        0x44,0xAC,0x00,0x00,0x88,0x58,0x01,0x00,0x02,0x00,0x10,0x00,
+        0x64,0x61,0x74,0x61,0x02,0x00,0x00,0x00,0x00,0x00,
+      ])
+      const silentUrl = URL.createObjectURL(new Blob([silentWav], { type: 'audio/wav' }))
+      const silentAudio = new Audio(silentUrl)
+      silentAudio.playsInline = true
+      await silentAudio.play().catch(() => {})
+      URL.revokeObjectURL(silentUrl)
+
+      // 2. 마이크 권한 획득
       let stream: MediaStream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -136,21 +150,13 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
           },
         })
       } catch (micErr) {
-        throw new Error(`[1단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
+        throw new Error(`[2단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
       }
       streamRef.current = stream
 
-      // 2. AudioContext 생성
+      // 3. AudioContext 생성 (오디오 세션이 이미 활성화된 상태)
       audioCtx = new AudioContext()
       audioCtx.resume()
-
-      // iOS PWA: MediaStream을 AudioContext에 연결 유지 → 오디오 세션 강제 활성화
-      // GainNode(음량0)을 거쳐 연결해서 피드백(하울링) 방지
-      const keepAlive = audioCtx.createMediaStreamSource(stream)
-      const muteGain = audioCtx.createGain()
-      muteGain.gain.value = 0
-      keepAlive.connect(muteGain)
-      muteGain.connect(audioCtx.destination)
 
       // 3. 토큰 가져오기
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
