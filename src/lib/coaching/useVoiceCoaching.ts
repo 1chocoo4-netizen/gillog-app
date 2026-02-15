@@ -140,16 +140,17 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       }
       streamRef.current = stream
 
-      // 2. AudioContext 생성 (resume은 await하지 않음 - iOS PWA에서 무한 대기)
-      // MediaStream 연결 시 자동 활성화됨
+      // 2. AudioContext 생성
       audioCtx = new AudioContext()
       audioCtx.resume()
 
-      // 마이크 스트림을 AudioContext에 연결 → iOS에서 오디오 세션 강제 활성화
-      const tempSource = audioCtx.createMediaStreamSource(stream)
-      tempSource.connect(audioCtx.destination)
-      // 즉시 연결 해제 (피드백 방지), 오디오 세션만 활성화 목적
-      tempSource.disconnect()
+      // iOS PWA: MediaStream을 AudioContext에 연결 유지 → 오디오 세션 강제 활성화
+      // GainNode(음량0)을 거쳐 연결해서 피드백(하울링) 방지
+      const keepAlive = audioCtx.createMediaStreamSource(stream)
+      const muteGain = audioCtx.createGain()
+      muteGain.gain.value = 0
+      keepAlive.connect(muteGain)
+      muteGain.connect(audioCtx.destination)
 
       // 3. 토큰 가져오기
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
