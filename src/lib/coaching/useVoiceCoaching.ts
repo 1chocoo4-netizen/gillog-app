@@ -124,11 +124,19 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     try {
       updateState('connecting')
 
-      // PWA standalone 모드: AudioContext는 사용자 제스처 내(await 전)에 생성해야 동작함
+      // PWA standalone: AudioContext는 사용자 제스처 내(await 전)에 생성 + resume 해야 함
+      // iOS는 sampleRate 지정 시 실패할 수 있으므로 기본값 사용 (리샘플링은 소프트웨어로 처리)
       const playbackCtx = new AudioContext()
-      const micCtx = new AudioContext({ sampleRate: 16000 })
-      playbackCtx.resume()
-      micCtx.resume()
+      const micCtx = new AudioContext()
+      await playbackCtx.resume()
+      await micCtx.resume()
+
+      // iOS PWA 오디오 잠금 해제: 무음 버퍼 재생
+      const silent = playbackCtx.createBuffer(1, 1, playbackCtx.sampleRate)
+      const src = playbackCtx.createBufferSource()
+      src.buffer = silent
+      src.connect(playbackCtx.destination)
+      src.start()
 
       // 1. 토큰 가져오기
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
@@ -269,6 +277,10 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       })
     } catch (err) {
       console.error('[Voice] 시작 에러:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Permission') || msg.includes('NotAllowed')) {
+        alert('마이크 권한이 필요합니다. 설정에서 마이크 권한을 허용해주세요.')
+      }
       updateState('error')
       cleanup()
     }
