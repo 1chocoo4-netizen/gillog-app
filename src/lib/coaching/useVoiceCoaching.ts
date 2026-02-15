@@ -125,24 +125,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     try {
       updateState('connecting')
 
-      // iOS PWA는 AudioContext를 1개만 허용 → 재생/마이크 공유
-      // 사용자 제스처 내(await 전)에 생성해야 함
-      audioCtx = new AudioContext()
-      await audioCtx.resume()
-
-      // iOS PWA 오디오 잠금 해제: 무음 버퍼 재생
-      const silent = audioCtx.createBuffer(1, 1, audioCtx.sampleRate)
-      const src = audioCtx.createBufferSource()
-      src.buffer = silent
-      src.connect(audioCtx.destination)
-      src.start()
-
-      // 1. 토큰 가져오기
-      const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
-      if (!tokenRes.ok) throw new Error('[1단계] 토큰 요청 실패')
-      const { apiKey } = await tokenRes.json()
-
-      // 2. 마이크 권한
+      // 1. 마이크 권한을 먼저 획득 → iOS PWA에서 오디오 세션 활성화
       let stream: MediaStream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -153,11 +136,20 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
           },
         })
       } catch (micErr) {
-        throw new Error(`[2단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
+        throw new Error(`[1단계] 마이크: ${micErr instanceof Error ? micErr.message : micErr}`)
       }
       streamRef.current = stream
 
-      // 3. 재생 큐 (같은 AudioContext 공유)
+      // 2. 마이크로 오디오 세션이 활성화된 후 AudioContext 생성
+      audioCtx = new AudioContext()
+      await audioCtx.resume()
+
+      // 3. 토큰 가져오기
+      const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
+      if (!tokenRes.ok) throw new Error('[2단계] 토큰 요청 실패')
+      const { apiKey } = await tokenRes.json()
+
+      // 4. 재생 큐 (AudioContext 하나로 재생/마이크 공유)
       playbackRef.current = new AudioPlaybackQueue(audioCtx, (playing) => {
         if (playing) updateState('speaking')
         else updateState('listening')
