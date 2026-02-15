@@ -63,7 +63,7 @@ function ProfileContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900">
+    <main className="h-[100dvh] bg-slate-900 overflow-hidden">
       {/* 상단 HUD */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-3">
@@ -94,7 +94,7 @@ function ProfileContent() {
       </header>
 
       {/* 프로필 콘텐츠 */}
-      <div className="pt-24 pb-28 px-4">
+      <div className="h-full pt-24 pb-28 px-4 overflow-y-auto">
         {session?.user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

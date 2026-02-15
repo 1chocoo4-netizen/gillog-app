@@ -27,7 +27,7 @@ function AppHomeContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900">
+    <main className="h-[100dvh] bg-slate-900 overflow-hidden">
       {/* 상단 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/5 pt-safe">
         {/* 로고 + 에너지 바 */}
@@ -66,7 +66,7 @@ function AppHomeContent() {
       </header>
 
       {/* 맵 영역 */}
-      <div className="pt-[140px] pb-28 overflow-y-auto">
+      <div className="h-full pt-[140px] pb-28 overflow-y-auto">
         <MapArea
           selectedWorld={selectedWorld}
           onNodeClick={handleNodeClick}

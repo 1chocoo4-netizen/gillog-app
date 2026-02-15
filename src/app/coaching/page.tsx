@@ -333,7 +333,7 @@ function CoachingChat() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 flex flex-col">
+    <main className="h-[100dvh] bg-slate-900 flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-3">

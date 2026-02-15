@@ -269,8 +269,11 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
   }, [])
 
   function startMicCapture(stream: MediaStream) {
-    const audioCtx = new AudioContext()
-    audioCtx.resume()
+    const audioCtx = new AudioContext({ sampleRate: 16000 })
+    // PWA standalone 모드에서 AudioContext가 suspended 상태일 수 있음
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume()
+    }
     audioCtxRef.current = audioCtx
     console.log('[Voice] 마이크 샘플레이트:', audioCtx.sampleRate)
 

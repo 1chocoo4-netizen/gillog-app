@@ -35,7 +35,7 @@ function DashboardContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900">
+    <main className="h-[100dvh] bg-slate-900 overflow-hidden">
       {/* 헤더 */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-lg border-b border-white/5 pt-safe">
         <div className="flex items-center justify-between px-4 py-3">
@@ -66,7 +66,7 @@ function DashboardContent() {
       </header>
 
       {/* 메인 영역 */}
-      <div className="pt-28 pb-28 px-4">
+      <div className="h-full pt-28 pb-28 px-4 overflow-y-auto">
         <div className="max-w-lg mx-auto space-y-6">
 
           {/* 리포트 내보내기 */}

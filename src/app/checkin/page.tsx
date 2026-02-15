@@ -456,7 +456,7 @@ function ExecutionContent() {
   )
 
   return (
-    <main className="min-h-screen bg-slate-900">
+    <main className="h-[100dvh] bg-slate-900 overflow-hidden">
       {/* 매일 명언 오버레이 (하루 1회) */}
       <DailyQuoteOverlay onRegister={handleDailyQuoteRegister} />
 
@@ -487,8 +487,10 @@ function ExecutionContent() {
         </div>
       </header>
 
+      {/* 스크롤 영역 */}
+      <div className="h-full overflow-y-auto pt-[72px] pb-36">
       {/* 오늘 남은 실행 횟수 */}
-      <div className="pt-[72px] px-4">
+      <div className="px-4">
         <div className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium ${
           dailyRemaining > 0
             ? 'bg-indigo-500/10 text-indigo-300'
@@ -648,7 +650,7 @@ function ExecutionContent() {
         const maxRef = Math.max(...worldCounts.map(w => w.count), 1000)
 
         return (
-          <div className="pt-2 pb-36 px-4">
+          <div className="pt-2 px-4">
             <div className="max-w-lg mx-auto">
               <div className="bg-white/5 rounded-2xl px-5 py-4 mt-2 relative">
                 <div className="flex items-end justify-between gap-2" style={{ height: 110 }}>
@@ -754,6 +756,7 @@ function ExecutionContent() {
           </div>
         )
       })()}
+      </div>{/* 스크롤 영역 끝 */}
 
       {/* 플로팅 추가 버튼 */}
       <div className="fixed right-4 z-40" style={{ bottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
