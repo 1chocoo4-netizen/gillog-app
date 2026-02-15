@@ -67,10 +67,8 @@ export class AudioPlaybackQueue {
   private nextStartTime = 0
   private onPlayStateChange?: (playing: boolean) => void
 
-  constructor(onPlayStateChange?: (playing: boolean) => void) {
-    // 브라우저 기본 샘플레이트 사용 (24kHz 강제 시 일부 브라우저에서 실패)
-    this.ctx = new AudioContext()
-    this.ctx.resume() // autoplay 정책 해제
+  constructor(ctx: AudioContext, onPlayStateChange?: (playing: boolean) => void) {
+    this.ctx = ctx
     this.onPlayStateChange = onPlayStateChange
   }
 

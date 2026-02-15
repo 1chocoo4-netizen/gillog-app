@@ -124,6 +124,12 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     try {
       updateState('connecting')
 
+      // PWA standalone 모드: AudioContext는 사용자 제스처 내(await 전)에 생성해야 동작함
+      const playbackCtx = new AudioContext()
+      const micCtx = new AudioContext({ sampleRate: 16000 })
+      playbackCtx.resume()
+      micCtx.resume()
+
       // 1. 토큰 가져오기
       const tokenRes = await fetch('/api/coaching/voice-token', { method: 'POST' })
       if (!tokenRes.ok) throw new Error('Token fetch failed')
@@ -140,7 +146,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       streamRef.current = stream
 
       // 3. 재생 큐
-      playbackRef.current = new AudioPlaybackQueue((playing) => {
+      playbackRef.current = new AudioPlaybackQueue(playbackCtx, (playing) => {
         if (playing) updateState('speaking')
         else updateState('listening')
       })
@@ -254,7 +260,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       // connect() 완료 후 = 세션 준비 완료
       console.log('[Voice] 세션 준비 완료, 마이크 시작')
       updateState('listening')
-      startMicCapture(stream)
+      startMicCapture(stream, micCtx)
 
       // 코치가 먼저 인사하도록 트리거
       session.sendClientContent({
@@ -268,12 +274,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
     }
   }, [])
 
-  function startMicCapture(stream: MediaStream) {
-    const audioCtx = new AudioContext({ sampleRate: 16000 })
-    // PWA standalone 모드에서 AudioContext가 suspended 상태일 수 있음
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume()
-    }
+  function startMicCapture(stream: MediaStream, audioCtx: AudioContext) {
     audioCtxRef.current = audioCtx
     console.log('[Voice] 마이크 샘플레이트:', audioCtx.sampleRate)
 
