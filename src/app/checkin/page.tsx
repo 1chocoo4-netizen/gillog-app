@@ -756,7 +756,7 @@ function ExecutionContent() {
       })()}
 
       {/* 플로팅 추가 버튼 */}
-      <div className="fixed right-4 z-40" style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+      <div className="fixed right-4 z-40" style={{ bottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
         <AnimatePresence>
           {showOnboarding && (
             <motion.div
@@ -822,7 +822,7 @@ function ExecutionContent() {
               exit={{ opacity: 0, y: 100 }}
               className="fixed inset-x-0 top-8 bottom-0 z-50 overflow-hidden"
             >
-              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 h-full overflow-y-auto pb-12">
+              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 h-full overflow-y-auto pb-24">
                 {/* 헤더 */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-white font-bold text-lg">
