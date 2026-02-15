@@ -126,3 +126,32 @@ html {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* ========================================
+   PWA 네이티브 앱 UX
+   ======================================== */
+
+/* pull-to-refresh 방지 */
+html, body {
+  overscroll-behavior-y: none;
+}
+
+/* 탭 하이라이트 제거 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* UI 요소 선택 방지 */
+button, nav, header {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* safe area 유틸리티 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.h-safe-area-inset-bottom {
+  height: env(safe-area-inset-bottom);
+}

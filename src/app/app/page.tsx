@@ -10,6 +10,7 @@ import { QuestBanner } from '@/components/map/QuestBanner'
 import { MapArea } from '@/components/map/MapArea'
 import { WorldKey, MapNode } from '@/components/map/WorldTokens'
 import { AuthGuard } from '@/components/AuthGuard'
+import { BottomTabBar } from '@/components/BottomTabBar'
 import { useUserData } from '@/lib/UserDataProvider'
 
 function AppHomeContent() {
@@ -73,43 +74,8 @@ function AppHomeContent() {
         />
       </div>
 
-      {/* 하단 탭바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-t border-white/5">
-        <div className="flex justify-around py-1.5 pb-safe">
-          <TabItem href="/checkin" icon="⭐" label="실행" />
-          <TabItem href="/coaching" icon="💬" label="코칭" />
-          <TabItem href="/app" icon="🗺️" label="월드" active />
-          <TabItem href="/dashboard" icon="📊" label="리포트" />
-        </div>
-      </nav>
+      <BottomTabBar activeTab="/app" />
     </main>
-  )
-}
-
-function TabItem({
-  href,
-  icon,
-  label,
-  active = false
-}: {
-  href: string
-  icon: string
-  label: string
-  active?: boolean
-}) {
-  return (
-    <Link
-      href={href}
-      className={`
-        flex flex-col items-center gap-0.5 px-5 py-2 rounded-xl transition-colors min-w-[56px]
-        ${active ? 'text-white' : 'text-white/35 hover:text-white/55'}
-      `}
-    >
-      <span className="text-[22px]">{icon}</span>
-      <span className={`text-[10px] font-bold ${active ? 'text-white' : 'text-white/45'}`}>
-        {label}
-      </span>
-    </Link>
   )
 }
 

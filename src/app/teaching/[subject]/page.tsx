@@ -145,7 +145,7 @@ function WorldTeachingContent() {
         )}
       </AnimatePresence>
 
-      <BottomTabBar />
+      <BottomTabBar activeTab="/app" />
     </main>
   )
 }

@@ -108,7 +108,7 @@ function TeachingContent() {
         </div>
       </div>
 
-      <BottomTabBar />
+      <BottomTabBar activeTab="/app" />
     </main>
   )
 }

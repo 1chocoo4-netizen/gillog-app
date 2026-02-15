@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Star, X, Lightbulb } from 'lucide-react'
+import { Send, Star, X, Lightbulb, Mic } from 'lucide-react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LevelBadge } from '@/components/LevelBadge'
+import { BottomTabBar } from '@/components/BottomTabBar'
 import { useUserData } from '@/lib/UserDataProvider'
 import PaywallBanner from '@/components/PaywallBanner'
+import { useVoiceCoaching } from '@/lib/coaching/useVoiceCoaching'
+import VoiceCoachingBar from './components/VoiceCoachingOverlay'
 
 interface Message {
   id: string
@@ -59,11 +62,25 @@ function CoachingChat() {
   const [showStartModal, setShowStartModal] = useState(false)
   const [coachingStarted, setCoachingStarted] = useState(false)
   const [pendingMsg, setPendingMsg] = useState('')
+  const [pendingVoice, setPendingVoice] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showCoachList, setShowCoachList] = useState(false)
   const [paymentProcessing, setPaymentProcessing] = useState(false)
   const [selectedCoach, setSelectedCoach] = useState<typeof COACHES[number] | null>(null)
   const paymentTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 음성 코칭
+  const [voiceMode, setVoiceMode] = useState(false)
+  const voice = useVoiceCoaching({
+    onMessage: (role, text) => {
+      addMessage(role === 'coach' ? 'coach' : 'user', text)
+    },
+    onComplete: () => {
+      setVoiceMode(false)
+      setChatDone(true)
+      setTodoText('')
+    },
+  })
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -177,6 +194,14 @@ function CoachingChat() {
     setCoachingStarted(true)
     setShowStartModal(false)
 
+    // 음성 코칭 시작
+    if (pendingVoice) {
+      setPendingVoice(false)
+      setVoiceMode(true)
+      voice.start()
+      return
+    }
+
     // 보류된 메시지 전송
     if (pendingMsg) {
       sendMessage(pendingMsg)
@@ -258,7 +283,7 @@ function CoachingChat() {
         setChatDone(true)
         setTimeout(() => {
           setShowTodoModal(true)
-        }, 1500)
+        }, 5000)
       }
     } catch {
       addMessage('coach', '인터넷 연결을 확인해줘!')
@@ -266,6 +291,21 @@ function CoachingChat() {
     }
 
     inputRef.current?.focus()
+  }
+
+  async function handleStartVoice() {
+    if (!coachingStarted) {
+      setPendingVoice(true)
+      setShowStartModal(true)
+      return
+    }
+    setVoiceMode(true)
+    await voice.start()
+  }
+
+  function handleEndVoice() {
+    voice.stop()
+    setVoiceMode(false)
   }
 
   function handleSaveTodo() {
@@ -812,6 +852,14 @@ function CoachingChat() {
                 <Star className="w-4 h-4" />
                 실행 등록하기
               </button>
+            ) : voiceMode ? (
+              <VoiceCoachingBar
+                state={voice.state}
+                isMuted={voice.isMuted}
+                audioLevel={voice.audioLevel}
+                onToggleMute={voice.toggleMute}
+                onEnd={handleEndVoice}
+              />
             ) : (
               <div className="flex gap-2">
                 <input
@@ -824,6 +872,14 @@ function CoachingChat() {
                   disabled={isTyping}
                   className="flex-1 bg-white/10 text-white rounded-full px-5 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-violet-500/50 placeholder:text-white/30 disabled:opacity-50"
                 />
+                <button
+                  onClick={handleStartVoice}
+                  disabled={isTyping}
+                  className="w-12 h-12 rounded-full bg-white/10 text-white/70 flex items-center justify-center active:scale-95 transition-transform hover:bg-white/15 disabled:opacity-40"
+                  title="음성 코칭"
+                >
+                  <Mic className="w-5 h-5" />
+                </button>
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isTyping}
@@ -866,25 +922,8 @@ function CoachingChat() {
         )}
       </AnimatePresence>
 
-      {/* 하단 탭바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/5">
-        <div className="flex justify-around py-2">
-          <NavItem href="/checkin" icon="⭐" label="실행" />
-          <NavItem href="/coaching" icon="💬" label="코칭" active />
-          <NavItem href="/app" icon="🗺️" label="월드" />
-          <NavItem href="/dashboard" icon="📊" label="리포트" />
-        </div>
-      </nav>
+      <BottomTabBar activeTab="/coaching" />
     </main>
-  )
-}
-
-function NavItem({ href, icon, label, active = false }: { href: string; icon: string; label: string; active?: boolean }) {
-  return (
-    <Link href={href} className={`flex flex-col items-center gap-0.5 px-5 py-2.5 min-w-[56px] rounded-xl transition-colors ${active ? 'text-white' : 'text-white/40 hover:text-white/60'}`}>
-      <span className="text-[22px]">{icon}</span>
-      <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>{label}</span>
-    </Link>
   )
 }
 

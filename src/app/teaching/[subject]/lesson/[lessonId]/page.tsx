@@ -717,7 +717,7 @@ function LessonContent() {
         )}
       </AnimatePresence>
 
-      <BottomTabBar />
+      <BottomTabBar activeTab="/app" />
     </main>
   )
 }

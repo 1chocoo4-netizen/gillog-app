@@ -283,7 +283,7 @@ function StageMapContent() {
         )}
       </AnimatePresence>
 
-      <BottomTabBar />
+      <BottomTabBar activeTab="/app" />
     </main>
   )
 }
