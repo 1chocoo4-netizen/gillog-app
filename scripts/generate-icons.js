@@ -50,60 +50,83 @@ const { createCanvas } = (() => {
       }
     }
 
-    // 간단한 "G" 글자 렌더링 (비트맵 폰트)
-    function drawG(cx, cy, size) {
-      const r = size * 0.35  // 글자 크기
-      const thick = size * 0.08  // 선 두께
+    // 픽셀에 색 쓰기 (안티앨리어싱용 알파 블렌딩)
+    function setPixel(x, y, r, g, b, a = 255) {
+      const ix = Math.round(x), iy = Math.round(y)
+      if (ix < 0 || ix >= width || iy < 0 || iy >= height) return
+      const idx = (iy * width + ix) * 4
+      if (a >= 255) {
+        pixels[idx] = r; pixels[idx+1] = g; pixels[idx+2] = b; pixels[idx+3] = 255
+      } else {
+        const sa = a / 255, da = 1 - sa
+        pixels[idx]   = Math.round(r * sa + pixels[idx]   * da)
+        pixels[idx+1] = Math.round(g * sa + pixels[idx+1] * da)
+        pixels[idx+2] = Math.round(b * sa + pixels[idx+2] * da)
+        pixels[idx+3] = Math.min(255, pixels[idx+3] + a)
+      }
+    }
 
-      // G 외곽 원호 (C자 형태)
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const dx = x - cx
-          const dy = y - cy
+    // "G" 글자 렌더링 - 작게 + ㄱ자에 파란색
+    function drawG(cx, cy, size) {
+      const r = size * 0.24       // G 크기 (줄임)
+      const thick = size * 0.065  // 선 두께 (줄임)
+
+      // 흰색: C자 원호 부분
+      // 파란색: ㄱ자 (가로바 + 세로선)
+      const WHITE = [255, 255, 255]
+      const BLUE  = [96, 165, 250]  // #60a5fa - blue-400
+
+      // 1) C자 원호 (흰색)
+      for (let py = 0; py < height; py++) {
+        for (let px = 0; px < width; px++) {
+          const dx = px - cx
+          const dy = py - cy
           const dist = Math.sqrt(dx * dx + dy * dy)
 
-          // 원호 부분 (C 형태 - 오른쪽 중간~하단 열림)
           if (dist >= r - thick && dist <= r + thick) {
             const angle = Math.atan2(dy, dx)
-            // -40도 ~ 270도 사이만 그림 (오른쪽 중단 열림)
             const angleDeg = (angle * 180 / Math.PI + 360) % 360
-            if (angleDeg > 40 && angleDeg < 340) {
-              const idx = (y * width + x) * 4
-              pixels[idx] = 255
-              pixels[idx + 1] = 255
-              pixels[idx + 2] = 255
-              pixels[idx + 3] = 255
+            // C 형태: 오른쪽 위 열림 (30~330도)
+            if (angleDeg > 35 && angleDeg < 330) {
+              // 엣지 부분 안티앨리어싱
+              const outerDist = Math.abs(dist - (r + thick))
+              const innerDist = Math.abs(dist - (r - thick))
+              const edgeDist = Math.min(outerDist, innerDist)
+              const alpha = edgeDist < 1.5 ? Math.min(255, Math.round(edgeDist / 1.5 * 255)) : 255
+              setPixel(px, py, ...WHITE, alpha)
             }
           }
         }
       }
 
-      // G의 가로 바 (중간 오른쪽으로 향하는 선)
-      const barY = cy
-      const barStartX = cx
-      const barEndX = cx + r + thick
-      for (let y = Math.floor(barY - thick); y <= Math.ceil(barY + thick); y++) {
-        for (let x = Math.floor(barStartX); x <= Math.ceil(barEndX); x++) {
-          if (x >= 0 && x < width && y >= 0 && y < height) {
-            const idx = (y * width + x) * 4
-            pixels[idx] = 255
-            pixels[idx + 1] = 255
-            pixels[idx + 2] = 255
-            pixels[idx + 3] = 255
+      // 2) ㄱ자 가로바 (파란색) - 중앙에서 오른쪽으로
+      const barY = cy + thick * 0.3
+      const barStartX = cx - thick * 0.5
+      const barEndX = cx + r
+      for (let py = Math.floor(barY - thick); py <= Math.ceil(barY + thick); py++) {
+        for (let px = Math.floor(barStartX); px <= Math.ceil(barEndX); px++) {
+          if (px >= 0 && px < width && py >= 0 && py < height) {
+            // 가로바 끝에서 파란색→흰색 그라디언트
+            const t = (px - barStartX) / (barEndX - barStartX)
+            const rr = Math.round(BLUE[0] * (1-t*0.3) + WHITE[0] * t * 0.3)
+            const gg = Math.round(BLUE[1] * (1-t*0.3) + WHITE[1] * t * 0.3)
+            const bb = Math.round(BLUE[2] * (1-t*0.15) + WHITE[2] * t * 0.15)
+            setPixel(px, py, rr, gg, bb)
           }
         }
       }
 
-      // G 바 아래 세로선 (오른쪽 끝에서 아래로)
-      const vertX = barEndX - thick
-      for (let y = Math.floor(barY); y <= Math.ceil(barY + r * 0.5); y++) {
-        for (let x = Math.floor(vertX - thick); x <= Math.ceil(vertX + thick); x++) {
-          if (x >= 0 && x < width && y >= 0 && y < height) {
-            const idx = (y * width + x) * 4
-            pixels[idx] = 255
-            pixels[idx + 1] = 255
-            pixels[idx + 2] = 255
-            pixels[idx + 3] = 255
+      // 3) ㄱ자 세로선 (파란색) - 오른쪽 끝에서 아래로
+      const vertX = barEndX - thick * 0.5
+      const vertEndY = cy + r * 0.55
+      for (let py = Math.floor(barY - thick); py <= Math.ceil(vertEndY); py++) {
+        for (let px = Math.floor(vertX - thick); px <= Math.ceil(vertX + thick); px++) {
+          if (px >= 0 && px < width && py >= 0 && py < height) {
+            const t = (py - barY) / (vertEndY - barY)
+            const rr = Math.round(BLUE[0] + (WHITE[0] - BLUE[0]) * t * 0.4)
+            const gg = Math.round(BLUE[1] + (WHITE[1] - BLUE[1]) * t * 0.3)
+            const bb = Math.round(BLUE[2] + (WHITE[2] - BLUE[2]) * t * 0.15)
+            setPixel(px, py, rr, gg, bb)
           }
         }
       }

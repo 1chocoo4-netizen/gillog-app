@@ -488,7 +488,7 @@ function ExecutionContent() {
       </header>
 
       {/* 오늘 남은 실행 횟수 */}
-      <div className="pt-16 px-4">
+      <div className="pt-[72px] px-4">
         <div className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium ${
           dailyRemaining > 0
             ? 'bg-indigo-500/10 text-indigo-300'
@@ -756,7 +756,7 @@ function ExecutionContent() {
       })()}
 
       {/* 플로팅 추가 버튼 */}
-      <div className="fixed bottom-24 right-4 z-40">
+      <div className="fixed bottom-20 right-4 z-40" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
         <AnimatePresence>
           {showOnboarding && (
             <motion.div
@@ -820,9 +820,9 @@ function ExecutionContent() {
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
-              className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-hidden"
+              className="fixed inset-x-0 top-8 bottom-0 z-50 overflow-hidden"
             >
-              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 max-h-[80vh] overflow-y-auto">
+              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 h-full overflow-y-auto pb-12">
                 {/* 헤더 */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-white font-bold text-lg">
