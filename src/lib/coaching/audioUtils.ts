@@ -93,6 +93,11 @@ export class AudioPlaybackQueue {
     this.isPlaying = true
     this.onPlayStateChange?.(true)
 
+    // iOS PWA: 재생 전 resume 시도 (suspended 상태일 수 있음)
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume()
+    }
+
     const float32 = this.queue.shift()!
     const audioBuffer = this.ctx.createBuffer(1, float32.length, 24000)
     audioBuffer.getChannelData(0).set(float32)
