@@ -88,7 +88,7 @@ export async function DELETE(request: Request) {
       endDate: { gt: new Date() },
     },
     data: {
-      status: 'CANCELLED',
+      status: 'EXPIRED',
       cancelledAt: new Date(),
     },
   })
