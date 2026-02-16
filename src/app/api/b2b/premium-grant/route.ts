@@ -78,18 +78,20 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: '유효하지 않은 요청입니다' }, { status: 400 })
   }
 
-  // 해당 코치가 부여한 활성 B2B 구독만 해지
+  // 해당 코치가 부여한 B2B 구독 해지 (ACTIVE, CANCELLED 모두 처리)
+  const now = new Date()
   const result = await prisma.subscription.updateMany({
     where: {
       userId,
       source: 'B2B_GRANT',
-      status: 'ACTIVE',
+      status: { in: ['ACTIVE', 'CANCELLED'] },
       grantedByCoachEmail: coachAuth.coachEmail,
-      endDate: { gt: new Date() },
+      endDate: { gt: now },
     },
     data: {
       status: 'EXPIRED',
-      cancelledAt: new Date(),
+      endDate: now,
+      cancelledAt: now,
     },
   })
 
