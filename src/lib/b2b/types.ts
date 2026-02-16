@@ -54,4 +54,5 @@ export interface RegisteredUser {
   email: string
   consentStatus: string
   executionCount: number
+  premiumEndDate?: string | null
 }

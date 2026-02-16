@@ -59,6 +59,10 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPl
   const [premiumSubmitting, setPremiumSubmitting] = useState(false)
   const [premiumMsg, setPremiumMsg] = useState('')
 
+  // 프리미엄 해지
+  const [revokeTarget, setRevokeTarget] = useState<{ userId: string; name: string } | null>(null)
+  const [revokeSubmitting, setRevokeSubmitting] = useState(false)
+
   async function handleGrantPremium() {
     if (!premiumModal) return
     setPremiumSubmitting(true)
@@ -83,6 +87,29 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPl
       setPremiumMsg('네트워크 오류')
     } finally {
       setPremiumSubmitting(false)
+    }
+  }
+
+  async function handleRevokePremium() {
+    if (!revokeTarget) return
+    setRevokeSubmitting(true)
+    try {
+      const res = await fetch('/api/b2b/premium-grant', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: revokeTarget.userId }),
+      })
+      if (res.ok) {
+        setRevokeTarget(null)
+        fetchUsers() // 리스트 새로고침
+      } else {
+        const data = await res.json().catch(() => null)
+        alert(data?.error || '해지 실패')
+      }
+    } catch {
+      alert('네트워크 오류')
+    } finally {
+      setRevokeSubmitting(false)
     }
   }
 
@@ -282,16 +309,28 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPl
                                 >
                                   조회
                                 </button>
-                                <button
-                                  onClick={() => {
-                                    setPremiumModal({ userId: u.userId, name: u.name })
-                                    setPremiumMonths(1)
-                                    setPremiumMsg('')
-                                  }}
-                                  className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-medium rounded-lg transition-colors"
-                                >
-                                  프리미엄
-                                </button>
+                                {u.premiumEndDate ? (
+                                  <button
+                                    onClick={() => setRevokeTarget({ userId: u.userId, name: u.name })}
+                                    className="p-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-400 rounded-lg transition-colors"
+                                    title={`프리미엄 해지 (만료: ${new Date(u.premiumEndDate).toLocaleDateString('ko-KR')})`}
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setPremiumModal({ userId: u.userId, name: u.name })
+                                      setPremiumMonths(1)
+                                      setPremiumMsg('')
+                                    }}
+                                    className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    프리미엄
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -593,6 +632,60 @@ export function B2BHeader({ onSelectUser, institutionName, onChangeName, coachPl
                   className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                 >
                   {premiumSubmitting ? '처리 중...' : '부여하기'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 프리미엄 해지 확인 모달 */}
+      <AnimatePresence>
+        {revokeTarget && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !revokeSubmitting && setRevokeTarget(null)}
+              className="fixed inset-0 bg-black/60 z-[9999]"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-0 left-0 right-0 z-[9999] sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-80 bg-gray-900 border-t sm:border border-gray-700 rounded-t-2xl sm:rounded-xl shadow-2xl p-5"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold">프리미엄 해지</h3>
+                  <p className="text-sm text-gray-400">{revokeTarget.name}님의 프리미엄을 해지합니다</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500 mb-4">
+                해지 시 즉시 프리미엄 기능이 중단됩니다. 이 작업은 되돌릴 수 없습니다.
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setRevokeTarget(null)}
+                  disabled={revokeSubmitting}
+                  className="flex-1 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm hover:bg-gray-700"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleRevokePremium}
+                  disabled={revokeSubmitting}
+                  className="flex-1 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                >
+                  {revokeSubmitting ? '처리 중...' : '해지하기'}
                 </button>
               </div>
             </motion.div>

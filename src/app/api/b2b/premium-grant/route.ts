@@ -64,3 +64,41 @@ export async function POST(request: Request) {
     message: `${months}개월 프리미엄이 부여되었습니다`,
   })
 }
+
+/** DELETE: B2B 부여 프리미엄 해지 */
+export async function DELETE(request: Request) {
+  const coachAuth = await requireCoachAPI()
+  if (!coachAuth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { userId } = await request.json()
+
+  if (!userId) {
+    return NextResponse.json({ error: '유효하지 않은 요청입니다' }, { status: 400 })
+  }
+
+  // 해당 코치가 부여한 활성 B2B 구독만 해지
+  const result = await prisma.subscription.updateMany({
+    where: {
+      userId,
+      source: 'B2B_GRANT',
+      status: 'ACTIVE',
+      grantedByCoachEmail: coachAuth.coachEmail,
+      endDate: { gt: new Date() },
+    },
+    data: {
+      status: 'CANCELLED',
+      cancelledAt: new Date(),
+    },
+  })
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: '해지할 프리미엄이 없습니다' }, { status: 404 })
+  }
+
+  return NextResponse.json({
+    ok: true,
+    message: '프리미엄이 해지되었습니다',
+  })
+}

@@ -28,6 +28,17 @@ export async function GET() {
             userData: {
               select: { history: true },
             },
+            subscriptions: {
+              where: {
+                source: 'B2B_GRANT',
+                status: 'ACTIVE',
+                grantedByCoachEmail: coachResult.coachEmail,
+                endDate: { gt: new Date() },
+              },
+              orderBy: { endDate: 'desc' },
+              take: 1,
+              select: { endDate: true },
+            },
           },
         },
       },
@@ -36,12 +47,14 @@ export async function GET() {
 
     const users = consents.map((c) => {
       const history = (c.user.userData?.history as unknown as ExecutionRecord[]) || []
+      const activeSub = c.user.subscriptions?.[0]
       return {
         userId: c.user.id,
         name: c.user.name || '이름 없음',
         email: c.user.email,
         consentStatus: c.status,
         executionCount: Array.isArray(history) ? history.length : 0,
+        premiumEndDate: activeSub ? activeSub.endDate.toISOString() : null,
       }
     })
 
