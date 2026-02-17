@@ -110,9 +110,10 @@ body {
   padding-top: var(--gl-space-xl);
 }
 
-/* 부드러운 스크롤 */
+/* 부드러운 스크롤 + 기본 폰트 크기 */
 html {
   scroll-behavior: smooth;
+  font-size: 17px;
 }
 
 /* 포커스 스타일 - 접근성 */
