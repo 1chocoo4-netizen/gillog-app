@@ -560,8 +560,8 @@ function LessonContent() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={handleSkipExec} className="fixed inset-0 bg-black/60 z-50" />
             <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-              className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-hidden">
-              <div className="bg-slate-800 rounded-t-3xl p-6 shadow-2xl border-t border-white/10 max-h-[85vh] overflow-y-auto">
+              className="fixed inset-x-0 bottom-0 z-50">
+              <div className="bg-slate-800 rounded-t-3xl p-6 pb-28 shadow-2xl border-t border-white/10 max-h-[85vh] overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {/* 헤더 */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-white font-bold text-lg">
