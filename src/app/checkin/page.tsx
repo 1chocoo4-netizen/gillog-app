@@ -216,7 +216,7 @@ function ExecutionContent() {
     return new File([arr], fileName, { type: mime })
   }
 
-  // 사진 선택 처리 + OCR 자동 실행
+  // 사진 선택 처리 + 즉시 압축 + OCR 자동 실행
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -228,15 +228,15 @@ function ExecutionContent() {
       alert('50MB 이하 파일만 업로드 가능합니다.')
       return
     }
-    setPhotoFile(file)
 
-    // 미리보기 + 압축 후 OCR
-    const reader = new FileReader()
-    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    // 선택 즉시 압축하여 저장 (원본 대신 압축본 사용)
+    compressImage(file, 1200, 0.7).then(compressedDataUrl => {
+      const compressedFile = dataUrlToFile(compressedDataUrl, 'photo.jpg')
+      setPhotoFile(compressedFile)
+      setPhotoPreview(compressedDataUrl)
 
-    setIsOcrLoading(true)
-    compressImage(file).then(compressedDataUrl => {
+      // 압축본으로 OCR 실행
+      setIsOcrLoading(true)
       const base64 = compressedDataUrl.split(',')[1]
       return fetch('/api/ocr', {
         method: 'POST',
@@ -254,32 +254,22 @@ function ExecutionContent() {
       .finally(() => setIsOcrLoading(false))
   }
 
-  // 사진 업로드 (GCS) - 압축 후 업로드
+  // 사진 업로드 (GCS) - 이미 압축된 파일 업로드
   async function uploadPhoto(): Promise<string | undefined> {
     if (!photoFile) return undefined
     setIsUploading(true)
     try {
-      // 고화질 압축 (2400px) → 3.5MB 초과 시 단계별 재압축
-      let fileToUpload: File
-      try {
-        let compressed = await compressImage(photoFile, 2400, 0.85)
-        let file = dataUrlToFile(compressed, 'photo.jpg')
-        // Vercel 4.5MB 제한 대비: 3.5MB 초과 시 재압축
-        if (file.size > 3.5 * 1024 * 1024) {
-          compressed = await compressImage(photoFile, 1800, 0.75)
-          file = dataUrlToFile(compressed, 'photo.jpg')
-        }
-        if (file.size > 3.5 * 1024 * 1024) {
-          compressed = await compressImage(photoFile, 1400, 0.65)
-          file = dataUrlToFile(compressed, 'photo.jpg')
-        }
-        fileToUpload = file
-      } catch {
-        if (photoFile.size > 4 * 1024 * 1024) {
+      // photoFile은 handlePhotoSelect에서 이미 1200px/0.7 품질로 압축됨
+      // 혹시 3.5MB 넘으면 추가 압축
+      let fileToUpload = photoFile
+      if (photoFile.size > 3.5 * 1024 * 1024) {
+        try {
+          const compressed = await compressImage(photoFile, 800, 0.6)
+          fileToUpload = dataUrlToFile(compressed, 'photo.jpg')
+        } catch {
           alert('사진을 처리할 수 없습니다. 다른 사진을 선택해주세요.')
           return undefined
         }
-        fileToUpload = photoFile
       }
       const formData = new FormData()
       formData.append('file', fileToUpload)
