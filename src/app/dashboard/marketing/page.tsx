@@ -19,17 +19,17 @@ type Step = 'input' | 'generating' | 'result'
 const WORLD_KEYS = ['cognition', 'selfDirected', 'habit', 'attitude', 'relationship', 'character'] as const
 
 const EXAMPLE_PURPOSES = [
-  '자기소개서',
-  '이력서',
-  '면접 준비',
-  '직무역량 분석',
-  '포트폴리오',
-  '경력기술서',
-  '성장과정',
-  '지원동기',
+  '광고 상세페이지',
+  'SNS 홍보글',
+  '제품 소개서',
+  '영업 제안서',
+  '이벤트 안내',
+  '브랜드 스토리',
+  '고객 후기 정리',
+  '뉴스레터',
 ]
 
-function ResumeContent() {
+function MarketingContent() {
   const router = useRouter()
   const { history, energy, addEnergy } = useUserData()
 
@@ -44,7 +44,6 @@ function ResumeContent() {
 
   const [stats, setStats] = useState<ReturnType<typeof calculateOverallStats> | null>(null)
   const [filteredRecords, setFilteredRecords] = useState<ExecutionRecord[]>([])
-
 
   useEffect(() => {
     setStats(calculateOverallStats(history))
@@ -80,7 +79,7 @@ function ResumeContent() {
     pendingReport.current = null
 
     try {
-      const res = await fetch('/api/resume-report', {
+      const res = await fetch('/api/marketing-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,7 +99,7 @@ function ResumeContent() {
       setGeneratedReport(data.report)
       setStep('result')
     } catch (error) {
-      console.error('이력서 리포트 생성 실패:', error)
+      console.error('마케팅용 리포트 생성 실패:', error)
       alert('리포트 생성에 시간이 필요합니다. 잠시 후 다시 시도해주세요!')
       setStep('input')
     }
@@ -143,7 +142,7 @@ function ResumeContent() {
             <ArrowLeft className="w-5 h-5" />
             뒤로
           </button>
-          <h1 className="text-white font-semibold">이력서 리포트</h1>
+          <h1 className="text-white font-semibold">마케팅용 리포트</h1>
           <div className="w-16" />
         </div>
       </header>
@@ -164,14 +163,14 @@ function ResumeContent() {
                 {/* 글 종류 입력 */}
                 <div>
                   <label className="text-white/60 text-sm mb-2 block">
-                    이력서용 리포트를 만들어보세요
+                    마케팅 영업 홍보 광고용 글을 써보세요
                   </label>
                   <input
                     type="text"
-                    placeholder="예: 네이버 프론트엔드 자기소개서 써줘"
+                    placeholder="예: 내 경험으로 SNS 홍보글 써줘"
                     value={purpose}
                     onChange={e => setPurpose(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-orange-500/50"
                   />
                 </div>
 
@@ -183,8 +182,8 @@ function ResumeContent() {
                       onClick={() => setPurpose(ex)}
                       className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
                         purpose === ex
-                          ? 'border-violet-500/50 bg-violet-500/20 text-violet-300'
-                          : 'border-white/10 text-white/40 hover:text-violet-300 hover:border-violet-500/30 hover:bg-violet-500/10'
+                          ? 'border-orange-500/50 bg-orange-500/20 text-orange-300'
+                          : 'border-white/10 text-white/40 hover:text-orange-300 hover:border-orange-500/30 hover:bg-orange-500/10'
                       }`}
                     >
                       {ex}
@@ -202,7 +201,7 @@ function ResumeContent() {
                         onClick={() => toggleWorld(key)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-all ${
                           selectedWorlds.has(key)
-                            ? 'border-violet-500/40 bg-violet-500/15 text-white'
+                            ? 'border-orange-500/40 bg-orange-500/15 text-white'
                             : 'border-white/10 text-white/30 hover:border-white/20'
                         }`}
                       >
@@ -240,7 +239,7 @@ function ResumeContent() {
                 <button
                   onClick={handleGenerate}
                   disabled={filteredRecords.length === 0 || !purpose.trim()}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="w-5 h-5" />
                   리포트 생성하기
@@ -263,7 +262,7 @@ function ResumeContent() {
                     <circle
                       cx="60" cy="60" r="54"
                       fill="none"
-                      stroke="url(#timerGradResume)"
+                      stroke="url(#timerGradMarketing)"
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={2 * Math.PI * 54}
@@ -272,9 +271,9 @@ function ResumeContent() {
                       style={{ transition: 'stroke-dashoffset 1s linear' }}
                     />
                     <defs>
-                      <linearGradient id="timerGradResume" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#8B5CF6" />
-                        <stop offset="100%" stopColor="#A855F7" />
+                      <linearGradient id="timerGradMarketing" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#F97316" />
+                        <stop offset="100%" stopColor="#F59E0B" />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -300,8 +299,8 @@ function ResumeContent() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-violet-400" />
-                    <h2 className="text-white font-bold">이력서 리포트</h2>
+                    <FileText className="w-5 h-5 text-orange-400" />
+                    <h2 className="text-white font-bold">마케팅용 리포트</h2>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1 bg-white/10 rounded-lg px-1.5 py-1">
@@ -337,7 +336,7 @@ function ResumeContent() {
                         return <h1 key={idx} className="font-bold text-white mt-4 mb-2" style={{ fontSize: '1.5em' }}>{line.slice(2)}</h1>
                       }
                       if (line.startsWith('## ')) {
-                        return <h2 key={idx} className="font-bold text-violet-400 mt-4 mb-2" style={{ fontSize: '1.3em' }}>{line.slice(3)}</h2>
+                        return <h2 key={idx} className="font-bold text-orange-400 mt-4 mb-2" style={{ fontSize: '1.3em' }}>{line.slice(3)}</h2>
                       }
                       if (line.startsWith('### ')) {
                         return <h3 key={idx} className="font-semibold text-white/80 mt-3 mb-1" style={{ fontSize: '1.1em' }}>{line.slice(4)}</h3>
@@ -346,11 +345,8 @@ function ResumeContent() {
                         const parts = line.split('**')
                         return <p key={idx} className="text-white/70"><strong className="text-white">{parts[1]}</strong>:{parts[2]}</p>
                       }
-                      if (line.startsWith('- ') || line.startsWith('* ') || line.startsWith('• ')) {
+                      if (line.startsWith('- ') || line.startsWith('* ')) {
                         return <li key={idx} className="text-white/70 ml-4">{line.slice(2)}</li>
-                      }
-                      if (line.startsWith('|')) {
-                        return <p key={idx} className="text-white/60 font-mono" style={{ fontSize: '0.85em' }}>{line}</p>
                       }
                       if (line.startsWith('---')) {
                         return <hr key={idx} className="border-white/10 my-4" />
@@ -376,7 +372,7 @@ function ResumeContent() {
                   </button>
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold"
+                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold"
                   >
                     완료
                   </button>
@@ -390,10 +386,10 @@ function ResumeContent() {
   )
 }
 
-export default function ResumePage() {
+export default function MarketingPage() {
   return (
     <AuthGuard>
-      <ResumeContent />
+      <MarketingContent />
     </AuthGuard>
   )
 }

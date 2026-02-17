@@ -81,7 +81,10 @@ function DashboardContent() {
                     📚
                   </div>
                   <div>
-                    <h3 className="text-white font-bold">생활기록부용 리포트</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-bold">생활기록부 리포트</h3>
+                      <span className="text-yellow-400 text-xs font-medium">⭐-5</span>
+                    </div>
                     <p className="text-white/60 text-sm mt-0.5">대입 · 학교 제출용</p>
                   </div>
                 </div>
@@ -99,8 +102,53 @@ function DashboardContent() {
                     💼
                   </div>
                   <div>
-                    <h3 className="text-white font-bold">이력서용 리포트</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-bold">이력서 리포트</h3>
+                      <span className="text-yellow-400 text-xs font-medium">⭐-5</span>
+                    </div>
                     <p className="text-white/60 text-sm mt-0.5">면접 · 취업용 리포트</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/marketing"
+              className="block w-full bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/30 rounded-2xl p-5 text-left hover:from-orange-500/30 hover:to-amber-500/30 transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl">
+                    📣
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-bold">마케팅 리포트</h3>
+                      <span className="text-yellow-400 text-xs font-medium">⭐-5</span>
+                    </div>
+                    <p className="text-white/60 text-sm mt-0.5">영업 · 홍보 · 광고용</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/business"
+              className="block w-full bg-gradient-to-br from-slate-500/20 to-gray-500/20 border border-slate-500/30 rounded-2xl p-5 text-left hover:from-slate-500/30 hover:to-gray-500/30 transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-500/20 flex items-center justify-center text-2xl">
+                    📋
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-bold">업무 리포트</h3>
+                      <span className="text-yellow-400 text-xs font-medium">⭐-5</span>
+                    </div>
+                    <p className="text-white/60 text-sm mt-0.5">보고서 · 회의록 · 업무 문서</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -117,7 +165,10 @@ function DashboardContent() {
                     ✏️
                   </div>
                   <div>
-                    <h3 className="text-white font-bold">쓰기용 리포트</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-bold">글쓰기 리포트</h3>
+                      <span className="text-yellow-400 text-xs font-medium">⭐-5</span>
+                    </div>
                     <p className="text-white/60 text-sm mt-0.5">블로그 · SNS · 개인 기록용</p>
                   </div>
                 </div>

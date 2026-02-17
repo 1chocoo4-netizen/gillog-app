@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Sparkles, FileText, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Sparkles, FileText, Copy, Check, Plus, Minus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthGuard } from '@/components/AuthGuard'
 import { useUserData } from '@/lib/UserDataProvider'
@@ -34,13 +34,16 @@ const EXAMPLE_PURPOSES = [
 
 function RecordContent() {
   const router = useRouter()
-  const { history } = useUserData()
+  const { history, energy, addEnergy } = useUserData()
 
   const [step, setStep] = useState<Step>('input')
   const [purpose, setPurpose] = useState('')
   const [selectedWorlds, setSelectedWorlds] = useState<Set<string>>(new Set(WORLD_KEYS))
   const [generatedReport, setGeneratedReport] = useState('')
   const [copied, setCopied] = useState(false)
+  const [fontSize, setFontSize] = useState(14)
+  const [countdown, setCountdown] = useState(60)
+  const pendingReport = useRef<string | null>(null)
 
   const [stats, setStats] = useState<ReturnType<typeof calculateOverallStats> | null>(null)
   const [filteredRecords, setFilteredRecords] = useState<ExecutionRecord[]>([])
@@ -68,8 +71,15 @@ function RecordContent() {
 
   async function handleGenerate() {
     if (filteredRecords.length === 0 || !purpose.trim()) return
+    if (energy < 5) {
+      alert('에너지가 부족합니다. (필요: ⭐5)')
+      return
+    }
 
+    addEnergy(-5)
     setStep('generating')
+    setCountdown(60)
+    pendingReport.current = null
 
     try {
       const res = await fetch('/api/record-report', {
@@ -88,6 +98,7 @@ function RecordContent() {
       if (!res.ok) throw new Error('API 요청 실패')
 
       const data = await res.json()
+      pendingReport.current = data.report
       setGeneratedReport(data.report)
       setStep('result')
     } catch (error) {
@@ -96,6 +107,14 @@ function RecordContent() {
       setStep('input')
     }
   }
+
+  useEffect(() => {
+    if (step !== 'generating') return
+    const timer = setInterval(() => {
+      setCountdown(prev => (prev <= 0 ? 0 : prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [step])
 
   function handleCopy() {
     navigator.clipboard.writeText(generatedReport)
@@ -240,20 +259,36 @@ function RecordContent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center min-h-[60vh]"
               >
-                <div className="relative w-24 h-24 mb-6">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-0 rounded-full border-4 border-cyan-500/30 border-t-cyan-500"
-                  />
+                <div className="relative w-32 h-32 mb-8">
+                  <svg width="128" height="128" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+                    <circle
+                      cx="60" cy="60" r="54"
+                      fill="none"
+                      stroke="url(#timerGradRecord)"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 54}
+                      strokeDashoffset={2 * Math.PI * 54 * (countdown / 60)}
+                      transform="rotate(-90 60 60)"
+                      style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                    <defs>
+                      <linearGradient id="timerGradRecord" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#06B6D4" />
+                        <stop offset="100%" stopColor="#14B8A6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-cyan-400" />
+                    <span className="text-3xl font-bold text-white tabular-nums">{countdown}</span>
                   </div>
                 </div>
-                <h2 className="text-white text-xl font-bold mb-2">글을 만들고 있어요...</h2>
+                <h2 className="text-white text-xl font-bold mb-2">리포트를 만들고 있습니다</h2>
                 <p className="text-white/50 text-sm text-center">
                   {filteredRecords.length}개의 기록을 바탕으로 작성 중입니다
                 </p>
+                <p className="text-yellow-400/60 text-xs mt-3">⭐ -5 에너지 사용</p>
               </motion.div>
             )}
 
@@ -270,34 +305,51 @@ function RecordContent() {
                     <FileText className="w-5 h-5 text-cyan-400" />
                     <h2 className="text-white font-bold">쓰기용 리포트</h2>
                   </div>
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white/10 rounded-lg text-white/70 text-sm hover:bg-white/20"
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copied ? '복사됨' : '복사'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-white/10 rounded-lg px-1.5 py-1">
+                      <button
+                        onClick={() => setFontSize(prev => Math.max(10, prev - 2))}
+                        className="text-white/70 hover:text-white p-0.5"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="text-white/50 text-xs w-5 text-center">{fontSize}</span>
+                      <button
+                        onClick={() => setFontSize(prev => Math.min(24, prev + 2))}
+                        className="text-white/70 hover:text-white p-0.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white/10 rounded-lg text-white/70 text-sm hover:bg-white/20"
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? '복사됨' : '복사'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* 리포트 내용 */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                  <div className="prose prose-invert prose-sm max-w-none">
+                  <div className="prose prose-invert max-w-none" style={{ fontSize: `${fontSize}px` }}>
                     {generatedReport.split('\n').map((line, idx) => {
                       if (line.startsWith('# ')) {
-                        return <h1 key={idx} className="text-xl font-bold text-white mt-4 mb-2">{line.slice(2)}</h1>
+                        return <h1 key={idx} className="font-bold text-white mt-4 mb-2" style={{ fontSize: '1.5em' }}>{line.slice(2)}</h1>
                       }
                       if (line.startsWith('## ')) {
-                        return <h2 key={idx} className="text-lg font-bold text-cyan-400 mt-4 mb-2">{line.slice(3)}</h2>
+                        return <h2 key={idx} className="font-bold text-cyan-400 mt-4 mb-2" style={{ fontSize: '1.3em' }}>{line.slice(3)}</h2>
                       }
                       if (line.startsWith('### ')) {
-                        return <h3 key={idx} className="text-md font-semibold text-white/80 mt-3 mb-1">{line.slice(4)}</h3>
+                        return <h3 key={idx} className="font-semibold text-white/80 mt-3 mb-1" style={{ fontSize: '1.1em' }}>{line.slice(4)}</h3>
                       }
                       if (line.startsWith('**') && line.includes('**:')) {
                         const parts = line.split('**')
-                        return <p key={idx} className="text-white/70 text-sm"><strong className="text-white">{parts[1]}</strong>:{parts[2]}</p>
+                        return <p key={idx} className="text-white/70"><strong className="text-white">{parts[1]}</strong>:{parts[2]}</p>
                       }
                       if (line.startsWith('- ') || line.startsWith('* ')) {
-                        return <li key={idx} className="text-white/70 text-sm ml-4">{line.slice(2)}</li>
+                        return <li key={idx} className="text-white/70 ml-4">{line.slice(2)}</li>
                       }
                       if (line.startsWith('---')) {
                         return <hr key={idx} className="border-white/10 my-4" />
@@ -305,7 +357,7 @@ function RecordContent() {
                       if (line.trim() === '') {
                         return <br key={idx} />
                       }
-                      return <p key={idx} className="text-white/70 text-sm">{line}</p>
+                      return <p key={idx} className="text-white/70">{line}</p>
                     })}
                     <div className="mt-6 pt-4 border-t border-white/10 text-center">
                       <p className="text-white/30 text-xs">리포트가 끝났습니다</p>
