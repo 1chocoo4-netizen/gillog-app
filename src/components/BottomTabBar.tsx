@@ -27,7 +27,7 @@ export function BottomTabBar({ activeTab }: { activeTab?: string }) {
               }`}
             >
               <span className="text-[22px]">{tab.icon}</span>
-              <span className={`text-[11px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
+              <span className={`text-[13px] font-semibold ${active ? 'text-white' : 'text-white/50'}`}>
                 {tab.label}
               </span>
             </Link>
