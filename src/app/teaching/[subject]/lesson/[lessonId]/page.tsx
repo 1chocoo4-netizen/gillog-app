@@ -508,7 +508,7 @@ function LessonContent() {
       </header>
 
       {/* 카드 영역 */}
-      <div className="flex-1 pt-24 pb-36 px-4 overflow-y-auto">
+      <div className="flex-1 pt-24 pb-40 px-4 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div key={currentCard} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.25 }} className="max-w-lg mx-auto">
             <div className="text-center mb-6">
@@ -529,7 +529,7 @@ function LessonContent() {
 
       {/* 하단 버튼 */}
       {execStep === 'closed' && !showReward && (
-        <div className="fixed bottom-16 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-4">
+        <div className="fixed bottom-20 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-3">
           <button onClick={handleNext} disabled={!canProceed()}
             className={`w-full py-4 rounded-xl bg-gradient-to-r ${tier.color} text-white font-bold flex items-center justify-center gap-2 disabled:opacity-40 max-w-lg mx-auto transition-opacity`}>
             {currentCard === totalCards - 1 ? (<><CheckCircle className="w-5 h-5" />학습 완료</>) : (<>다음<ChevronRight className="w-5 h-5" /></>)}

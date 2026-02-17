@@ -3,6 +3,16 @@ import { HUMANITIES_STAGES } from './humanitiesContent'
 import { KOREAN_STAGES } from './koreanContent'
 import { ENGLISH_STAGES } from './englishContent'
 import { MATH_STAGES } from './mathContent'
+import { TIME_STAGES } from './timeContent'
+import { GOOD_HABIT_STAGES } from './goodHabitContent'
+import { SELF_AWARENESS_STAGES } from './selfAwarenessContent'
+import { ENVIRONMENT_STAGES } from './environmentContent'
+import { FOCUS_STAGES } from './focusContent'
+import { GRATITUDE_STAGES } from './gratitudeContent'
+import { COMMUNICATION_STAGES } from './communicationContent'
+import { TRUST_STAGES } from './trustContent'
+import { LOVE_STAGES } from './loveContent'
+import { MENTAL_STAGES } from './mentalContent'
 
 // ── 카드 타입 정의 ──
 
@@ -127,6 +137,16 @@ export const STAGE_CONTENT: Record<string, Stage> = {
   ...KOREAN_STAGES,
   ...ENGLISH_STAGES,
   ...MATH_STAGES,
+  ...TIME_STAGES,
+  ...GOOD_HABIT_STAGES,
+  ...SELF_AWARENESS_STAGES,
+  ...ENVIRONMENT_STAGES,
+  ...FOCUS_STAGES,
+  ...GRATITUDE_STAGES,
+  ...COMMUNICATION_STAGES,
+  ...TRUST_STAGES,
+  ...LOVE_STAGES,
+  ...MENTAL_STAGES,
 }
 
 // 특정 챕터의 스테이지 가져오기

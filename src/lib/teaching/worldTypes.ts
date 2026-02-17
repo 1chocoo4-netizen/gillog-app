@@ -88,9 +88,7 @@ export const WORLD_CONFIGS: Record<WorldKey, WorldConfig> = {
     color: 'from-rose-500 to-red-600',
     chapters: [
       { key: 'love', label: '사랑', icon: '❤️', color: 'from-rose-500 to-red-600', gradient: 'from-rose-500/20 to-red-500/20' },
-      { key: 'emotion', label: '감정', icon: '🎭', color: 'from-amber-500 to-orange-600', gradient: 'from-amber-500/20 to-orange-500/20' },
       { key: 'mental', label: '멘탈', icon: '🧠', color: 'from-blue-500 to-indigo-600', gradient: 'from-blue-500/20 to-indigo-500/20' },
-      { key: 'service', label: '봉사와 나눔', icon: '🌍', color: 'from-teal-500 to-cyan-600', gradient: 'from-teal-500/20 to-cyan-500/20' },
     ]
   }
 }
