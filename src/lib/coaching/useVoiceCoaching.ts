@@ -142,7 +142,7 @@ export function useVoiceCoaching(options?: UseVoiceCoachingOptions): UseVoiceCoa
       ])
       const silentUrl = URL.createObjectURL(new Blob([silentWav], { type: 'audio/wav' }))
       const silentAudio = new Audio(silentUrl)
-      silentAudio.playsInline = true
+      ;(silentAudio as any).playsInline = true
       await silentAudio.play().catch(() => {})
       URL.revokeObjectURL(silentUrl)
 
