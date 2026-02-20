@@ -207,6 +207,20 @@ export default function AdminCouponsPage() {
                 </span>
                 <span className="text-sm text-gray-400">|</span>
                 <span className="text-sm text-gray-500">{coupon.durationDays}일</span>
+                <span className="text-sm text-gray-400">|</span>
+                {coupon.expiresAt ? (
+                  new Date(coupon.expiresAt) < new Date() ? (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
+                      만료됨 ({new Date(coupon.expiresAt).toLocaleDateString('ko-KR')})
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      ~{new Date(coupon.expiresAt).toLocaleDateString('ko-KR')}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-sm text-gray-400">만료일 없음</span>
+                )}
                 <button
                   onClick={() => handleToggleActive(coupon)}
                   className={`text-xs px-3 py-1 rounded-lg ${coupon.isActive ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'}`}
