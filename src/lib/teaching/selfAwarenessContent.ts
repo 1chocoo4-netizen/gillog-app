@@ -328,7 +328,7 @@ export const SELF_AWARENESS_STAGES: Record<string, Stage> = {
         { icon: '🔗', label: '연결', description: '감정 → 욕구 찾기' },
         { icon: '💡', label: '해결', description: '욕구를 알면 해결이 보인다' },
       ]},
-      { type: 'example', bad: { label: '감정만 보기', story: '"짜증나! 동생이 시끄럽게 해서!"\n화만 내고 관계가 나빠졌다.' }, good: { label: '욕구 발견', story: '"짜증의 뒤에는 '조용히 공부하고 싶다'는\n욕구가 있네. 동생에게 차분히 부탁하자."\n욕구를 알고 나니 해결이 쉬웠다.' }},
+      { type: 'example', bad: { label: '감정만 보기', story: '"짜증나! 동생이 시끄럽게 해서!"\n화만 내고 관계가 나빠졌다.' }, good: { label: '욕구 발견', story: '"짜증의 뒤에는 \'조용히 공부하고 싶다\'는\n욕구가 있네. 동생에게 차분히 부탁하자."\n욕구를 알고 나니 해결이 쉬웠다.' }},
       { type: 'ox', statement: '감정을 느끼면 원인이 바로 명확하다.', answer: false, feedback: '감정의 표면 원인과 진짜 욕구는 달라!\n한 단계 더 파고들어야 진짜 이유를 알 수 있어.' },
       { type: 'multipleChoice', question: '"친구가 약속을 어겨서 화가 났다"에서 숨은 욕구는?', options: ['복수하고 싶다', '존중받고 싶다 / 중요하게 여겨지고 싶다', '혼자 있고 싶다', '더 바빠지고 싶다'], correctIndex: 1, explanation: '약속 어김 → 나를 중요하게 여기지 않는다는 느낌\n→ "존중받고 싶다"는 욕구!' },
       { type: 'feedback', summary: '감정 뒤의 욕구를 찾으면 해결이 보인다', message: '"진짜 원하는 게 뭐지?" 이 질문이 핵심!' },
@@ -588,6 +588,400 @@ export const SELF_AWARENESS_STAGES: Record<string, Stage> = {
       { type: 'apply', question: '나만의 자기인식 철학을 한 문장으로 정리해보세요.', placeholder: '예: "나를 아는 것이 세상을 아는 첫걸음이다"' },
       { type: 'feedback', summary: '자기인식 = 평생의 여정, 끝없는 성장', message: '골드 완료! 자기인식의 기본을 마스터했어!' },
       { type: 'mission', mission: '"나의 자기인식 선언문" 한 문장을 적고 매일 보기', encouragement: '30단계를 완주한 너, 정말 대단해!' },
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // 플래티넘 (자기인식 고급 기법) 1~10
+  // ═══════════════════════════════════════
+
+  'selfAwareness-platinum-1': {
+    id: 'selfAwareness-platinum-1', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 1,
+    title: '자기 객관화 훈련',
+    cards: [
+      { type: 'concept', title: '3인칭으로 나를 보기', description: '감정에 빠지면 판단이 흐려져.\n\n"나는 왜 이러지?" 대신\n"영수는 왜 저러는 걸까?"\n처럼 3인칭으로 바꿔보면\n\n거리두기(self-distancing)가 되면서\n객관적 판단이 가능해져!' },
+      { type: 'summary', keywords: [
+        { icon: '🔭', label: '거리두기', description: '감정에서 한 발 떨어지기' },
+        { icon: '👤', label: '3인칭', description: '나를 제3자처럼 관찰' },
+        { icon: '🧊', label: '냉정함', description: '감정 온도를 낮춰 판단' },
+        { icon: '🎯', label: '정확성', description: '객관적일수록 판단이 정확' },
+      ]},
+      { type: 'example', bad: { label: '감정에 빠짐', story: '"왜 나만 이런 일이 생기지!"\n분노 속에서 충동적으로 결정.\n나중에 후회했다.' }, good: { label: '자기 객관화', story: '"만약 친구가 이 상황이라면\n뭐라고 조언할까?"\n한 발 떨어지니 해결책이 보였다.' }},
+      { type: 'ox', statement: '감정적일 때 중요한 결정을 내려야 한다.', answer: false, feedback: '감정이 강할 때는 판단이 왜곡돼!\n거리두기 후 결정하는 게 현명해.' },
+      { type: 'multipleChoice', question: '자기 객관화에 가장 효과적인 방법은?', options: ['감정을 참기', '3인칭으로 상황을 바라보기', '빠르게 결정하기', '남에게 결정을 맡기기'], correctIndex: 1, explanation: '3인칭 시점이 감정적 거리를 만들어\n더 현명한 판단을 가능하게 해!' },
+      { type: 'feedback', summary: '3인칭 시점 = 감정에서 벗어나 객관적 판단', message: '한 발 떨어지면 세상이 다르게 보여!' },
+      { type: 'mission', mission: '고민될 때 "친구라면 뭐라고 조언할까?" 적용해보기', encouragement: '거리두기가 지혜의 시작이야!' },
+    ],
+  },
+
+  'selfAwareness-platinum-2': {
+    id: 'selfAwareness-platinum-2', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 2,
+    title: '감정 세분화 고급편',
+    cards: [
+      { type: 'concept', title: '감정을 30가지 이상 구분하기', description: '브론즈에서 감정 라벨링을 배웠지?\n이제 더 정밀하게 나눠보자.\n\n"화남" 안에도\n분노, 짜증, 억울함, 배신감,\n좌절감, 모멸감이 있어.\n\n세밀하게 구분할수록\n감정 조절이 정밀해져!' },
+      { type: 'summary', keywords: [
+        { icon: '🔬', label: '세분화', description: '감정을 더 정밀하게 구분' },
+        { icon: '🌈', label: '감정 스펙트럼', description: '하나의 감정에도 여러 결' },
+        { icon: '🎚️', label: '강도', description: '같은 감정도 강도가 다름' },
+        { icon: '💊', label: '정밀 처방', description: '정확한 감정에 맞는 대처' },
+      ]},
+      { type: 'example', bad: { label: '뭉뚱그린 감정', story: '"기분 나빠." 끝.\n뭐가 나쁜지 모르니\n어떻게 해야 할지도 모름.' }, good: { label: '감정 세분화', story: '"이건 화가 아니라 억울함이네.\n내 노력을 인정 안 받은 느낌.\n인정받고 싶다는 욕구구나."\n정확히 알면 대처가 달라진다.' }},
+      { type: 'ox', statement: '감정을 세밀하게 나누는 것은 과민한 것이다.', answer: false, feedback: '오히려 감정 전문가의 특징이야!\n세밀할수록 조절 능력이 높아져.' },
+      { type: 'multipleChoice', question: '"속상하다"를 세분화한 것으로 적절하지 않은 것은?', options: ['서운하다', '허탈하다', '배고프다', '실망했다'], correctIndex: 2, explanation: '배고프다는 신체 감각이지 감정이 아니야!\n서운함, 허탈함, 실망은 속상함의 세부 감정.' },
+      { type: 'feedback', summary: '감정 세분화 = 정밀한 자기인식의 핵심', message: '감정을 정확히 알수록 나를 잘 다룰 수 있어!' },
+      { type: 'mission', mission: '"화남" 카테고리에서 5가지 세부 감정 적어보기', encouragement: '감정 어휘가 곧 감정 지능이야!' },
+    ],
+  },
+
+  'selfAwareness-platinum-3': {
+    id: 'selfAwareness-platinum-3', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 3,
+    title: '가치관 우선순위 갈등',
+    cards: [
+      { type: 'concept', title: '가치가 충돌할 때 어떻게 할까', description: '가치관끼리 부딪힐 때가 있어.\n\n"정직" vs "배려"\n→ 솔직히 말하면 상처줄 것 같을 때\n\n"성장" vs "안정"\n→ 도전하고 싶지만 불안할 때\n\n이때 자기인식이 깊어야\n후회 없는 선택을 할 수 있어!' },
+      { type: 'summary', keywords: [
+        { icon: '⚔️', label: '가치 충돌', description: '두 가치가 동시에 부딪힘' },
+        { icon: '⚖️', label: '우선순위', description: '어떤 가치가 더 중요한가' },
+        { icon: '🤔', label: '딜레마', description: '정답이 없는 선택의 순간' },
+        { icon: '🧭', label: '기준점', description: '장기적 가치를 기준으로' },
+      ]},
+      { type: 'example', bad: { label: '회피', story: '성장(도전)과 안정(현재유지) 사이에서\n결정 못 하고 6개월을 흘려보냈다.' }, good: { label: '가치 우선순위 정리', story: '"장기적으로 성장이 내 1순위야.\n단기 불안은 감수하고 도전하자."\n명확한 기준으로 결정하니 후회가 없었다.' }},
+      { type: 'ox', statement: '가치관이 확실하면 갈등 상황이 없다.', answer: false, feedback: '가치 간 충돌은 자연스러워!\n중요한 건 우선순위를 아는 것.' },
+      { type: 'multipleChoice', question: '가치 충돌 시 가장 좋은 결정 기준은?', options: ['남들의 선택', '단기적 편안함', '장기적으로 중요한 가치', '직감만 따르기'], correctIndex: 2, explanation: '장기적 가치 기준이 후회를 줄여줘!' },
+      { type: 'apply', question: '최근 두 가지 가치가 충돌한 경험이 있나요? 어떤 가치를 선택했나요?', placeholder: '가치A vs 가치B: ...\n선택한 것: ...\n이유: ...' },
+      { type: 'feedback', summary: '가치 충돌 = 더 깊은 자기인식의 기회', message: '갈등은 나를 더 잘 알게 해주는 선물!' },
+      { type: 'mission', mission: '나의 가치 TOP5를 적고 충돌 가능한 조합 1개 찾기', encouragement: '미리 생각하면 실전에서 흔들리지 않아!' },
+    ],
+  },
+
+  'selfAwareness-platinum-4': {
+    id: 'selfAwareness-platinum-4', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 4,
+    title: '투사와 전이 이해하기',
+    cards: [
+      { type: 'concept', title: '내 감정을 남에게 씌우기', description: '투사(Projection)란\n내 감정을 남의 것으로 보는 것.\n\n내가 불안하면서\n"쟤가 날 불안하게 해"\n\n내가 질투하면서\n"쟤가 나를 질투해"\n\n알아차리면 관계가 180도 달라져!' },
+      { type: 'summary', keywords: [
+        { icon: '🪞', label: '투사', description: '내 감정을 남에게 돌리기' },
+        { icon: '🔄', label: '전이', description: '과거 감정이 현재 관계에' },
+        { icon: '⚠️', label: '무의식', description: '자각 없이 자동으로 일어남' },
+        { icon: '💡', label: '알아차림', description: '인식하면 관계가 좋아짐' },
+      ]},
+      { type: 'example', bad: { label: '투사', story: '내가 자신없는데\n"쟤가 날 무시해"라고 느낌.\n상대에게 화를 냈지만 사실 내 문제였다.' }, good: { label: '투사 인식', story: '"이 사람한테 유독 화가 나네.\n혹시 내 불안을 투사하는 건 아닐까?"\n점검하니 진짜 원인은 내 안에 있었다.' }},
+      { type: 'ox', statement: '다른 사람에게 강하게 느끼는 감정은 항상 상대 때문이다.', answer: false, feedback: '투사일 수 있어! "이 감정이\n정말 상대 때문인가?" 점검이 필요해.' },
+      { type: 'multipleChoice', question: '투사를 알아차리는 가장 좋은 질문은?', options: ['"저 사람이 왜 저래?"', '"이 감정이 정말 상대 때문일까, 내 안에서 온 걸까?"', '"누가 잘못한 거지?"', '"다들 저렇게 느끼지 않나?"'], correctIndex: 1, explanation: '감정의 진짜 출처를 묻는 것이 핵심!\n내 안에서 온 감정일 수 있어.' },
+      { type: 'feedback', summary: '투사 인식 = 관계 갈등의 진짜 원인 찾기', message: '남 탓 전에 내 안을 먼저 보자!' },
+      { type: 'mission', mission: '특정 사람에게 반복적으로 느끼는 감정이 투사인지 점검해보기', encouragement: '투사를 아는 것이 관계 지혜의 시작!' },
+    ],
+  },
+
+  'selfAwareness-platinum-5': {
+    id: 'selfAwareness-platinum-5', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 5,
+    title: '정체성과 역할의 분리',
+    cards: [
+      { type: 'concept', title: '나는 역할 그 이상이다', description: '학생, 자녀, 친구, 리더...\n우리는 여러 역할을 맡아.\n\n하지만 역할 = 나 전부가 아니야!\n\n시험 망쳤다고 "나는 실패자"?\n학생 역할에서 한 번 실수한 거지\n내 전체가 실패한 게 아니야.' },
+      { type: 'summary', keywords: [
+        { icon: '🎭', label: '역할', description: '상황에 따라 맡는 모습' },
+        { icon: '👤', label: '정체성', description: '역할을 넘어선 진짜 나' },
+        { icon: '🔗', label: '동일시', description: '역할과 자신을 같다고 여김' },
+        { icon: '🦋', label: '분리', description: '역할 실패 ≠ 나의 실패' },
+      ]},
+      { type: 'example', bad: { label: '역할 동일시', story: '반장 선거에서 떨어짐.\n"나는 리더 자격이 없는 사람이야."\n모든 자신감을 잃었다.' }, good: { label: '역할 분리', story: '"반장 역할은 못 맡았지만\n나라는 사람의 가치는 변하지 않아.\n다른 방식으로 리더십을 발휘하자."' }},
+      { type: 'ox', statement: '한 분야에서 실패하면 나 자체가 실패한 것이다.', answer: false, feedback: '역할에서의 실패 ≠ 나의 실패!\n나는 수많은 역할과 가능성의 총합이야.' },
+      { type: 'multipleChoice', question: '역할과 정체성을 분리하면 좋은 점은?', options: ['책임감이 줄어든다', '실패에도 자존감이 유지된다', '노력을 안 해도 된다', '역할을 무시해도 된다'], correctIndex: 1, explanation: '한 역할의 실패가 나 전체를 무너뜨리지 않아!\n자존감이 유지되면 다시 도전할 수 있어.' },
+      { type: 'feedback', summary: '역할 ≠ 정체성, 실패해도 나는 괜찮다', message: '역할은 옷이야. 옷이 찢어져도 내가 사라지진 않아!' },
+      { type: 'mission', mission: '내가 맡고 있는 역할 5가지와 "역할과 상관없는 나의 가치" 3가지 적기', encouragement: '역할 너머의 나를 아는 것이 진정한 자기인식!' },
+    ],
+  },
+
+  'selfAwareness-platinum-6': {
+    id: 'selfAwareness-platinum-6', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 6,
+    title: '감정 복합체 분석',
+    cards: [
+      { type: 'concept', title: '한 번에 여러 감정이 온다', description: '감정은 하나만 오지 않아.\n\n졸업식: 기쁨 + 슬픔 + 불안\n고백: 설렘 + 두려움\n승진: 뿌듯함 + 부담감\n\n복합 감정을 하나하나 분리하면\n혼란스러운 마음이 정리돼!' },
+      { type: 'summary', keywords: [
+        { icon: '🎨', label: '복합 감정', description: '여러 감정이 동시에 존재' },
+        { icon: '🧩', label: '분리', description: '각 감정을 하나씩 꺼내보기' },
+        { icon: '🤷', label: '혼란', description: '복합 감정을 모르면 혼란' },
+        { icon: '✅', label: '수용', description: '모순된 감정도 자연스러움' },
+      ]},
+      { type: 'example', bad: { label: '혼란', story: '전학 가게 됐다.\n기분이 이상한데 뭔지 모르겠다.\n혼란 속에 아무 준비도 못 했다.' }, good: { label: '복합 감정 분리', story: '"새로운 곳에 대한 설렘 + 친구와 헤어지는 슬픔\n+ 적응 못 할까 봐 불안."\n각각 분리하니 대처법이 보였다.' }},
+      { type: 'ox', statement: '한 상황에서는 하나의 감정만 느껴야 정상이다.', answer: false, feedback: '여러 감정을 동시에 느끼는 게 정상이야!\n모순된 감정도 자연스러운 거야.' },
+      { type: 'multipleChoice', question: '복합 감정을 다루는 첫 번째 단계는?', options: ['하나만 골라서 느끼기', '각 감정을 하나씩 이름 붙여 분리하기', '모든 감정 무시하기', '가장 강한 감정만 처리하기'], correctIndex: 1, explanation: '먼저 분리! 이름을 붙이면\n각 감정에 맞는 대처가 가능해져.' },
+      { type: 'feedback', summary: '복합 감정 = 분리하면 정리된다', message: '모순된 감정도 다 괜찮아! 분리가 핵심.' },
+      { type: 'mission', mission: '최근 복잡했던 감정 1개를 3가지 이상 세부 감정으로 분리해보기', encouragement: '분리하는 순간 혼란이 사라져!' },
+    ],
+  },
+
+  'selfAwareness-platinum-7': {
+    id: 'selfAwareness-platinum-7', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 7,
+    title: '신체-감정-사고 삼각형',
+    cards: [
+      { type: 'concept', title: '몸·감정·생각은 연결되어 있다', description: '이 세 가지는 삼각형처럼 연결돼.\n\n생각: "나는 못해" →\n감정: 불안 →\n신체: 손 떨림, 심장 빨라짐\n\n하나를 바꾸면 나머지도 바뀌어!\n몸을 바꾸면 감정이 바뀌고\n생각을 바꾸면 몸이 편해져.' },
+      { type: 'summary', keywords: [
+        { icon: '🔺', label: '삼각형', description: '몸·감정·생각의 연결' },
+        { icon: '💭', label: '사고', description: '생각이 감정과 몸에 영향' },
+        { icon: '❤️', label: '감정', description: '감정이 생각과 몸에 영향' },
+        { icon: '🏃', label: '신체', description: '몸을 바꾸면 감정이 변함' },
+      ]},
+      { type: 'example', bad: { label: '악순환', story: '"발표 망할 거야" (생각)\n→ 불안 (감정) → 손 떨림 (몸)\n→ "역시 나는 안 돼" (생각 강화)\n계속 나빠지는 악순환.' }, good: { label: '삼각형 활용', story: '손이 떨려? → 심호흡 (몸 변경)\n→ 불안 줄어듦 (감정 변화)\n→ "한번 해보자" (생각 전환)\n하나만 바꿔도 전체가 달라졌다.' }},
+      { type: 'ox', statement: '감정을 바꾸려면 생각만 바꾸면 된다.', answer: false, feedback: '생각, 감정, 몸 중 어디서든 시작 가능!\n특히 몸을 바꾸는 게 가장 빠를 때가 많아.' },
+      { type: 'multipleChoice', question: '불안할 때 가장 빠른 개입 경로는?', options: ['생각을 바꾸기', '감정을 억누르기', '신체를 바꾸기 (심호흡, 자세 등)', '아무것도 안 하기'], correctIndex: 2, explanation: '몸은 가장 직접적으로 바꿀 수 있어!\n심호흡 3번이면 즉시 변화가 시작돼.' },
+      { type: 'feedback', summary: '몸·감정·생각 = 하나만 바꿔도 전체가 변한다', message: '악순환을 끊는 열쇠는 삼각형에 있어!' },
+      { type: 'mission', mission: '다음에 부정적 감정이 올 때 "몸 먼저" 바꿔보기 (자세, 호흡, 표정)', encouragement: '몸이 바뀌면 마음이 따라와!' },
+    ],
+  },
+
+  'selfAwareness-platinum-8': {
+    id: 'selfAwareness-platinum-8', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 8,
+    title: '자기 효능감 구축',
+    cards: [
+      { type: 'concept', title: '"나는 할 수 있다"는 근거 만들기', description: '자기 효능감 = "나는 해낼 수 있다"는\n구체적 믿음. 막연한 자신감과 달라.\n\n4가지 원천:\n1. 성공 경험 (직접 해본 것)\n2. 대리 경험 (비슷한 사람의 성공)\n3. 격려 (신뢰하는 사람의 응원)\n4. 몸 상태 (컨디션 관리)' },
+      { type: 'summary', keywords: [
+        { icon: '💪', label: '효능감', description: '"해낼 수 있다"는 구체적 믿음' },
+        { icon: '🏆', label: '성공 경험', description: '작은 성공을 쌓아 근거 만들기' },
+        { icon: '👀', label: '대리 경험', description: '비슷한 사람이 했으면 나도' },
+        { icon: '📣', label: '격려', description: '신뢰하는 사람의 응원' },
+      ]},
+      { type: 'example', bad: { label: '낮은 효능감', story: '"어차피 못 할 거야."\n시도조차 안 하니 근거가 계속 0.\n할 수 있다는 믿음이 생길 리 없다.' }, good: { label: '효능감 구축', story: '"지난번 작은 발표를 해냈잖아.\n이번에도 할 수 있어."\n성공 경험이 자기 효능감의 근거가 됐다.' }},
+      { type: 'ox', statement: '자기 효능감은 선천적인 성격이다.', answer: false, feedback: '경험으로 만드는 거야!\n작은 성공을 쌓으면 누구나 키울 수 있어.' },
+      { type: 'multipleChoice', question: '자기 효능감을 가장 강하게 높이는 것은?', options: ['남의 칭찬', '직접 해낸 성공 경험', '이론 공부', '성격 바꾸기'], correctIndex: 1, explanation: '직접 해본 경험이 가장 강력한 근거!\n그래서 작은 도전부터 시작하는 게 중요해.' },
+      { type: 'feedback', summary: '자기 효능감 = 작은 성공이 만드는 큰 믿음', message: '작게 시작하고 성공을 쌓아가자!' },
+      { type: 'mission', mission: '과거 성공 경험 3가지를 적고 "나는 이것을 해냈다" 선언하기', encouragement: '증거가 쌓이면 믿음이 된다!' },
+    ],
+  },
+
+  'selfAwareness-platinum-9': {
+    id: 'selfAwareness-platinum-9', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 9,
+    title: '무의식 패턴 해독',
+    cards: [
+      { type: 'concept', title: '반복되는 패턴에 숨은 무의식', description: '같은 유형의 사람과 갈등.\n같은 상황에서 같은 실수.\n같은 감정이 반복.\n\n이건 우연이 아니야.\n무의식적 패턴이 작동하는 거야.\n\n패턴을 발견하면\n"자동 반복"에서 벗어날 수 있어!' },
+      { type: 'summary', keywords: [
+        { icon: '🔁', label: '반복 패턴', description: '같은 상황이 계속 되풀이' },
+        { icon: '🧠', label: '무의식', description: '의식하지 못하는 자동 프로그램' },
+        { icon: '🔍', label: '패턴 발견', description: '반복에서 공통점 찾기' },
+        { icon: '🔓', label: '해방', description: '알면 자동 반복에서 벗어남' },
+      ]},
+      { type: 'example', bad: { label: '패턴 반복', story: '매번 비슷한 유형의 친구와 갈등.\n"나는 왜 항상 이런 사람만 만나?"\n원인을 모르니 계속 반복.' }, good: { label: '패턴 해독', story: '"나는 거절을 못해서 무리한 부탁을\n받아주다가 터지는 패턴이구나!"\n패턴을 알고 나서 거절 연습을 시작했다.' }},
+      { type: 'ox', statement: '같은 실수를 반복하는 건 의지가 약해서이다.', answer: false, feedback: '의지 문제가 아니라 무의식 패턴이야!\n패턴을 인식해야 바꿀 수 있어.' },
+      { type: 'multipleChoice', question: '무의식 패턴을 발견하는 가장 좋은 방법은?', options: ['다른 사람 탓하기', '반복되는 상황의 공통점을 기록하고 분석하기', '생각 안 하기', '매번 환경을 바꾸기'], correctIndex: 1, explanation: '기록 + 분석! 3번 이상 반복되면\n거기에 무의식 패턴이 있다.' },
+      { type: 'apply', question: '최근 반복되는 상황이나 감정 패턴이 있나요? 공통점은 무엇인가요?', placeholder: '반복 상황: ...\n공통점: ...\n숨은 패턴: ...' },
+      { type: 'feedback', summary: '반복 = 무의식의 신호. 패턴을 읽으면 자유', message: '패턴을 아는 것이 자동 반복을 깨는 첫걸음!' },
+      { type: 'mission', mission: '내 인생에서 3번 이상 반복된 상황을 찾고 공통점 분석하기', encouragement: '패턴을 깨는 사람이 운명을 바꿔!' },
+    ],
+  },
+
+  'selfAwareness-platinum-10': {
+    id: 'selfAwareness-platinum-10', chapterKey: 'selfAwareness', tierKey: 'platinum', stageNumber: 10,
+    title: '자기인식 실전 통합',
+    cards: [
+      { type: 'concept', title: '플래티넘 기법을 일상에 녹이기', description: '지금까지 배운 고급 기법 정리:\n\n1. 자기 객관화 (3인칭)\n2. 감정 세분화 (30가지+)\n3. 투사 점검 (내 감정인가?)\n4. 역할과 정체성 분리\n5. 신체-감정-사고 삼각형\n\n핵심: 상황에 맞는 도구를 골라 쓰기!' },
+      { type: 'summary', keywords: [
+        { icon: '🔭', label: '객관화', description: '3인칭 거리두기' },
+        { icon: '🔬', label: '세분화', description: '정밀한 감정 구분' },
+        { icon: '🪞', label: '투사 점검', description: '내 감정을 남에게 씌우지 않기' },
+        { icon: '🔺', label: '삼각형', description: '몸·감정·생각 중 하나 바꾸기' },
+      ]},
+      { type: 'example', bad: { label: '도구 방치', story: '배운 건 많지만 쓰질 않으니\n여전히 감정에 끌려다녔다.' }, good: { label: '실전 통합', story: '감정 올라옴 → 세분화(정확히 뭐지?)\n→ 투사 점검(진짜 원인은?) → 삼각형(몸 먼저!)\n상황별로 도구를 골라 쓰니 자유로워졌다.' }},
+      { type: 'ox', statement: '모든 상황에 같은 기법을 써야 한다.', answer: false, feedback: '상황마다 맞는 도구가 달라!\n여러 도구를 갖고 유연하게 쓰는 게 핵심.' },
+      { type: 'multipleChoice', question: '갈등 상황에서 "내 감정이 아닌 것 같다"고 느낄 때 쓸 기법은?', options: ['감정 세분화', '투사 점검', '자기 효능감', '성장 마인드셋'], correctIndex: 1, explanation: '투사일 수 있어! 내 감정의 진짜 출처를 점검해야 해.' },
+      { type: 'apply', question: '가장 자주 쓸 것 같은 플래티넘 기법 TOP 3를 골라보세요.', placeholder: '1위: ...\n2위: ...\n3위: ...' },
+      { type: 'feedback', summary: '상황별로 도구를 골라 쓰는 것이 진짜 실력', message: '플래티넘 완료! 자기인식의 전문가가 되어가고 있어!' },
+      { type: 'mission', mission: '이번 주 매일 다른 플래티넘 기법 1개씩 실전 적용하기', encouragement: '도구를 쓸수록 자기인식이 자동화돼!' },
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // 다이아 (자기인식 마스터리) 1~10
+  // ═══════════════════════════════════════
+
+  'selfAwareness-diamond-1': {
+    id: 'selfAwareness-diamond-1', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 1,
+    title: '알아차림의 알아차림',
+    cards: [
+      { type: 'concept', title: '메타-메타인지의 세계', description: '메타인지 = 생각을 생각하기.\n메타-메타인지 = 그 과정 자체를 관찰.\n\n"지금 나는 내 감정을 관찰하고 있는데\n그 관찰이 진짜 객관적인가?"\n\n관찰자도 편향이 있어.\n관찰하는 나마저 관찰하는 것.\n이것이 자기인식의 최고 단계!' },
+      { type: 'summary', keywords: [
+        { icon: '🔭', label: '메타-메타', description: '관찰하는 나를 관찰하기' },
+        { icon: '🪞', label: '거울의 거울', description: '반영의 반영' },
+        { icon: '⚠️', label: '관찰자 편향', description: '관찰자도 왜곡할 수 있다' },
+        { icon: '🏔️', label: '최고 단계', description: '자기인식의 정점' },
+      ]},
+      { type: 'example', bad: { label: '관찰자 착각', story: '"나는 객관적으로 보고 있어."\n하지만 자기 방어 편향으로\n불편한 진실을 무의식적으로 피하고 있었다.' }, good: { label: '메타-메타인지', story: '"지금 내가 객관적이라고 느끼는 건\n혹시 방어기제는 아닐까?"\n한 겹 더 깊이 점검하니 진짜가 보였다.' }},
+      { type: 'ox', statement: '자기인식이 높은 사람은 자기 편향을 완전히 없앨 수 있다.', answer: false, feedback: '완전히 없앨 순 없어!\n하지만 "있을 수 있다"는 자각이 핵심이야.' },
+      { type: 'multipleChoice', question: '메타-메타인지가 필요한 이유는?', options: ['복잡하게 생각하면 멋있어서', '자기 관찰에도 편향이 있을 수 있으므로', '남에게 보여주려고', '감정을 안 느끼려고'], correctIndex: 1, explanation: '관찰자도 완벽하지 않아!\n관찰의 질을 점검하는 것이 진정한 마스터.' },
+      { type: 'feedback', summary: '관찰하는 나마저 관찰하기 = 자기인식의 정점', message: '한 겹 더 깊이 들어가면 진짜가 보여!' },
+      { type: 'mission', mission: '오늘 자기 관찰을 한 뒤 "이 관찰은 객관적이었나?" 한 번 더 점검하기', encouragement: '마스터는 관찰의 관찰까지 한다!' },
+    ],
+  },
+
+  'selfAwareness-diamond-2': {
+    id: 'selfAwareness-diamond-2', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 2,
+    title: '방어기제 마스터',
+    cards: [
+      { type: 'concept', title: '무의식이 나를 보호하는 방식', description: '방어기제 = 마음이 불안에서\n스스로를 보호하는 무의식 전략.\n\n합리화: "어차피 안 하려 했어"\n부정: "별로 안 슬퍼"\n승화: 분노를 운동으로 전환\n\n건강한 것도, 해로운 것도 있어.\n핵심은 알아차리는 것!' },
+      { type: 'summary', keywords: [
+        { icon: '🛡️', label: '방어기제', description: '마음의 자동 보호 시스템' },
+        { icon: '🤥', label: '합리화', description: '변명으로 불안 회피' },
+        { icon: '🙈', label: '부정', description: '현실을 인정하지 않음' },
+        { icon: '🎨', label: '승화', description: '부정 에너지를 생산적으로 전환' },
+      ]},
+      { type: 'example', bad: { label: '방어기제에 지배', story: '시험 망쳤는데 "문제가 이상했어" (합리화).\n매번 변명하니 실력이 안 늘었다.' }, good: { label: '방어기제 인식', story: '"합리화하고 있네. 솔직히 준비 부족이었어."\n방어기제를 알아차리고 진짜 원인을 마주했다.' }},
+      { type: 'ox', statement: '방어기제는 무조건 나쁜 것이다.', answer: false, feedback: '승화처럼 건강한 방어기제도 있어!\n문제는 해로운 기제를 모르고 쓰는 것.' },
+      { type: 'multipleChoice', question: '가장 건강한 방어기제는?', options: ['부정 (안 일어난 척)', '합리화 (변명)', '승화 (에너지 전환)', '퇴행 (어린아이처럼 행동)'], correctIndex: 2, explanation: '승화는 부정적 에너지를 창작, 운동 등\n생산적 활동으로 바꾸는 건강한 기제!' },
+      { type: 'feedback', summary: '방어기제 인식 = 진짜 나를 마주하는 용기', message: '알면 지배당하지 않고 선택할 수 있어!' },
+      { type: 'mission', mission: '최근 변명이나 회피를 한 순간을 떠올리고 어떤 방어기제였는지 분류하기', encouragement: '방어기제를 아는 것이 진짜 용기야!' },
+    ],
+  },
+
+  'selfAwareness-diamond-3': {
+    id: 'selfAwareness-diamond-3', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 3,
+    title: '자기 서사 재구성',
+    cards: [
+      { type: 'concept', title: '내 인생 이야기를 다시 쓰기', description: '우리는 각자 "내 이야기"를 갖고 있어.\n\n"나는 불운한 사람"\n"나는 늘 뒤처지는 사람"\n\n하지만 같은 사건도\n이야기 방식에 따라 의미가 달라져.\n\n"실패의 연속" → "도전의 기록"\n서사를 바꾸면 정체성이 바뀐다!' },
+      { type: 'summary', keywords: [
+        { icon: '📖', label: '자기 서사', description: '내가 나에 대해 하는 이야기' },
+        { icon: '✏️', label: '재구성', description: '같은 사건, 다른 의미 부여' },
+        { icon: '🔄', label: '관점 전환', description: '피해자 → 주인공으로' },
+        { icon: '🌟', label: '정체성', description: '이야기가 정체성을 만든다' },
+      ]},
+      { type: 'example', bad: { label: '부정적 서사', story: '"어릴 때 왕따당해서 나는 사회성이 없어."\n과거에 갇혀 새 관계를 시도하지 않았다.' }, good: { label: '서사 재구성', story: '"그 경험으로 사람의 아픔을 잘 이해하게 됐어.\n그래서 지금 좋은 친구가 될 수 있는 거야."\n같은 과거, 다른 의미.' }},
+      { type: 'ox', statement: '과거 경험은 무조건 나를 결정한다.', answer: false, feedback: '과거 사건은 바꿀 수 없지만\n그 의미는 바꿀 수 있어! 서사의 힘이야.' },
+      { type: 'multipleChoice', question: '자기 서사 재구성의 핵심은?', options: ['과거를 잊기', '과거 사건의 의미를 재해석하기', '다른 사람의 이야기 따라하기', '과거를 부정하기'], correctIndex: 1, explanation: '사건은 못 바꿔도 해석은 바꿀 수 있어!\n"상처"를 "성장의 씨앗"으로 재해석.' },
+      { type: 'apply', question: '나를 힘들게 한 과거 경험 1개를 성장 관점으로 다시 써보세요.', placeholder: '사건: ...\n기존 해석: ...\n새로운 해석: ...' },
+      { type: 'feedback', summary: '자기 서사 = 내 이야기를 내가 다시 쓸 수 있다', message: '나는 내 인생의 작가이자 주인공이야!' },
+      { type: 'mission', mission: '"내 인생에서 가장 힘들었던 사건"을 성장 서사로 다시 한 줄 쓰기', encouragement: '이야기를 바꾸면 미래가 바뀐다!' },
+    ],
+  },
+
+  'selfAwareness-diamond-4': {
+    id: 'selfAwareness-diamond-4', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 4,
+    title: '상황적 자기인식',
+    cards: [
+      { type: 'concept', title: '나는 상황에 따라 달라진다', description: '집에서의 나 ≠ 학교에서의 나\n친구 앞의 나 ≠ 어른 앞의 나\n\n이건 가식이 아니라 자연스러운 거야.\n\n핵심은 "어떤 상황에서\n어떤 나가 나오는지" 아는 것.\n상황별 나를 알면 관계가 편해져!' },
+      { type: 'summary', keywords: [
+        { icon: '🔀', label: '상황적', description: '맥락에 따라 달라지는 나' },
+        { icon: '🎭', label: '다면성', description: '여러 모습 = 자연스러움' },
+        { icon: '📊', label: '패턴 맵', description: '상황별 반응 패턴 정리' },
+        { icon: '🤝', label: '관계', description: '상대에 따라 다른 나' },
+      ]},
+      { type: 'example', bad: { label: '혼란', story: '"친구 앞에선 밝은데 집에선 조용해.\n나는 어떤 게 진짜야?"\n정체성 혼란.' }, good: { label: '상황적 인식', story: '"친구 앞의 밝은 나도 진짜,\n집에서 조용한 나도 진짜야.\n상황에 따라 다른 면이 나오는 거지."\n모든 모습이 나라는 걸 수용.' }},
+      { type: 'ox', statement: '진짜 나는 하나의 일관된 모습이어야 한다.', answer: false, feedback: '사람은 다면적이야!\n상황별로 다른 건 가식이 아니라 자연스러움.' },
+      { type: 'multipleChoice', question: '상황적 자기인식이 높은 사람의 특징은?', options: ['모든 상황에서 똑같이 행동', '상황별로 다른 자신의 모습을 이해하고 수용', '항상 남에게 맞춤', '감정을 숨김'], correctIndex: 1, explanation: '다양한 나를 이해하고 수용!\n어떤 상황에서 어떤 내가 나오는지 아는 것이 핵심.' },
+      { type: 'feedback', summary: '상황마다 다른 나 = 다 진짜 나', message: '다면적인 나를 수용하는 것이 성숙이야!' },
+      { type: 'mission', mission: '3가지 상황(집/학교/친구)에서 각각 어떤 내가 나오는지 적어보기', encouragement: '모든 면이 나라는 걸 인정하면 편해져!' },
+    ],
+  },
+
+  'selfAwareness-diamond-5': {
+    id: 'selfAwareness-diamond-5', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 5,
+    title: '자기 수용의 깊은 차원',
+    cards: [
+      { type: 'concept', title: '있는 그대로의 나를 받아들이기', description: '자기인식의 끝은 자기 수용이야.\n\n강점도, 약점도,\n밝은 면도, 어두운 면도,\n이상적 나와 현실의 나 사이 차이도.\n\n모두 포함한 것이 "나"야.\n\n바꾸려는 노력은 하되\n바꾸기 전의 나도 충분히 괜찮다.' },
+      { type: 'summary', keywords: [
+        { icon: '🤗', label: '수용', description: '있는 그대로 받아들이기' },
+        { icon: '⚖️', label: '균형', description: '수용 + 성장 노력 동시에' },
+        { icon: '💎', label: '완전함', description: '불완전한 그대로 완전하다' },
+        { icon: '☮️', label: '평화', description: '자기 전쟁을 끝내기' },
+      ]},
+      { type: 'example', bad: { label: '자기 거부', story: '"이런 내가 싫어. 완전히 달라져야 해."\n자기와의 전쟁. 지치고 자존감 바닥.' }, good: { label: '자기 수용', story: '"완벽하진 않지만 나는 나야.\n부족한 부분도 인정하면서\n조금씩 성장하면 돼."\n평화 속에서 더 잘 성장했다.' }},
+      { type: 'ox', statement: '자기 수용은 변화를 포기하는 것이다.', answer: false, feedback: '수용은 포기가 아니야!\n"지금의 나도 괜찮고, 더 나아질 수도 있다."\n이 둘은 공존해.' },
+      { type: 'multipleChoice', question: '자기 수용의 핵심 태도는?', options: ['"나는 완벽해야 해"', '"나는 부족하니까 바꿔야 해"', '"지금의 나도 괜찮고, 성장도 할 수 있다"', '"나는 변할 수 없어"'], correctIndex: 2, explanation: '수용과 성장은 모순이 아니야!\n자기와 싸우지 않으면서 성장하는 것이 최선.' },
+      { type: 'feedback', summary: '자기 수용 = 불완전한 나도 충분히 괜찮다', message: '나와 평화를 이루는 것이 가장 강한 힘!' },
+      { type: 'mission', mission: '"지금의 내가 괜찮은 이유" 5가지 적기', encouragement: '수용이 진짜 변화의 시작점이야!' },
+    ],
+  },
+
+  'selfAwareness-diamond-6': {
+    id: 'selfAwareness-diamond-6', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 6,
+    title: '관계 속 자기인식',
+    cards: [
+      { type: 'concept', title: '관계가 거울이 된다', description: '관계는 나를 비추는 거울이야.\n\n화나는 사람 → 내 그림자를 자극\n끌리는 사람 → 내 욕구를 반영\n반복되는 갈등 → 내 패턴을 보여줌\n\n모든 관계 경험이\n자기인식의 재료가 돼!' },
+      { type: 'summary', keywords: [
+        { icon: '🪞', label: '관계 거울', description: '타인은 나를 비추는 거울' },
+        { icon: '😡', label: '자극', description: '싫은 사람이 보여주는 내 그림자' },
+        { icon: '💕', label: '끌림', description: '끌리는 사람이 보여주는 내 욕구' },
+        { icon: '🔁', label: '패턴', description: '반복 갈등 = 내 과제' },
+      ]},
+      { type: 'example', bad: { label: '남 탓', story: '"저 사람이 문제야."\n모든 갈등을 상대 탓으로 돌리니\n같은 문제가 사람만 바뀌며 반복.' }, good: { label: '관계 거울', story: '"이 사람에게 유독 화가 나는 건\n내 안의 뭔가를 건드리기 때문이야."\n관계를 통해 나를 더 깊이 이해했다.' }},
+      { type: 'ox', statement: '인간관계 갈등은 항상 상대방의 문제이다.', answer: false, feedback: '갈등 속에는 내 패턴도 있어!\n관계가 보여주는 나를 읽을 수 있어야 해.' },
+      { type: 'multipleChoice', question: '같은 유형의 갈등이 사람만 바뀌며 반복될 때 점검할 것은?', options: ['상대방 성격', '나의 반복 패턴', '운이 나쁜 것', '환경'], correctIndex: 1, explanation: '사람이 바뀌어도 같은 갈등 = 내 패턴!\n관계가 보여주는 나의 과제야.' },
+      { type: 'feedback', summary: '모든 관계는 자기인식의 재료', message: '관계 속에서 나를 읽는 것이 마스터!' },
+      { type: 'mission', mission: '가장 자주 갈등하는 관계에서 "나의 패턴" 1가지 찾기', encouragement: '관계가 나를 가르쳐준다!' },
+    ],
+  },
+
+  'selfAwareness-diamond-7': {
+    id: 'selfAwareness-diamond-7', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 7,
+    title: '시간축 자기인식',
+    cards: [
+      { type: 'concept', title: '과거·현재·미래의 나를 통합하기', description: '과거의 나: 어떻게 여기까지 왔는가\n현재의 나: 지금 어디에 있는가\n미래의 나: 어디로 가고 싶은가\n\n이 세 시점의 나를 연결하면\n"나는 어디서 와서 어디로 가는가"\n라는 인생 지도가 완성돼!' },
+      { type: 'summary', keywords: [
+        { icon: '⏪', label: '과거', description: '경험과 교훈의 축적' },
+        { icon: '⏺️', label: '현재', description: '지금의 상태와 위치' },
+        { icon: '⏩', label: '미래', description: '목표와 방향' },
+        { icon: '🗺️', label: '인생 지도', description: '세 시점의 통합' },
+      ]},
+      { type: 'example', bad: { label: '분리된 시점', story: '과거 후회에 갇히고\n현재를 놓치고\n미래가 막막하다.\n세 시점이 따로 놀아 혼란.' }, good: { label: '시간축 통합', story: '"과거 실패에서 배운 것 → 현재 나의 강점 →\n미래에 활용할 방향"\n세 시점이 연결되니 인생이 읽혔다.' }},
+      { type: 'ox', statement: '미래 계획만 잘 세우면 자기인식은 충분하다.', answer: false, feedback: '과거-현재-미래가 모두 연결되어야\n진짜 자기인식이야! 과거와 현재도 중요해.' },
+      { type: 'multipleChoice', question: '시간축 자기인식에서 가장 중요한 것은?', options: ['과거 후회하기', '미래만 계획하기', '과거·현재·미래를 하나의 흐름으로 연결하기', '현재만 살기'], correctIndex: 2, explanation: '세 시점의 연결! 과거의 교훈 → 현재의 위치\n→ 미래의 방향이 하나의 이야기가 돼야 해.' },
+      { type: 'apply', question: '과거-현재-미래의 나를 한 줄씩 정리해보세요.', placeholder: '과거의 나: ...\n현재의 나: ...\n미래의 나: ...' },
+      { type: 'feedback', summary: '과거·현재·미래를 연결하면 인생 지도가 된다', message: '세 시점의 나를 통합하는 것이 지혜야!' },
+      { type: 'mission', mission: '"5년 전 나 → 지금 나 → 5년 후 나"를 한 줄씩 적어 연결하기', encouragement: '시간이 만든 나를 이해하면 방향이 보여!' },
+    ],
+  },
+
+  'selfAwareness-diamond-8': {
+    id: 'selfAwareness-diamond-8', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 8,
+    title: '자기인식과 타인 이해의 연결',
+    cards: [
+      { type: 'concept', title: '나를 알면 남을 이해한다', description: '자기인식의 궁극적 확장은\n타인 이해로 이어지는 거야.\n\n내 불안을 이해하면\n상대의 불안도 읽을 수 있어.\n\n내 욕구를 알면\n상대의 욕구도 공감할 수 있어.\n\n자기인식 → 공감 → 관계의 질 UP!' },
+      { type: 'summary', keywords: [
+        { icon: '🪞', label: '자기인식', description: '나를 깊이 이해하기' },
+        { icon: '🤝', label: '공감', description: '나의 경험으로 타인 이해' },
+        { icon: '👥', label: '연결', description: '이해가 관계를 깊게 만듦' },
+        { icon: '🌍', label: '확장', description: '나 → 타인 → 세상으로' },
+      ]},
+      { type: 'example', bad: { label: '자기만 아는 인식', story: '자기 감정은 잘 알지만\n남의 감정에는 무관심.\n관계가 일방적이 됐다.' }, good: { label: '인식의 확장', story: '"내가 무시당할 때 서운하듯\n저 사람도 지금 서운한 거구나."\n자기인식이 공감으로 확장되니 관계가 깊어졌다.' }},
+      { type: 'ox', statement: '자기인식은 나만을 위한 것이다.', answer: false, feedback: '자기인식은 타인 이해의 기반이야!\n나를 알아야 남도 이해할 수 있어.' },
+      { type: 'multipleChoice', question: '자기인식이 타인 이해로 확장되는 원리는?', options: ['남을 분석하기', '내 경험을 통해 상대의 감정을 유추하기', '남에게 조언하기', '감정을 숨기기'], correctIndex: 1, explanation: '내가 느껴본 감정이 있으니\n상대의 비슷한 감정을 이해할 수 있는 거야!' },
+      { type: 'feedback', summary: '자기인식 → 공감 → 깊은 관계', message: '나를 아는 것이 세상을 아는 것의 시작!' },
+      { type: 'mission', mission: '오늘 누군가의 행동 뒤에 숨은 감정/욕구를 "내 경험에 비춰" 추측해보기', encouragement: '자기인식이 공감이 되는 순간을 경험해봐!' },
+    ],
+  },
+
+  'selfAwareness-diamond-9': {
+    id: 'selfAwareness-diamond-9', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 9,
+    title: '자기인식의 역설',
+    cards: [
+      { type: 'concept', title: '알수록 모르겠다는 깨달음', description: '진짜 자기인식의 경지는\n"나를 완전히 안다"가 아니라\n"나는 아직 모르는 게 많구나"야.\n\n소크라테스: "나는 내가 모른다는 것을 안다."\n\n겸손한 자기인식이\n가장 강력한 자기인식이야.\n이것이 자기인식의 역설!' },
+      { type: 'summary', keywords: [
+        { icon: '🔄', label: '역설', description: '알수록 겸손해진다' },
+        { icon: '🏛️', label: '소크라테스', description: '무지의 자각이 지혜' },
+        { icon: '🌊', label: '무한', description: '자기인식은 끝이 없는 여정' },
+        { icon: '🙏', label: '겸손', description: '모른다는 자각이 진짜 앎' },
+      ]},
+      { type: 'example', bad: { label: '과신', story: '"나는 나를 완벽히 알아."\n자기 확신에 빠져 피드백을 안 들음.\n성장이 멈췄다.' }, good: { label: '겸손한 인식', story: '"많이 알게 됐지만 아직 모르는 나가 있겠지."\n열린 태도로 계속 배우니 끝없이 성장.' }},
+      { type: 'ox', statement: '자기인식이 완성되는 순간이 있다.', answer: false, feedback: '자기인식은 평생의 여정!\n완성이 있다고 생각하면 성장이 멈춰.' },
+      { type: 'multipleChoice', question: '자기인식의 역설이 의미하는 것은?', options: ['자기인식은 불가능하다', '많이 알수록 겸손해지고, 그 겸손이 더 깊은 인식을 가능케 한다', '자기인식은 시간 낭비다', '완벽하게 알아야 의미가 있다'], correctIndex: 1, explanation: '겸손 → 열린 태도 → 더 깊은 인식\n→ 더 겸손 → 무한 성장 순환!' },
+      { type: 'feedback', summary: '겸손한 자기인식이 가장 강력한 자기인식', message: '"모르는 게 있다"는 자각이 지혜의 시작!' },
+      { type: 'mission', mission: '"내가 아직 모르는 나"에 대해 3가지 질문 만들기', encouragement: '좋은 질문이 있는 한 성장은 계속된다!' },
+    ],
+  },
+
+  'selfAwareness-diamond-10': {
+    id: 'selfAwareness-diamond-10', chapterKey: 'selfAwareness', tierKey: 'diamond', stageNumber: 10,
+    title: '나를 아는 것이 세상을 바꾼다',
+    cards: [
+      { type: 'concept', title: '50단계 마스터 완주', description: '브론즈: 감정 알아차리기\n실버: 감정 이해·조절\n골드: 감정 활용·표현\n플래티넘: 고급 기법·패턴 해독\n다이아: 통합·철학·확장\n\n50개 레슨을 통해\n나를 아는 여정의 기반을 완성했어.\n\n이제 자기인식은 기술이 아니라\n너의 삶의 방식이야!' },
+      { type: 'summary', keywords: [
+        { icon: '🪞', label: '인식', description: '알아차리기에서 시작' },
+        { icon: '🧠', label: '이해', description: '깊이 파고들기' },
+        { icon: '🛠️', label: '기술', description: '도구로 다루기' },
+        { icon: '💎', label: '지혜', description: '삶의 방식으로 통합' },
+      ]},
+      { type: 'example', bad: { label: '수료만 하기', story: '50단계 다 들었지만\n일상에서 안 쓰면 의미 없다.\n지식만 쌓이고 변화는 없었다.' }, good: { label: '삶에 통합', story: '매 순간 감정을 알아차리고\n관계에서 패턴을 읽고\n겸손하게 계속 배우는 삶.\n자기인식이 삶 자체가 됐다.' }},
+      { type: 'ox', statement: '이 과정을 마치면 더 이상 배울 것이 없다.', answer: false, feedback: '이건 끝이 아니라 진짜 시작이야!\n50단계는 평생 여정의 기반일 뿐.' },
+      { type: 'multipleChoice', question: '50단계를 마친 뒤 가장 중요한 것은?', options: ['새로운 이론 공부', '배운 것을 일상에서 매일 실천하기', '남에게 가르치기만 하기', '더 이상 노력하지 않기'], correctIndex: 1, explanation: '일상 실천이 핵심! 알고 + 하는 것이\n진짜 자기인식이야.' },
+      { type: 'apply', question: '50단계를 마친 지금, 나만의 자기인식 한 줄 철학을 완성해보세요.', placeholder: '나의 자기인식 철학: ...' },
+      { type: 'feedback', summary: '자기인식 = 평생의 여정, 삶의 방식', message: '다이아 완료! 50단계를 완주한 너, 진짜 대단해!' },
+      { type: 'mission', mission: '"나의 자기인식 마스터 선언문"을 적고 매일 보이는 곳에 두기', encouragement: '나를 아는 것이 세상을 바꾸는 첫걸음이야!' },
     ],
   },
 
