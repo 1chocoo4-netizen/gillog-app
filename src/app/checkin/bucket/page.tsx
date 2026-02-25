@@ -8,12 +8,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { BottomTabBar } from '@/components/BottomTabBar'
-import { useUserData } from '@/lib/UserDataProvider'
+import { useUserData, type BucketItem } from '@/lib/UserDataProvider'
+import { classifyGoalArea } from '@/lib/research/growthInference'
 
-interface BucketItem {
-  id: string
-  text: string
-  completed: boolean
+const GROWTH_AREAS: Record<string, { label: string; icon: string; color: string }> = {
+  cognition: { label: '인지(학습)', icon: '🧠', color: '#8b5cf6' },
+  selfDirected: { label: '자기주도', icon: '🎯', color: '#06b6d4' },
+  habit: { label: '습관', icon: '📚', color: '#22c55e' },
+  attitude: { label: '태도', icon: '💪', color: '#f59e0b' },
+  relationship: { label: '관계', icon: '🤝', color: '#ec4899' },
+  character: { label: '인성', icon: '❤️', color: '#fb923c' },
 }
 
 function BucketContent() {
@@ -44,8 +48,20 @@ function BucketContent() {
   }
 
   function handleTextChange(id: string, text: string) {
+    const autoArea = classifyGoalArea(text)
     const updated = items.map(item =>
-      item.id === id ? { ...item, text } : item
+      item.id === id
+        ? { ...item, text, areaKey: item.areaKey || autoArea || undefined }
+        : item
+    )
+    saveItems(updated)
+  }
+
+  function handleAreaSelect(id: string, areaKey: string) {
+    const updated = items.map(item =>
+      item.id === id
+        ? { ...item, areaKey: item.areaKey === areaKey ? undefined : areaKey }
+        : item
     )
     saveItems(updated)
   }
@@ -53,6 +69,8 @@ function BucketContent() {
   function handleComplete(id: string) {
     const item = items.find(i => i.id === id)
     if (!item || item.completed || !item.text.trim()) return
+
+    const worldKey = item.areaKey || classifyGoalArea(item.text) || 'selfDirected'
 
     const updated = items.map(i =>
       i.id === id ? { ...i, completed: true } : i
@@ -62,8 +80,8 @@ function BucketContent() {
     addEnergy(15)
 
     addHistoryRecord({
-      worldKey: 'selfDirected',
-      areaKey: 'selfDirected',
+      worldKey,
+      areaKey: worldKey,
       lessonTitle: '버킷리스트 달성',
       executionText: `[버킷리스트] ${item.text}`,
       energy: 15,
@@ -169,6 +187,32 @@ function BucketContent() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
+
+                {/* 영역 선택 칩 */}
+                {item.text.trim() && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
+                    {Object.entries(GROWTH_AREAS).map(([key, area]) => {
+                      const isSelected = item.areaKey === key
+                      const isAutoSuggested = !item.areaKey && classifyGoalArea(item.text) === key
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => handleAreaSelect(item.id, key)}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border ${
+                            isSelected
+                              ? 'border-current bg-current/20 opacity-100'
+                              : isAutoSuggested
+                              ? 'border-current bg-current/10 opacity-80 ring-1 ring-current/30'
+                              : 'border-white/10 text-white/30 hover:text-white/50 hover:border-white/20'
+                          }`}
+                          style={isSelected || isAutoSuggested ? { color: area.color } : undefined}
+                        >
+                          {area.icon} {area.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>

@@ -45,12 +45,14 @@ export interface BucketItem {
   id: string
   text: string
   completed: boolean
+  areaKey?: string   // worldKey 값 (cognition, selfDirected, habit, attitude, relationship, character)
 }
 
 export interface MonthlyGoal {
   id: string
   text: string
   completed: boolean
+  areaKey?: string   // worldKey 값
 }
 
 export interface SubscriptionInfo {

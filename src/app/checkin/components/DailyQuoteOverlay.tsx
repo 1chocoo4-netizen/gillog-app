@@ -98,9 +98,11 @@ export default function DailyQuoteOverlay({ onRegister }: DailyQuoteOverlayProps
   useEffect(() => {
     setQuote(DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)])
     setFeelingExample(FEELING_EXAMPLES[Math.floor(Math.random() * FEELING_EXAMPLES.length)])
-    // 6시간 경과 여부로 모드 결정
-    setMode(needsCheckin() ? 'feeling' : 'execution')
-    setVisible(true)
+    // 감정 체크인이 필요할 때만 표시 (6시간 경과)
+    if (needsCheckin()) {
+      setMode('feeling')
+      setVisible(true)
+    }
   }, [])
 
   // 체크인 저장
@@ -133,8 +135,7 @@ export default function DailyQuoteOverlay({ onRegister }: DailyQuoteOverlayProps
   function handleFeelingDone() {
     saveCheckin()
     localStorage.setItem(STORAGE_KEY_EXEC, getLocalDateStr())
-    setStep('done')
-    setTimeout(() => setVisible(false), 2500)
+    setVisible(false)
   }
 
   // 실행 모드: "다음" → 월드 선택

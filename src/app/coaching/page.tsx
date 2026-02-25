@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Star, X, Lightbulb, Mic } from 'lucide-react'
+import { Send, Star, X, Lightbulb, Mic, Clock, ChevronRight } from 'lucide-react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LevelBadge } from '@/components/LevelBadge'
 import { BottomTabBar } from '@/components/BottomTabBar'
@@ -71,6 +70,7 @@ function CoachingChat() {
 
   // 음성 코칭
   const [voiceMode, setVoiceMode] = useState(false)
+  const coachingModeRef = useRef<'text' | 'voice'>('text')
   const voice = useVoiceCoaching({
     onMessage: (role, text) => {
       addMessage(role === 'coach' ? 'coach' : 'user', text)
@@ -81,6 +81,13 @@ function CoachingChat() {
       setTodoText('')
     },
   })
+
+  // 기록 보기
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyList, setHistoryList] = useState<{ id: string; mode: string; createdAt: string; messageCount: number; preview: string }[]>([])
+  const [historyDetail, setHistoryDetail] = useState<{ id: string; mode: string; createdAt: string; messages: { role: string; content: string }[] } | null>(null)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const sessionSaved = useRef(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -165,6 +172,48 @@ function CoachingChat() {
       role,
       content,
     }])
+  }
+
+  // chatDone이 true가 된 후 렌더링 완료 시점에 저장 (messages가 최신 상태)
+  useEffect(() => {
+    if (!chatDone || sessionSaved.current) return
+    sessionSaved.current = true
+    const msgs = messages.filter(m => m.content.trim())
+    if (msgs.length === 0) return
+    fetch('/api/coaching/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: coachingModeRef.current,
+        messages: msgs.map(m => ({ role: m.role, content: m.content })),
+      }),
+    }).catch(err => console.error('코칭 세션 저장 실패:', err))
+  }, [chatDone, messages])
+
+  async function loadHistory() {
+    setShowHistory(true)
+    setHistoryDetail(null)
+    setHistoryLoading(true)
+    try {
+      const res = await fetch('/api/coaching/sessions')
+      if (res.ok) {
+        const data = await res.json()
+        setHistoryList(data.sessions || [])
+      }
+    } catch { /* ignore */ }
+    setHistoryLoading(false)
+  }
+
+  async function loadHistoryDetail(sessionId: string) {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch(`/api/coaching/sessions/${sessionId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setHistoryDetail(data)
+      }
+    } catch { /* ignore */ }
+    setHistoryLoading(false)
   }
 
   async function handleSend() {
@@ -299,6 +348,7 @@ function CoachingChat() {
       setShowStartModal(true)
       return
     }
+    coachingModeRef.current = 'voice'
     setVoiceMode(true)
     await voice.start()
   }
@@ -349,6 +399,13 @@ function CoachingChat() {
             </button>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={loadHistory}
+              className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+              title="코칭 기록"
+            >
+              <Clock className="w-4 h-4 text-white/60" />
+            </button>
             <LevelBadge />
             <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5">
               <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
@@ -917,6 +974,102 @@ function CoachingChat() {
               >
                 닫기
               </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 기록 보기 사이드 패널 */}
+      <AnimatePresence>
+        {showHistory && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowHistory(false)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-slate-800 z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+                <h3 className="text-white font-bold text-lg">
+                  {historyDetail ? (
+                    <button onClick={() => setHistoryDetail(null)} className="flex items-center gap-1 text-white/60 hover:text-white">
+                      <ChevronRight className="w-4 h-4 rotate-180" />
+                      <span className="text-white font-bold">대화 상세</span>
+                    </button>
+                  ) : '코칭 기록'}
+                </h3>
+                <button onClick={() => setShowHistory(false)} className="text-white/40 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                {historyLoading ? (
+                  <div className="flex items-center justify-center py-12 text-white/40">로딩 중...</div>
+                ) : historyDetail ? (
+                  /* 상세 대화 */
+                  <div className="p-4 space-y-3">
+                    <div className="text-xs text-white/40 mb-2">
+                      {new Date(historyDetail.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {' '}{historyDetail.mode === 'voice' ? '(음성)' : '(텍스트)'}
+                    </div>
+                    {historyDetail.messages.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {msg.role === 'coach' && (
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xs mr-2 flex-shrink-0">
+                            AI
+                          </div>
+                        )}
+                        <div className={`max-w-[85%] px-3 py-2 text-sm leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-violet-600 text-white rounded-2xl rounded-br-sm'
+                            : 'bg-white/10 text-white/90 rounded-2xl rounded-bl-sm'
+                        }`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : historyList.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-white/40">
+                    <Clock className="w-8 h-8 mb-2 opacity-30" />
+                    <p className="text-sm">아직 코칭 기록이 없어요</p>
+                  </div>
+                ) : (
+                  /* 목록 */
+                  <div className="divide-y divide-white/5">
+                    {historyList.map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => loadHistoryDetail(s.id)}
+                        className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-white/40">
+                            {new Date(s.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                            {' '}{new Date(s.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                            s.mode === 'voice' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-violet-500/20 text-violet-400'
+                          }`}>
+                            {s.mode === 'voice' ? '음성' : '텍스트'}
+                          </span>
+                        </div>
+                        <p className="text-white/80 text-sm line-clamp-2">{s.preview || '대화 내용'}</p>
+                        <p className="text-white/30 text-xs mt-1">{s.messageCount}개 메시지</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </>
         )}

@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: '/admin/growth', label: '성장 분석', icon: '📈' },
   { href: '/admin/research', label: '연구 분석', icon: '🔬' },
   { href: '/admin/growth-inference', label: '성장 추론', icon: '🧠' },
+  { href: '/admin/ai-engine', label: 'AI 성장엔진', icon: '🤖' },
   { href: '/admin/export', label: '데이터 내보내기', icon: '📥' },
   { href: '/admin/coaches', label: '코치 관리', icon: '👥' },
   { href: '/admin/coupons', label: '쿠폰 관리', icon: '🎟️' },

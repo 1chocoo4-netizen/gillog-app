@@ -9,6 +9,7 @@ import {
   type ExecutionRecord,
   type SurveyScores,
   type GrowthState,
+  type GoalItem,
 } from '@/lib/research/growthInference'
 
 // ========================================
@@ -43,7 +44,7 @@ export async function GET() {
     // 1. 병렬 Prisma 쿼리
     const [allUserData, allCheckins, allSurveyResponses] = await Promise.all([
       prisma.userData.findMany({
-        select: { userId: true, history: true },
+        select: { userId: true, history: true, bucketList: true, monthlyGoals: true },
       }),
       prisma.checkin.findMany({
         select: { userId: true, mood: true, energy: true, createdAt: true },
@@ -121,7 +122,19 @@ export async function GET() {
         areaKey: h.areaKey,
       }))
 
-      const inference = computeUserInference(checkins, execRecords, surveyScores)
+      // 버킷리스트 + 월간목표 → GoalItem[]
+      const rawBucket = typeof ud.bucketList === 'string' ? JSON.parse(ud.bucketList) : ud.bucketList
+      const buckets: Array<{ text: string; areaKey?: string }> = Array.isArray(rawBucket) ? rawBucket : []
+      const rawMonthly = typeof ud.monthlyGoals === 'string' ? JSON.parse(ud.monthlyGoals) : ud.monthlyGoals
+      const monthGoals: Record<string, Array<{ text: string; areaKey?: string }>> =
+        rawMonthly && typeof rawMonthly === 'object' ? rawMonthly : {}
+
+      const goalItems: GoalItem[] = [
+        ...buckets.filter(b => b.text).map(b => ({ text: b.text, areaKey: b.areaKey })),
+        ...Object.values(monthGoals).flat().filter(g => g.text).map(g => ({ text: g.text, areaKey: g.areaKey })),
+      ]
+
+      const inference = computeUserInference(checkins, execRecords, surveyScores, goalItems)
 
       users.push({
         id: `R${String(idx + 1).padStart(3, '0')}`,

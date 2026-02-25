@@ -46,6 +46,69 @@ export interface InferenceResult {
 }
 
 // ========================================
+// 한국어 키워드 분류기 (목표 텍스트 → worldKey)
+// ========================================
+
+const AREA_KEYWORDS: Record<string, string[]> = {
+  cognition: ['공부', '수학', '영어', '과학', '국어', '시험', '성적', '학습', '독서', '책'],
+  selfDirected: ['진로', '꿈', '목표', '계획', '자격증', '대학', '미래', '취업'],
+  habit: ['운동', '기상', '루틴', '정리', '청소', '식단', '수면', '일찍'],
+  attitude: ['감사', '긍정', '인내', '끈기', '도전', '태도', '마음'],
+  relationship: ['친구', '가족', '봉사', '소통', '대화', '관계', '선생님'],
+  character: ['정직', '약속', '예의', '배려', '존중', '책임', '성실'],
+}
+
+export function classifyGoalArea(text: string): string | null {
+  const counts: Record<string, number> = {}
+  for (const [area, keywords] of Object.entries(AREA_KEYWORDS)) {
+    let count = 0
+    for (const kw of keywords) {
+      if (text.includes(kw)) count++
+    }
+    if (count > 0) counts[area] = count
+  }
+  if (Object.keys(counts).length === 0) return null
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
+}
+
+// ========================================
+// 목표 기반 영역 점수 추론
+// ========================================
+
+export interface GoalItem {
+  text: string
+  areaKey?: string  // 유저가 직접 선택한 영역 (worldKey)
+}
+
+export function deriveGoalAreaScores(goals: GoalItem[]): SurveyScores | null {
+  const areaCounts: Record<ResearchArea, number> = {
+    career: 0, community: 0, nonCognitive: 0, learning: 0, habit: 0,
+  }
+
+  let classified = 0
+  for (const goal of goals) {
+    const worldKey = goal.areaKey || classifyGoalArea(goal.text)
+    if (!worldKey) continue
+    const area = WORLD_TO_AREA[worldKey]
+    if (!area) continue
+    areaCounts[area]++
+    classified++
+  }
+
+  if (classified === 0) return null
+
+  // 빈도 → 0~100 정규화
+  const max = Math.max(...Object.values(areaCounts), 1)
+  return {
+    career: Math.round((areaCounts.career / max) * 100),
+    community: Math.round((areaCounts.community / max) * 100),
+    nonCognitive: Math.round((areaCounts.nonCognitive / max) * 100),
+    learning: Math.round((areaCounts.learning / max) * 100),
+    habit: Math.round((areaCounts.habit / max) * 100),
+  }
+}
+
+// ========================================
 // Input types
 // ========================================
 
@@ -375,6 +438,7 @@ export function computeUserInference(
   checkins: CheckinRecord[],
   executionRecords: ExecutionRecord[],
   surveyScores: SurveyScores | null,
+  goalData?: GoalItem[],
 ): InferenceResult {
   // 실행 날짜 (고유 일자)
   const executionDatesSet = new Set<string>()
@@ -390,9 +454,21 @@ export function computeUserInference(
   const failureEvents = detectFailureEvents(executionDates)
   const executionResilienceIndex = calcExecutionResilienceIndex(failureEvents)
 
-  // 3. 가치-행동 일치도
+  // 3. 가치-행동 일치도 (설문 우선, 없으면 목표 텍스트 추론)
   const executionWorldKeys = executionRecords.map(er => er.worldKey)
-  const valueActionAlignment = calcValueActionAlignment(surveyScores, executionWorldKeys)
+  let valueActionAlignment: number | null = null
+  let vaaSource: string | null = null
+
+  if (surveyScores) {
+    valueActionAlignment = calcValueActionAlignment(surveyScores, executionWorldKeys)
+    vaaSource = 'VAA: 설문 기반'
+  } else if (goalData && goalData.length > 0) {
+    const derivedScores = deriveGoalAreaScores(goalData)
+    if (derivedScores) {
+      valueActionAlignment = calcValueActionAlignment(derivedScores, executionWorldKeys)
+      vaaSource = 'VAA: 목표 텍스트 추론'
+    }
+  }
 
   // 4. 회복탄성 변화곡선
   const { score: recoveryCurveScore, trend: recoveryCurveTrend, data: recoveryCurveData } =
@@ -431,6 +507,7 @@ export function computeUserInference(
   if (checkins.length === 0) signals.push('체크인 데이터 부족')
   if (executionRecords.length < 5) signals.push('실행 데이터 부족 (5건 미만)')
   if (!surveyScores) signals.push('설문 데이터 없음')
+  if (vaaSource) signals.push(vaaSource)
   if (selfRegulationIndex >= 70) signals.push('높은 자기조절력')
   if (selfRegulationIndex < 30 && checkins.length > 0) signals.push('자기조절 주의 필요')
   if (executionResilienceIndex >= 80) signals.push('우수한 실행탄력성')

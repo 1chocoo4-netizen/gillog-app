@@ -8,13 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AuthGuard } from '@/components/AuthGuard'
 import { BottomTabBar } from '@/components/BottomTabBar'
-import { useUserData } from '@/lib/UserDataProvider'
-
-interface MonthlyGoal {
-  id: string
-  text: string
-  completed: boolean
-}
+import { useUserData, type MonthlyGoal } from '@/lib/UserDataProvider'
+import { classifyGoalArea } from '@/lib/research/growthInference'
 
 interface ExecutionItem {
   id: string
@@ -95,7 +90,21 @@ function MonthlyContent() {
   }
 
   function handleGoalTextChange(id: string, text: string) {
-    const updated = goals.map(g => g.id === id ? { ...g, text } : g)
+    const autoArea = classifyGoalArea(text)
+    const updated = goals.map(g =>
+      g.id === id
+        ? { ...g, text, areaKey: g.areaKey || autoArea || undefined }
+        : g
+    )
+    handleSaveGoals(updated)
+  }
+
+  function handleGoalAreaSelect(id: string, areaKey: string) {
+    const updated = goals.map(g =>
+      g.id === id
+        ? { ...g, areaKey: g.areaKey === areaKey ? undefined : areaKey }
+        : g
+    )
     handleSaveGoals(updated)
   }
 
@@ -103,14 +112,16 @@ function MonthlyContent() {
     const goal = goals.find(g => g.id === id)
     if (!goal || goal.completed || !goal.text.trim()) return
 
+    const worldKey = goal.areaKey || classifyGoalArea(goal.text) || 'selfDirected'
+
     const updated = goals.map(g => g.id === id ? { ...g, completed: true } : g)
     handleSaveGoals(updated)
 
     addEnergy(10)
 
     addHistoryRecord({
-      worldKey: 'selfDirected',
-      areaKey: 'selfDirected',
+      worldKey,
+      areaKey: worldKey,
       lessonTitle: '월 목표 달성',
       executionText: `[월 목표] ${goal.text}`,
       energy: 10,
@@ -270,6 +281,32 @@ function MonthlyContent() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
+
+                  {/* 영역 선택 칩 */}
+                  {goal.text.trim() && (
+                    <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
+                      {Object.entries(GROWTH_AREAS).map(([key, area]) => {
+                        const isSelected = goal.areaKey === key
+                        const isAutoSuggested = !goal.areaKey && classifyGoalArea(goal.text) === key
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => handleGoalAreaSelect(goal.id, key)}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border ${
+                              isSelected
+                                ? 'border-current bg-current/20 opacity-100'
+                                : isAutoSuggested
+                                ? 'border-current bg-current/10 opacity-80 ring-1 ring-current/30'
+                                : 'border-white/10 text-white/30 hover:text-white/50 hover:border-white/20'
+                            }`}
+                            style={isSelected || isAutoSuggested ? { color: area.color } : undefined}
+                          >
+                            {area.icon} {area.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
 
