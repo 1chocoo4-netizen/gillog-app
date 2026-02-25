@@ -586,4 +586,399 @@ export const TIME_STAGES: Record<string, Stage> = {
     ],
   },
 
+  // ═══════════════════════════════════════
+  // 플래티넘 (프로 시간관리 전략) 1~10
+  // ═══════════════════════════════════════
+
+  'time-platinum-1': {
+    id: 'time-platinum-1', chapterKey: 'time', tierKey: 'platinum', stageNumber: 1,
+    title: '시간 ROI 분석법',
+    cards: [
+      { type: 'concept', title: '투자 대비 수익으로 보는 시간', description: '돈에 ROI(투자수익률)가 있듯\n시간에도 ROI가 있어.\n\n1시간 투자했을 때\n가장 큰 가치를 돌려주는 활동이\n네 "높은 ROI" 활동이야.' },
+      { type: 'summary', keywords: [
+        { icon: '📊', label: '시간 ROI', description: '투자 시간 대비 얻는 가치' },
+        { icon: '💎', label: '고ROI 활동', description: '1시간에 큰 변화를 만드는 일' },
+        { icon: '🗑️', label: '저ROI 활동', description: '시간만 쓰고 결과가 없는 일' },
+        { icon: '🔀', label: '재배치', description: '저ROI → 고ROI로 시간 이동' },
+      ]},
+      { type: 'example', bad: { label: '시간 낭비형', story: '시험 범위 전체를 밑줄만 치며 3시간.\n결국 기억나는 건 거의 없다.' }, good: { label: 'ROI 분석형', story: '시험에 잘 나오는 유형 20개를 1시간 풀고\n틀린 것만 30분 복습. 핵심만 잡았다.' }},
+      { type: 'ox', statement: '오래 공부하면 무조건 성적이 오른다.', answer: false, feedback: '시간의 양보다 질이 중요해!\n고ROI 활동에 집중하는 게 핵심.' },
+      { type: 'multipleChoice', question: '시간 ROI가 가장 높은 학습법은?', options: ['교과서 전체 읽기', '오답 노트 집중 복습', '필기 예쁘게 정리', '친구와 수다하며 공부'], correctIndex: 1, explanation: '오답 복습은 약점을 정확히 보강해서 ROI가 높아!' },
+      { type: 'apply', question: '지난 일주일 중 시간 ROI가 가장 높았던 활동과 낮았던 활동은?', placeholder: '높은 ROI: / 낮은 ROI: ...' },
+      { type: 'feedback', summary: '시간 ROI = 같은 시간, 최고의 결과', message: '양이 아닌 질로 승부하자!' },
+      { type: 'mission', mission: '이번 주 활동 3가지를 ROI 기준으로 평가하기', encouragement: '분석할 줄 아는 사람이 시간을 지배한다!' },
+    ],
+  },
+
+  'time-platinum-2': {
+    id: 'time-platinum-2', chapterKey: 'time', tierKey: 'platinum', stageNumber: 2,
+    title: '울트라디안 리듬 활용',
+    cards: [
+      { type: 'concept', title: '90분 주기의 비밀', description: '우리 뇌는 90분 집중 → 20분 휴식\n주기를 반복해. "울트라디안 리듬"이야.\n\n이 리듬을 무시하면 집중력이 뚝.\n리듬에 맞추면 하루가 달라져!' },
+      { type: 'summary', keywords: [
+        { icon: '🧠', label: '90분 집중', description: '뇌의 최적 집중 단위' },
+        { icon: '☕', label: '20분 휴식', description: '리듬 회복 시간' },
+        { icon: '🔄', label: '3~4사이클', description: '하루 최대 집중 사이클' },
+        { icon: '📉', label: '리듬 무시', description: '집중력 급락, 피로 누적' },
+      ]},
+      { type: 'example', bad: { label: '무한 집중파', story: '4시간 연속 공부. 뒷부분은\n눈만 움직이고 머리는 안 돌아갔다.' }, good: { label: '리듬 활용파', story: '90분 공부 → 20분 산책 → 90분 공부.\n총 시간은 적은데 흡수한 건 더 많다.' }},
+      { type: 'ox', statement: '오래 앉아있을수록 집중력이 높아진다.', answer: false, feedback: '90분이 지나면 뇌 효율이 급락해.\n쉬어야 다시 집중할 수 있어!' },
+      { type: 'multipleChoice', question: '울트라디안 리듬에 맞는 학습법은?', options: ['5시간 연속 공부', '90분 공부 + 20분 휴식 반복', '15분마다 쉬기', '졸릴 때만 쉬기'], correctIndex: 1, explanation: '90+20 사이클이 뇌의 자연 리듬에 딱 맞아!' },
+      { type: 'feedback', summary: '90분 집중 + 20분 휴식 = 최적 리듬', message: '뇌 리듬을 타면 공부가 쉬워진다!' },
+      { type: 'mission', mission: '내일 오전에 90분 집중 + 20분 휴식 1사이클 해보기', encouragement: '한 번 해보면 차이를 바로 느낄 거야!' },
+    ],
+  },
+
+  'time-platinum-3': {
+    id: 'time-platinum-3', chapterKey: 'time', tierKey: 'platinum', stageNumber: 3,
+    title: '의사결정 피로 관리',
+    cards: [
+      { type: 'concept', title: '결정도 에너지를 소모한다', description: '하루에 결정을 35,000번 한다고 해.\n"뭐 먹지?" "뭐 입지?"도 결정이야.\n\n결정이 쌓이면 뇌가 지쳐서\n정작 중요한 결정에서 실수해.' },
+      { type: 'summary', keywords: [
+        { icon: '🧠', label: '결정 피로', description: '결정할수록 뇌 에너지 감소' },
+        { icon: '👔', label: '루틴화', description: '반복 결정은 자동화' },
+        { icon: '🌅', label: '아침 결정', description: '중요 결정은 아침에' },
+        { icon: '📋', label: '사전 결정', description: '미리 정해놓으면 에너지 절약' },
+      ]},
+      { type: 'example', bad: { label: '결정 과부하', story: '아침부터 옷, 메뉴, 카페 고민.\n오후엔 지쳐서 공부 계획을 대충 세웠다.' }, good: { label: '결정 절약', story: '옷은 전날 준비, 점심은 고정 메뉴.\n아침 에너지를 공부 계획에 집중 투자.' }},
+      { type: 'ox', statement: '작은 결정은 에너지를 소모하지 않는다.', answer: false, feedback: '작은 결정도 쌓이면 큰 피로가 돼!\n스티브 잡스가 매일 같은 옷 입은 이유야.' },
+      { type: 'multipleChoice', question: '의사결정 피로를 줄이는 방법은?', options: ['매 순간 신중하게 결정', '반복적인 일은 루틴으로 자동화', '결정을 다 미루기', '남에게 모두 맡기기'], correctIndex: 1, explanation: '반복 결정 루틴화 → 중요한 결정에 에너지 집중!' },
+      { type: 'feedback', summary: '작은 결정 자동화 → 중요한 결정에 집중', message: '에너지를 아끼는 것도 시간관리야!' },
+      { type: 'mission', mission: '매일 반복되는 결정 3가지를 루틴으로 고정하기', encouragement: '결정을 줄이면 실행력이 올라가!' },
+    ],
+  },
+
+  'time-platinum-4': {
+    id: 'time-platinum-4', chapterKey: 'time', tierKey: 'platinum', stageNumber: 4,
+    title: '시간 감사 일기',
+    cards: [
+      { type: 'concept', title: '잘 쓴 시간을 기록하자', description: '시간관리 = 부족한 시간 쥐어짜기?\n아니야! 잘 쓴 시간을 인식하는 거야.\n\n"오늘 시간을 잘 쓴 순간"을\n기록하면 긍정적 패턴이 강화돼.' },
+      { type: 'summary', keywords: [
+        { icon: '📓', label: '시간 감사', description: '잘 쓴 시간에 감사하기' },
+        { icon: '✨', label: '긍정 강화', description: '잘한 패턴이 반복됨' },
+        { icon: '🔍', label: '패턴 발견', description: '나의 최적 시간 발견' },
+        { icon: '😊', label: '만족감', description: '시간관리 스트레스 감소' },
+      ]},
+      { type: 'example', bad: { label: '자책형', story: '"오늘도 시간 낭비했어..."\n매일 자책만 하다 시간관리 자체를 포기.' }, good: { label: '감사형', story: '"오전에 1시간 집중한 게 뿌듯하다!"\n다음 날도 오전 집중을 자연스럽게 반복.' }},
+      { type: 'ox', statement: '시간관리를 잘하려면 항상 부족한 점을 반성해야 한다.', answer: false, feedback: '반성만 하면 지침! 잘한 것도 기록해야\n동기부여가 유지돼.' },
+      { type: 'multipleChoice', question: '시간 감사 일기의 핵심 효과는?', options: ['완벽한 하루를 만들기', '잘한 패턴을 인식하고 반복하기', '남과 비교하기', '반성할 점 찾기'], correctIndex: 1, explanation: '잘한 것을 인식하면 뇌가 자동으로 반복하려 해!' },
+      { type: 'feedback', summary: '잘 쓴 시간 기록 → 긍정 패턴 강화', message: '오늘 잘한 것에 집중하자!' },
+      { type: 'mission', mission: '오늘 밤 "시간을 잘 쓴 순간 2가지" 적어보기', encouragement: '감사하면 더 잘하게 돼!' },
+    ],
+  },
+
+  'time-platinum-5': {
+    id: 'time-platinum-5', chapterKey: 'time', tierKey: 'platinum', stageNumber: 5,
+    title: '전략적 게으름',
+    cards: [
+      { type: 'concept', title: '똑똑하게 쉬는 기술', description: '"열심히"만 하는 건 전략이 아니야.\n진짜 프로는 "전략적으로 쉰다".\n\n쉬는 것도 생산성의 일부야.\n회복 없이 성과 없다!' },
+      { type: 'summary', keywords: [
+        { icon: '🛋️', label: '전략적 쉼', description: '계획된 휴식 시간' },
+        { icon: '🔋', label: '에너지 충전', description: '쉬어야 다시 달릴 수 있다' },
+        { icon: '🧘', label: '능동적 휴식', description: '산책, 명상 등 회복 활동' },
+        { icon: '⚠️', label: '과로 경고', description: '쉬지 않으면 번아웃' },
+      ]},
+      { type: 'example', bad: { label: '쉼 없는 사람', story: '매일 12시간 공부. 3주 뒤 번아웃.\n일주일 내내 아무것도 못 했다.' }, good: { label: '전략적 쉼', story: '8시간 공부 + 운동 1시간 + 취미 30분.\n3개월간 꾸준히 유지, 성적도 상승.' }},
+      { type: 'ox', statement: '쉬는 시간은 시간 낭비다.', answer: false, feedback: '쉼은 투자야! 쉬어야 집중력이 회복되고\n장기적으로 더 많이 할 수 있어.' },
+      { type: 'multipleChoice', question: '전략적 쉼의 핵심은?', options: ['하루 종일 쉬기', '계획된 시간에 회복 활동하기', '피곤할 때만 쉬기', '놀기 = 쉬기'], correctIndex: 1, explanation: '계획된 쉼이 무계획 쉼보다 회복력이 3배!' },
+      { type: 'feedback', summary: '전략적 쉼 = 생산성의 숨은 무기', message: '잘 쉬는 사람이 잘 일한다!' },
+      { type: 'mission', mission: '이번 주 "회복 시간" 3개를 미리 캘린더에 넣기', encouragement: '쉼도 계획이야. 네 에너지를 지키자!' },
+    ],
+  },
+
+  'time-platinum-6': {
+    id: 'time-platinum-6', chapterKey: 'time', tierKey: 'platinum', stageNumber: 6,
+    title: '환경 설계 전략',
+    cards: [
+      { type: 'concept', title: '환경이 행동을 결정한다', description: '의지력에 기대지 마.\n환경을 바꾸면 행동이 바뀌어.\n\n공부 환경을 설계하면\n시간관리가 자동으로 돼.' },
+      { type: 'summary', keywords: [
+        { icon: '🏠', label: '공간 설계', description: '공부 전용 공간 만들기' },
+        { icon: '📱', label: '방해 차단', description: '알림 끄기, 앱 숨기기' },
+        { icon: '👁️', label: '단서 노출', description: '할 일 목록 보이게 두기' },
+        { icon: '🚫', label: '유혹 제거', description: '방해물을 물리적으로 치우기' },
+      ]},
+      { type: 'example', bad: { label: '유혹 환경', story: '침대에서 핸드폰 옆에 두고 공부.\n10분마다 알림 확인, 결국 포기.' }, good: { label: '설계된 환경', story: '핸드폰 다른 방에 두고 책상에 할 일 목록만.\n자연스럽게 2시간 집중 완료.' }},
+      { type: 'ox', statement: '의지력만 강하면 어디서든 집중할 수 있다.', answer: false, feedback: '의지력은 한계가 있어!\n환경을 바꾸는 게 더 확실하고 쉬워.' },
+      { type: 'multipleChoice', question: '집중 환경 설계의 핵심은?', options: ['더 열심히 참기', '방해물 제거 + 할 일 노출', '카페에서만 공부', '음악 크게 틀기'], correctIndex: 1, explanation: '유혹 제거하고 할 일을 눈에 띄게!\n의지력 필요 없는 시스템.' },
+      { type: 'feedback', summary: '환경 설계 = 의지력 없이도 집중', message: '환경을 바꾸면 습관이 따라와!' },
+      { type: 'mission', mission: '공부할 때 핸드폰 놓을 "다른 장소"를 정하기', encouragement: '환경 하나만 바꿔도 집중력 2배!' },
+    ],
+  },
+
+  'time-platinum-7': {
+    id: 'time-platinum-7', chapterKey: 'time', tierKey: 'platinum', stageNumber: 7,
+    title: '월간 시간 감사',
+    cards: [
+      { type: 'concept', title: '한 달을 돌아보는 힘', description: '주간 리뷰보다 더 넓은 시야로\n한 달을 돌아보자.\n\n"이번 달 시간을 어디에 썼는가?"\n패턴이 보이면 다음 달이 달라져.' },
+      { type: 'summary', keywords: [
+        { icon: '📅', label: '월간 리뷰', description: '한 달의 시간 사용 돌아보기' },
+        { icon: '📈', label: '성장 측정', description: '지난달 대비 변화 확인' },
+        { icon: '🎯', label: '목표 점검', description: '목표 달성률 체크' },
+        { icon: '🔧', label: '시스템 조정', description: '안 맞는 부분 수정' },
+      ]},
+      { type: 'example', bad: { label: '무계획 반복', story: '매달 같은 실수 반복.\n"다음 달은 다르겠지" → 변한 건 없다.' }, good: { label: '월간 리뷰어', story: '매달 말일 30분 리뷰.\n"아침 공부가 효과 좋았다" 발견 → 다음 달 강화.' }},
+      { type: 'ox', statement: '월간 리뷰는 시간 낭비다.', answer: false, feedback: '30분 리뷰가 다음 달 30시간을 아껴줘!\n가장 ROI 높은 활동이야.' },
+      { type: 'multipleChoice', question: '월간 리뷰에서 가장 중요한 질문은?', options: ['얼마나 바빴는가', '뭐가 효과 있었고 뭘 바꿀 것인가', '몇 시간 공부했는가', '남들은 뭘 했는가'], correctIndex: 1, explanation: '효과 있는 것은 유지, 없는 것은 제거!\n이 질문이 핵심이야.' },
+      { type: 'feedback', summary: '월간 리뷰 = 다음 달의 성공을 설계', message: '돌아보는 사람만이 앞으로 나아간다!' },
+      { type: 'mission', mission: '이번 달을 돌아보며 "잘한 것 3가지 + 바꿀 것 1가지" 적기', encouragement: '한 달에 30분, 인생이 달라지는 습관!' },
+    ],
+  },
+
+  'time-platinum-8': {
+    id: 'time-platinum-8', chapterKey: 'time', tierKey: 'platinum', stageNumber: 8,
+    title: '선제적 시간 확보',
+    cards: [
+      { type: 'concept', title: '먼저 넣어야 들어간다', description: '바쁜 일정에 중요한 일을 끼워넣지 마.\n중요한 일을 "먼저" 캘린더에 넣어.\n\n이걸 "빅 록(Big Rock) 원칙"이라 해.\n큰 돌을 먼저 넣어야 다 들어가!' },
+      { type: 'summary', keywords: [
+        { icon: '🪨', label: '빅 록', description: '가장 중요한 일을 먼저 배치' },
+        { icon: '📅', label: '선제 예약', description: '중요 일정을 먼저 캘린더에' },
+        { icon: '🛡️', label: '시간 보호', description: '예약한 시간은 양보 안 함' },
+        { icon: '⏳', label: '자투리', description: '남은 시간에 소소한 일 배치' },
+      ]},
+      { type: 'example', bad: { label: '끼워넣기', story: '매일 바쁘다가 "시간 나면 공부"\n→ 시간은 결코 나지 않았다.' }, good: { label: '선제 확보', story: '매주 일요일 "화목 오전 = 수학 공부"\n미리 확보. 다른 일정이 생겨도 거절.' }},
+      { type: 'ox', statement: '중요한 일은 빈 시간이 생기면 하면 된다.', answer: false, feedback: '빈 시간은 안 생겨!\n중요한 일은 먼저 예약해야 해.' },
+      { type: 'multipleChoice', question: '빅 록 원칙의 핵심은?', options: ['모든 일을 다 하기', '중요한 일을 먼저 시간 확보', '급한 일 먼저', '빈 시간에 채워넣기'], correctIndex: 1, explanation: '큰 돌(중요한 일)을 먼저 넣어야 다 들어가!' },
+      { type: 'feedback', summary: '중요한 일 = 먼저 시간 확보', message: '기다리지 마, 먼저 잡아!' },
+      { type: 'mission', mission: '다음 주 "가장 중요한 활동 2가지"를 캘린더에 먼저 넣기', encouragement: '선제 확보한 시간이 진짜 네 시간!' },
+    ],
+  },
+
+  'time-platinum-9': {
+    id: 'time-platinum-9', chapterKey: 'time', tierKey: 'platinum', stageNumber: 9,
+    title: '거절의 기술',
+    cards: [
+      { type: 'concept', title: '노(No)는 시간관리 최강 기술', description: '"응" 하나가 내 시간 1시간을 가져가.\n\n모든 요청에 "Yes"하면\n정작 내 목표에 쓸 시간이 없어.\n예의 바른 거절은 자기 보호야!' },
+      { type: 'summary', keywords: [
+        { icon: '🚫', label: '거절', description: '모든 요청에 Yes 하지 않기' },
+        { icon: '⚖️', label: '기준', description: '내 목표에 도움 되는가?' },
+        { icon: '🤝', label: '예의 바른 No', description: '"지금은 어렵지만..."' },
+        { icon: '🎯', label: '집중', description: '거절해야 중요한 것에 집중' },
+      ]},
+      { type: 'example', bad: { label: '예스맨', story: '친구 부탁, 동아리, 알바 전부 수락.\n정작 시험 공부 시간은 0시간.' }, good: { label: '전략적 거절', story: '"이번 주는 시험 기간이라 어려워!"\n거절한 덕에 공부 시간 확보.' }},
+      { type: 'ox', statement: '모든 부탁을 들어줘야 좋은 사람이다.', answer: false, feedback: '내 시간을 지키는 것도 책임이야.\n거절 = 내 목표를 위한 선택!' },
+      { type: 'multipleChoice', question: '거절 시 가장 좋은 방법은?', options: ['무시하기', '이유 설명 + 대안 제시', '화내기', '거짓말로 피하기'], correctIndex: 1, explanation: '"지금은 어렵지만 다음에!" 같이\n이유 + 대안이 가장 효과적.' },
+      { type: 'feedback', summary: '거절 = 내 시간을 지키는 기술', message: 'No라고 말할 줄 아는 사람이 성공한다!' },
+      { type: 'mission', mission: '이번 주 불필요한 요청 1개에 정중히 거절 연습하기', encouragement: '거절은 이기적이 아니라 전략적인 거야!' },
+    ],
+  },
+
+  'time-platinum-10': {
+    id: 'time-platinum-10', chapterKey: 'time', tierKey: 'platinum', stageNumber: 10,
+    title: '몰입 트리거 시스템',
+    cards: [
+      { type: 'concept', title: '몰입을 의도적으로 유발하기', description: '몰입(Flow)은 운이 아니야.\n특정 조건을 만들면 의도적으로\n몰입 상태에 들어갈 수 있어.\n\n이걸 "몰입 트리거"라고 해.' },
+      { type: 'summary', keywords: [
+        { icon: '🎵', label: '음악 트리거', description: '특정 음악 = 집중 모드 시작' },
+        { icon: '☕', label: '의식 트리거', description: '커피 한 잔 = 공부 시작 신호' },
+        { icon: '📍', label: '장소 트리거', description: '특정 장소 = 집중 장소' },
+        { icon: '⏱️', label: '시간 트리거', description: '같은 시간 = 자동 집중' },
+      ]},
+      { type: 'example', bad: { label: '의지력 의존', story: '"집중해야지..." 매번 의지로 시작.\n30분 걸려야 겨우 몰입. 지침.' }, good: { label: '트리거 시스템', story: '이어폰 끼고 + 로파이 음악 + 타이머 시작.\n3분 만에 자동으로 집중 모드 진입.' }},
+      { type: 'ox', statement: '몰입은 타고나는 능력이다.', answer: false, feedback: '몰입은 만드는 거야!\n트리거를 반복하면 몸이 기억해.' },
+      { type: 'multipleChoice', question: '몰입 트리거로 가장 효과적인 것은?', options: ['매번 새로운 환경', '특정 음악+장소+시간 반복', '의지력으로 참기', '카페인 대량 섭취'], correctIndex: 1, explanation: '반복되는 신호가 뇌에 "집중 모드" 스위치를 만들어!' },
+      { type: 'apply', question: '나만의 몰입 트리거를 3가지 정해보세요.', placeholder: '예: 이어폰 끼기, 책상 정리, 타이머 시작...' },
+      { type: 'feedback', summary: '몰입 트리거 = 의도적 집중 시스템', message: '플래티넘 완료! 이제 프로 시간관리자!' },
+      { type: 'mission', mission: '나만의 몰입 트리거 3가지를 정하고 내일 실험하기', encouragement: '트리거를 반복하면 집중이 습관이 돼!' },
+    ],
+  },
+
+  // ═══════════════════════════════════════
+  // 다이아 (마스터 시간관리) 1~10
+  // ═══════════════════════════════════════
+
+  'time-diamond-1': {
+    id: 'time-diamond-1', chapterKey: 'time', tierKey: 'diamond', stageNumber: 1,
+    title: '시간 철학 - 크로노스와 카이로스',
+    cards: [
+      { type: 'concept', title: '두 종류의 시간', description: '그리스인은 시간을 두 가지로 봤어.\n\n크로노스(Chronos) = 시계 시간\n카이로스(Kairos) = 의미 있는 순간\n\n진짜 시간관리는 카이로스를\n늘리는 거야.' },
+      { type: 'summary', keywords: [
+        { icon: '⏰', label: '크로노스', description: '물리적 시간 (1시간, 2시간)' },
+        { icon: '✨', label: '카이로스', description: '의미 있는 충만한 순간' },
+        { icon: '🎯', label: '질문', description: '"이 시간이 의미 있었나?"' },
+        { icon: '💫', label: '목표', description: '카이로스적 시간을 늘리기' },
+      ]},
+      { type: 'example', bad: { label: '크로노스만', story: '하루 14시간 공부. 빽빽한 스케줄.\n그런데 왜 공허하지? 의미가 없다.' }, good: { label: '카이로스 추구', story: '6시간만 공부했지만 "이해됐다!" 느낀 순간,\n친구와 깊은 대화. 하루가 충만하다.' }},
+      { type: 'ox', statement: '시간을 잘 쓰는 것은 매 초를 빽빽하게 채우는 것이다.', answer: false, feedback: '빽빽하게 채우는 건 크로노스적 접근.\n의미 있는 순간(카이로스)을 만드는 게 핵심!' },
+      { type: 'multipleChoice', question: '카이로스적 시간관리란?', options: ['매 분 계획하기', '의미 있는 순간을 의도적으로 만들기', '시간을 최대한 아끼기', '바쁘게 사는 것'], correctIndex: 1, explanation: '양이 아닌 의미! 카이로스를 늘리는 게 마스터.' },
+      { type: 'feedback', summary: '시간의 양보다 의미 = 카이로스', message: '진짜 시간 부자는 의미 있는 순간이 많은 사람!' },
+      { type: 'mission', mission: '오늘 하루 중 "가장 의미 있었던 순간" 1가지 적기', encouragement: '카이로스를 의식하면 삶의 질이 바뀐다!' },
+    ],
+  },
+
+  'time-diamond-2': {
+    id: 'time-diamond-2', chapterKey: 'time', tierKey: 'diamond', stageNumber: 2,
+    title: '역방향 스케줄링',
+    cards: [
+      { type: 'concept', title: '끝에서부터 계획하기', description: '일반: 오늘부터 → 시험일까지\n역방향: 시험일부터 → 오늘까지\n\n끝에서 역으로 계획하면\n"언제 뭘 끝내야 하는지" 선명해져.' },
+      { type: 'summary', keywords: [
+        { icon: '🏁', label: '최종 기한', description: '목표 달성일 먼저 정하기' },
+        { icon: '⬅️', label: '역산', description: '마감에서 오늘로 거꾸로' },
+        { icon: '📌', label: '마일스톤', description: '중간 체크포인트 설정' },
+        { icon: '📐', label: '현실적', description: '실제 필요 시간 계산' },
+      ]},
+      { type: 'example', bad: { label: '앞에서부터', story: '"시험까지 3주니까 여유 있지"\n→ 마지막 3일에 벼락치기.' }, good: { label: '역방향', story: '"시험 D-1은 복습만. D-7은 모의고사.\nD-14까지 전 범위 1회독." 촘촘한 계획 완성.' }},
+      { type: 'ox', statement: '계획은 항상 오늘부터 시작해야 한다.', answer: false, feedback: '끝에서부터 역산하면\n각 단계가 명확해져서 더 효과적!' },
+      { type: 'multipleChoice', question: '역방향 스케줄링의 첫 단계는?', options: ['오늘 할 일 정하기', '최종 기한을 정하고 거꾸로 계획', '남들 계획 참고하기', '일단 시작하기'], correctIndex: 1, explanation: '끝을 정하면 과정이 보여! 역방향이 핵심.' },
+      { type: 'apply', question: '다가오는 중요 일정을 역방향으로 계획해보세요.', placeholder: 'D-day: / D-7: / D-14: ...' },
+      { type: 'feedback', summary: '역방향 계획 = 끝에서부터 촘촘하게', message: '끝을 알면 길이 보인다!' },
+      { type: 'mission', mission: '다음 시험/과제를 역방향으로 D-day 계획 세우기', encouragement: '프로는 항상 끝에서부터 계획한다!' },
+    ],
+  },
+
+  'time-diamond-3': {
+    id: 'time-diamond-3', chapterKey: 'time', tierKey: 'diamond', stageNumber: 3,
+    title: '시간 자산 포트폴리오',
+    cards: [
+      { type: 'concept', title: '시간도 분산 투자하라', description: '돈을 한 곳에만 투자하면 위험하듯\n시간도 분산 투자해야 해.\n\n공부, 관계, 건강, 취미, 성장.\n"시간 포트폴리오"를 관리하자!' },
+      { type: 'summary', keywords: [
+        { icon: '📚', label: '학습', description: '성적/지식 (40%)' },
+        { icon: '🤝', label: '관계', description: '친구/가족 (20%)' },
+        { icon: '💪', label: '건강', description: '운동/수면 (20%)' },
+        { icon: '🎨', label: '성장/취미', description: '독서/취미 (20%)' },
+      ]},
+      { type: 'example', bad: { label: '올인 투자', story: '공부에만 100% 시간 투입.\n성적은 올랐지만 친구 없고 건강 나빠짐.' }, good: { label: '포트폴리오', story: '공부 40% + 운동 20% + 친구 20% + 독서 20%.\n균형 잡힌 생활, 지속가능한 성장.' }},
+      { type: 'ox', statement: '시간을 한 가지에 올인하는 게 가장 효율적이다.', answer: false, feedback: '단기적으론 효율적이지만 장기적으로 번아웃!\n균형 잡힌 분산이 지속 가능해.' },
+      { type: 'multipleChoice', question: '시간 포트폴리오의 핵심은?', options: ['공부에만 집중', '여러 영역에 균형 있게 분산', '쉬는 시간 최소화', '남들과 같은 비율'], correctIndex: 1, explanation: '균형 = 지속가능한 성장의 비밀!' },
+      { type: 'apply', question: '나의 이상적인 시간 포트폴리오 비율을 정해보세요.', placeholder: '학습 __% / 관계 __% / 건강 __% / 취미 __%' },
+      { type: 'feedback', summary: '시간 포트폴리오 = 균형 잡힌 시간 분산', message: '한쪽에 치우치지 않는 게 마스터의 비결!' },
+      { type: 'mission', mission: '이번 주 시간 포트폴리오 비율을 정하고 지켜보기', encouragement: '균형이 곧 지속가능한 성장이야!' },
+    ],
+  },
+
+  'time-diamond-4': {
+    id: 'time-diamond-4', chapterKey: 'time', tierKey: 'diamond', stageNumber: 4,
+    title: '시간 복리 효과',
+    cards: [
+      { type: 'concept', title: '매일 1%가 만드는 기적', description: '매일 1% 성장하면\n1년 뒤 37배가 돼. 복리 효과야.\n\n반대로 매일 1% 게으르면\n1년 뒤 거의 0에 가까워져.' },
+      { type: 'summary', keywords: [
+        { icon: '📈', label: '복리', description: '작은 것이 쌓여 거대해진다' },
+        { icon: '1️⃣', label: '1% 룰', description: '매일 조금씩만 성장' },
+        { icon: '🗓️', label: '365일', description: '1.01^365 = 37.8배' },
+        { icon: '⚠️', label: '역복리', description: '0.99^365 = 0.03배' },
+      ]},
+      { type: 'example', bad: { label: '한 방에', story: '"나중에 한꺼번에 하지"\n시험 전날 벼락치기 → 결과는 늘 아쉬움.' }, good: { label: '복리 성장', story: '매일 영어 단어 10개 × 300일 = 3,000개.\n큰 노력 없이 어느새 어휘왕.' }},
+      { type: 'ox', statement: '매일 30분 공부는 의미가 없다.', answer: false, feedback: '30분 × 365일 = 182시간!\n복리 효과로 엄청난 차이를 만들어.' },
+      { type: 'multipleChoice', question: '시간 복리의 핵심 조건은?', options: ['하루에 많이 하기', '매일 작더라도 꾸준히 하기', '가끔 한 번에 몰아서', '재능이 있어야'], correctIndex: 1, explanation: '양보다 꾸준함! 매일 작은 실행이 복리를 만들어.' },
+      { type: 'feedback', summary: '매일 1% = 1년 뒤 37배', message: '오늘의 작은 실행이 내일의 나를 만든다!' },
+      { type: 'mission', mission: '"매일 15분 투자할 성장 활동" 1가지 정하기', encouragement: '15분이 1년 뒤 기적을 만든다!' },
+    ],
+  },
+
+  'time-diamond-5': {
+    id: 'time-diamond-5', chapterKey: 'time', tierKey: 'diamond', stageNumber: 5,
+    title: '에너지 맵핑',
+    cards: [
+      { type: 'concept', title: '시간이 아닌 에너지를 관리하라', description: '같은 1시간이라도\n에너지가 높을 때 vs 낮을 때\n생산성이 5배 차이나.\n\n나의 에너지 패턴을 알면\n시간 배치가 완전히 달라져.' },
+      { type: 'summary', keywords: [
+        { icon: '🔋', label: '에너지 곡선', description: '하루 중 에너지 높낮이 파악' },
+        { icon: '🌅', label: '골든 타임', description: '에너지 최고 시간대' },
+        { icon: '📊', label: '매칭', description: '어려운 일 ↔ 높은 에너지' },
+        { icon: '🌙', label: '로우 타임', description: '쉬운 일 ↔ 낮은 에너지' },
+      ]},
+      { type: 'example', bad: { label: '시간만 관리', story: '오후 2시에 수학 공부 배치.\n매일 졸면서 풀다가 포기.' }, good: { label: '에너지 맵핑', story: '오전 10시가 골든 타임 발견!\n수학을 10시로 옮기니 집중력 5배.' }},
+      { type: 'ox', statement: '어떤 시간이든 의지만 있으면 같은 효율이다.', answer: false, feedback: '뇌 에너지는 시간대마다 달라!\n골든 타임에 어려운 일을 해야 효율적.' },
+      { type: 'multipleChoice', question: '에너지 맵핑 후 가장 먼저 해야 할 것은?', options: ['에너지 낮을 때 더 노력하기', '골든 타임에 가장 어려운 일 배치', '에너지와 상관없이 계획대로', '항상 같은 시간에 공부'], correctIndex: 1, explanation: '골든 타임 × 어려운 일 = 최고 효율!' },
+      { type: 'apply', question: '나의 골든 타임(에너지 최고 시간대)은 언제인가요?', placeholder: '예: 오전 9~11시, 저녁 7~9시...' },
+      { type: 'feedback', summary: '에너지 맵핑 = 시간의 질을 극대화', message: '시간이 아닌 에너지를 관리하는 게 마스터!' },
+      { type: 'mission', mission: '3일간 시간대별 에너지 레벨(1~5) 기록하기', encouragement: '내 에너지 패턴을 알면 게임 체인저!' },
+    ],
+  },
+
+  'time-diamond-6': {
+    id: 'time-diamond-6', chapterKey: 'time', tierKey: 'diamond', stageNumber: 6,
+    title: '시간 위임과 자동화',
+    cards: [
+      { type: 'concept', title: '모든 걸 직접 할 필요 없다', description: '마스터는 모든 걸 혼자 안 해.\n\n위임할 수 있는 건 위임하고\n자동화할 수 있는 건 자동화해서\n핵심에만 시간을 쓴다.' },
+      { type: 'summary', keywords: [
+        { icon: '🤝', label: '위임', description: '남이 더 잘하는 일은 맡기기' },
+        { icon: '🤖', label: '자동화', description: '반복 작업은 시스템으로' },
+        { icon: '🎯', label: '핵심 집중', description: '나만 할 수 있는 일에 집중' },
+        { icon: '⏰', label: '시간 창출', description: '위임/자동화로 시간 확보' },
+      ]},
+      { type: 'example', bad: { label: '혼자 다 하기', story: '조별 과제 전부 혼자.\n잘했지만 자기 공부 시간 0.' }, good: { label: '전략적 위임', story: '역할 분담: 자료조사는 친구, 발표자료는 나.\n각자 잘하는 걸 맡으니 빠르고 좋았다.' }},
+      { type: 'ox', statement: '책임감 있는 사람은 모든 걸 혼자 해야 한다.', answer: false, feedback: '진짜 책임감은 최고 결과를 만드는 것!\n위임이 더 좋은 결과를 만들 때도 있어.' },
+      { type: 'multipleChoice', question: '위임 시 가장 중요한 기준은?', options: ['귀찮은 일 떠넘기기', '상대가 더 잘하거나 성장할 수 있는 일', '모든 일을 공평하게', '내가 싫은 일만'], correctIndex: 1, explanation: '위임 = 적재적소! 각자 잘하는 걸 맡기는 게 핵심.' },
+      { type: 'feedback', summary: '위임/자동화 → 핵심에만 집중', message: '혼자 다 하지 마. 함께하면 더 멀리 간다!' },
+      { type: 'mission', mission: '이번 주 할 일 중 "남에게 부탁하거나 자동화할 것" 1가지 찾기', encouragement: '나만 할 수 있는 일에 집중하자!' },
+    ],
+  },
+
+  'time-diamond-7': {
+    id: 'time-diamond-7', chapterKey: 'time', tierKey: 'diamond', stageNumber: 7,
+    title: '안티프래질 시간관리',
+    cards: [
+      { type: 'concept', title: '변수에 강한 시간관리', description: '완벽한 계획은 없어.\n예상치 못한 일은 반드시 생겨.\n\n안티프래질 = 혼란 속에서\n오히려 더 강해지는 시스템.\n변수를 환영하는 시간관리!' },
+      { type: 'summary', keywords: [
+        { icon: '🛡️', label: '여유분', description: '계획의 20%는 빈칸으로' },
+        { icon: '🔄', label: '유연성', description: '변할 수 있는 유연한 구조' },
+        { icon: '📋', label: 'Plan B', description: '대안 계획 항상 준비' },
+        { icon: '💪', label: '적응력', description: '변수를 성장 기회로' },
+      ]},
+      { type: 'example', bad: { label: '완벽 계획', story: '분 단위 계획. 친구가 갑자기 전화.\n계획 틀어지자 전체 포기.' }, good: { label: '안티프래질', story: '시간블록 사이 30분 버퍼.\n갑작스런 일이 생겨도 버퍼로 흡수. OK.' }},
+      { type: 'ox', statement: '좋은 계획은 빈틈이 없어야 한다.', answer: false, feedback: '빈틈 없는 계획은 깨지기 쉬워!\n20% 여유가 오히려 강한 계획이야.' },
+      { type: 'multipleChoice', question: '안티프래질 시간관리의 핵심은?', options: ['변수를 완전히 없애기', '여유분을 두고 유연하게 대응', '계획을 안 세우기', '변수가 생기면 포기하기'], correctIndex: 1, explanation: '여유분 + 유연성 = 변수에도 무너지지 않는 시스템!' },
+      { type: 'feedback', summary: '20% 여유 = 무너지지 않는 시스템', message: '변수를 두려워하지 마. 여유가 너를 지켜줘!' },
+      { type: 'mission', mission: '내일 계획에 "빈 시간 30분"을 의도적으로 넣기', encouragement: '여유 있는 계획이 진짜 강한 계획이야!' },
+    ],
+  },
+
+  'time-diamond-8': {
+    id: 'time-diamond-8', chapterKey: 'time', tierKey: 'diamond', stageNumber: 8,
+    title: '미래의 나에게 시간 선물',
+    cards: [
+      { type: 'concept', title: '현재의 행동은 미래의 선물', description: '지금 귀찮은 일을 해두면\n미래의 내가 감사해.\n\n"미래의 나에게 시간을 선물한다"\n이 마인드가 시간관리 최고 원칙!' },
+      { type: 'summary', keywords: [
+        { icon: '🎁', label: '미래 선물', description: '지금 하면 미래가 편해진다' },
+        { icon: '⏳', label: '선행 투자', description: '미리 해두는 습관' },
+        { icon: '🧠', label: '미래 자아', description: '미래의 나를 진짜 사람으로 상상' },
+        { icon: '🙏', label: '과거 감사', description: '과거의 내가 해둔 것에 감사' },
+      ]},
+      { type: 'example', bad: { label: '미루기 대장', story: '"내일의 내가 하겠지"\n→ 내일의 나도 미루기 → 악순환.' }, good: { label: '미래 선물러', story: '"미래의 내가 고마워할 거야!"\n오늘 밤 내일 준비물 챙겨둠 → 아침이 여유로움.' }},
+      { type: 'ox', statement: '미래는 어차피 불확실하니 현재만 즐기면 된다.', answer: false, feedback: '현재를 즐기면서도 미래를 챙길 수 있어!\n작은 선행이 미래를 편하게 만들어.' },
+      { type: 'multipleChoice', question: '"미래의 나에게 선물하기"의 예시로 적절한 것은?', options: ['과제를 시험 전날로 미루기', '전날 밤 내일 준비물 챙겨두기', '오늘만 재밌게 보내기', '계획 안 세우고 자유롭게'], correctIndex: 1, explanation: '지금 5분 투자가 내일의 30분을 아껴줘!' },
+      { type: 'feedback', summary: '지금의 5분 = 미래의 30분', message: '미래의 내가 고마워할 행동을 하자!' },
+      { type: 'mission', mission: '"미래의 나에게 줄 선물" 1가지를 오늘 실행하기', encouragement: '지금의 수고가 미래의 여유가 돼!' },
+    ],
+  },
+
+  'time-diamond-9': {
+    id: 'time-diamond-9', chapterKey: 'time', tierKey: 'diamond', stageNumber: 9,
+    title: '시간관리 코칭 능력',
+    cards: [
+      { type: 'concept', title: '가르치면 2배 배운다', description: '진짜 마스터는 남을 도와.\n\n네가 배운 시간관리 기술을\n친구에게 알려주면\n네 실력도 2배 올라가.\n가르치는 게 최고의 학습이야.' },
+      { type: 'summary', keywords: [
+        { icon: '🧑‍🏫', label: '가르치기', description: '설명하면 이해가 깊어짐' },
+        { icon: '🤝', label: '함께 성장', description: '친구와 같이 시간관리' },
+        { icon: '💡', label: '재발견', description: '가르치다 새로운 인사이트' },
+        { icon: '🌱', label: '리더십', description: '도움을 주는 영향력' },
+      ]},
+      { type: 'example', bad: { label: '혼자만', story: '좋은 시간관리 방법을 알아도 혼자만 씀.\n동기부여가 점점 떨어짐.' }, good: { label: '코칭 리더', story: '친구에게 타임블로킹을 설명해줌.\n설명하다 보니 나도 더 잘 이해하게 됨!' }},
+      { type: 'ox', statement: '완벽하게 알아야만 남을 가르칠 수 있다.', answer: false, feedback: '70%만 알아도 가르칠 수 있어!\n가르치면서 나머지 30%도 채워져.' },
+      { type: 'multipleChoice', question: '시간관리를 남에게 가르치면 좋은 이유는?', options: ['우월감을 느끼려고', '설명하면서 내 이해도도 깊어지니까', '남을 통제하려고', '과제로 내주려고'], correctIndex: 1, explanation: '가르치기 = 최고의 학습법! 설명하면 2배 배워.' },
+      { type: 'apply', question: '친구에게 가장 알려주고 싶은 시간관리 기술은?', placeholder: '예: 타임블로킹, 2분 룰, 아침 루틴...' },
+      { type: 'feedback', summary: '가르치기 = 최고의 학습 + 리더십', message: '네 지식을 나누면 함께 성장해!' },
+      { type: 'mission', mission: '친구 1명에게 배운 시간관리 기술 하나 알려주기', encouragement: '나누면 2배가 된다!' },
+    ],
+  },
+
+  'time-diamond-10': {
+    id: 'time-diamond-10', chapterKey: 'time', tierKey: 'diamond', stageNumber: 10,
+    title: '시간관리 마스터 선언',
+    cards: [
+      { type: 'concept', title: '50단계를 완주한 너에게', description: '브론즈부터 다이아까지\n50개의 레슨을 모두 마쳤어.\n\n시간의 기초부터 철학까지.\n이제 너는 시간관리 마스터야.\n배운 걸 삶에 녹여내자!' },
+      { type: 'summary', keywords: [
+        { icon: '🥉', label: '기초', description: '시간 기록, 우선순위, To-Do' },
+        { icon: '🥈', label: '전략', description: '아이젠하워, 타임블로킹, SMART' },
+        { icon: '🥇', label: '실전', description: '딥 워크, 습관 스태킹, 80/20' },
+        { icon: '💎👑', label: '마스터', description: 'ROI, 에너지, 카이로스, 복리' },
+      ]},
+      { type: 'example', bad: { label: '배우기만', story: '50개 레슨 다 들었지만\n실천은 하나도 안 함. 달라진 건 없다.' }, good: { label: '실천 마스터', story: '매일 1가지씩 적용. 6개월 뒤\n시간관리가 자연스러운 습관이 됐다!' }},
+      { type: 'ox', statement: '시간관리를 배우면 끝이다.', answer: false, feedback: '배움은 시작일 뿐! 실천하고 조정하고\n반복해야 진짜 내 것이 돼.' },
+      { type: 'multipleChoice', question: '시간관리 마스터의 핵심은?', options: ['모든 기술을 한 번에 쓰기', '나에게 맞는 것을 실천하며 발전시키기', '남들과 같은 방법 쓰기', '더 많은 이론 공부'], correctIndex: 1, explanation: '나만의 시스템을 실천하고 진화시키는 것!\n그게 마스터야.' },
+      { type: 'apply', question: '시간관리 마스터로서 나의 각오를 한 문장으로!', placeholder: '예: 나는 매일 의미 있는 시간을 만드는 사람이다.' },
+      { type: 'feedback', summary: '배움 → 실천 → 습관 → 마스터', message: '축하해! 다이아 완료! 진짜 시간관리 마스터!' },
+      { type: 'mission', mission: '"나의 시간관리 철학" 한 문장을 적고 책상에 붙이기', encouragement: '50단계를 완주한 너는 이미 마스터야!' },
+    ],
+  },
+
 }
