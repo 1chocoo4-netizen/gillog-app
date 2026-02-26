@@ -10,6 +10,11 @@ function createPrismaClient() {
   return new PrismaClient({ adapter })
 }
 
+// 캐싱된 클라이언트가 coachingSession을 갖고 있지 않으면 재생성
+if (globalForPrisma.prisma && !('coachingSession' in globalForPrisma.prisma)) {
+  globalForPrisma.prisma = undefined
+}
+
 export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
