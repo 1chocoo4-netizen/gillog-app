@@ -1031,7 +1031,7 @@ function CoachingChat() {
                   <div className="flex items-center justify-center py-12 text-white/40">로딩 중...</div>
                 ) : historyDetail ? (
                   /* 상세 대화 */
-                  <div className="p-4 space-y-3 pb-8">
+                  <div className="p-4 space-y-3 pb-32">
                     <div className="text-xs text-white/40 mb-2">
                       {new Date(historyDetail.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                       {' '}{historyDetail.mode === 'voice' ? '(음성)' : '(텍스트)'}
