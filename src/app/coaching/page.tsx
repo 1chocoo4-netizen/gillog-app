@@ -174,20 +174,28 @@ function CoachingChat() {
     }])
   }
 
-  // chatDone이 true가 된 후 렌더링 완료 시점에 저장 (messages가 최신 상태)
+  // chatDone이 true가 된 후 약간 딜레이를 줘서 메시지 상태가 완전히 반영된 뒤 저장
   useEffect(() => {
     if (!chatDone || sessionSaved.current) return
-    sessionSaved.current = true
-    const msgs = messages.filter(m => m.content.trim())
-    if (msgs.length === 0) return
-    fetch('/api/coaching/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        mode: coachingModeRef.current,
-        messages: msgs.map(m => ({ role: m.role, content: m.content })),
-      }),
-    }).catch(err => console.error('코칭 세션 저장 실패:', err))
+    const timer = setTimeout(() => {
+      const msgs = messages.filter(m => m.content.trim())
+      if (msgs.length === 0) return
+      sessionSaved.current = true
+      fetch('/api/coaching/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: coachingModeRef.current,
+          messages: msgs.map(m => ({ role: m.role, content: m.content })),
+        }),
+      }).then(res => {
+        if (!res.ok) console.error('코칭 세션 저장 실패:', res.status)
+      }).catch(err => {
+        console.error('코칭 세션 저장 실패:', err)
+        sessionSaved.current = false // 실패시 재시도 가능하게
+      })
+    }, 500) // 메시지 상태 안정화 대기
+    return () => clearTimeout(timer)
   }, [chatDone, messages])
 
   async function loadHistory() {
@@ -199,8 +207,14 @@ function CoachingChat() {
       if (res.ok) {
         const data = await res.json()
         setHistoryList(data.sessions || [])
+      } else {
+        console.error('코칭 기록 로드 실패:', res.status)
+        setHistoryList([])
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('코칭 기록 로드 에러:', err)
+      setHistoryList([])
+    }
     setHistoryLoading(false)
   }
 

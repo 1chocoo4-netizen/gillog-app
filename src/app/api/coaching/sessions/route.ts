@@ -63,7 +63,7 @@ export async function GET() {
       include: {
         messages: {
           orderBy: { order: 'asc' },
-          take: 2, // 미리보기용 첫 2개
+          take: 4, // 미리보기용 (인사 + 유저 첫 메시지 확보)
           select: { role: true, content: true },
         },
         _count: { select: { messages: true } },
@@ -71,13 +71,17 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      sessions: sessions.map(s => ({
-        id: s.id,
-        mode: s.mode,
-        createdAt: s.createdAt.toISOString(),
-        messageCount: s._count.messages,
-        preview: s.messages.find(m => m.role === 'user')?.content?.slice(0, 60) || '',
-      })),
+      sessions: sessions.map(s => {
+        // 첫 번째 유저 메시지를 주제로 사용
+        const firstUserMsg = s.messages.find(m => m.role === 'user')
+        return {
+          id: s.id,
+          mode: s.mode,
+          createdAt: s.createdAt.toISOString(),
+          messageCount: s._count.messages,
+          preview: firstUserMsg?.content?.slice(0, 80) || '코칭 대화',
+        }
+      }),
     })
   } catch (error) {
     console.error('GET /api/coaching/sessions error:', error)
