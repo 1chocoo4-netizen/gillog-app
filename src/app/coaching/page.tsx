@@ -204,11 +204,11 @@ function CoachingChat() {
     setHistoryLoading(true)
     try {
       const res = await fetch('/api/coaching/sessions')
+      const data = await res.json()
       if (res.ok) {
-        const data = await res.json()
         setHistoryList(data.sessions || [])
       } else {
-        console.error('코칭 기록 로드 실패:', res.status)
+        console.error('코칭 기록 로드 실패:', res.status, data.error)
         setHistoryList([])
       }
     } catch (err) {

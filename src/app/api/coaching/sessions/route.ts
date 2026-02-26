@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 // 내 코칭 기록 목록 (최근 20개)
 // ========================================
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -63,7 +63,7 @@ export async function GET() {
       include: {
         messages: {
           orderBy: { order: 'asc' },
-          take: 4, // 미리보기용 (인사 + 유저 첫 메시지 확보)
+          take: 4,
           select: { role: true, content: true },
         },
         _count: { select: { messages: true } },
@@ -72,7 +72,6 @@ export async function GET() {
 
     return NextResponse.json({
       sessions: sessions.map(s => {
-        // 첫 번째 유저 메시지를 주제로 사용
         const firstUserMsg = s.messages.find(m => m.role === 'user')
         return {
           id: s.id,
@@ -84,7 +83,8 @@ export async function GET() {
       }),
     })
   } catch (error) {
-    console.error('GET /api/coaching/sessions error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    const errMsg = error instanceof Error ? error.message : String(error)
+    console.error('GET /api/coaching/sessions error:', errMsg)
+    return NextResponse.json({ error: errMsg }, { status: 500 })
   }
 }
