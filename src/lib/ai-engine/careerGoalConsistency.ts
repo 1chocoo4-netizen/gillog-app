@@ -2,17 +2,20 @@
 // AI 성장엔진 — 진로목표 일관성 (Career Goal Consistency)
 // 가중치: 버킷리스트진로목표안정성(30%) + 월간목표진로정렬(30%)
 //         + 진로실행분기별일관성(25%) + 설문진로점수궤적(15%)
+// 코칭 데이터 있으면 기존 88% + 코칭 12% (sessionCompletionRate 50% + careerMention 50%)
 // ========================================
 
 import { round2 } from '@/lib/research/longitudinalEngine'
 import { isCareerRelated } from './textAnalysis'
 import type { RawExecution, BucketItem, MonthlyGoalItem } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 export interface CareerGoalConsistencyInput {
   history: RawExecution[]
   bucketList: BucketItem[]
   monthlyGoals: Record<string, MonthlyGoalItem[]>  // "2026-01" → goals
   careerSurveyScores: number[]  // 시간순 설문 진로 점수들
+  coachingSignals?: CoachingSignals
 }
 
 export function calcCareerGoalConsistency(input: CareerGoalConsistencyInput): {
@@ -88,12 +91,23 @@ export function calcCareerGoalConsistency(input: CareerGoalConsistencyInput): {
     if (input.careerSurveyScores.length === 0) signals.push('진로 설문 이력 없음')
   }
 
-  const score = round2(
+  const baseScore = round2(
     bucketStabilityScore * 0.30 +
     monthlyAlignScore * 0.30 +
     quarterConsistencyScore * 0.25 +
     trajectoryScore * 0.15
   )
+
+  // 코칭 데이터 12% 가중치: sessionCompletionRate(50%) + careerMention(50%)
+  const cs = input.coachingSignals
+  let score: number
+  if (cs && cs.sessionCount > 0) {
+    const coachingScore = cs.sessionCompletionRate * 0.5 + cs.careerMention * 0.5
+    score = round2(baseScore * 0.88 + coachingScore * 0.12)
+    signals.push(`코칭 데이터 반영 (${cs.sessionCount}세션)`)
+  } else {
+    score = baseScore
+  }
 
   return {
     score: Math.min(100, Math.max(0, score)),
@@ -103,6 +117,7 @@ export function calcCareerGoalConsistency(input: CareerGoalConsistencyInput): {
       monthlyAlignScore: round2(monthlyAlignScore),
       quarterConsistencyScore: round2(quarterConsistencyScore),
       trajectoryScore: round2(trajectoryScore),
+      ...(cs && cs.sessionCount > 0 ? { coachingScore: round2(cs.sessionCompletionRate * 0.5 + cs.careerMention * 0.5) } : {}),
     },
   }
 }

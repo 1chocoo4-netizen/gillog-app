@@ -1,7 +1,9 @@
 // 실제 데이터에서 8개 실행 역량 지표를 계산하는 엔진
 // 기준: 1,000회 실행 = 100점 (ISO 30414 기반 완성된 인재)
 // 모든 증거 날짜는 실제 DB 레코드의 createdAt에서만 추출
+// 코칭 데이터 있으면 각 메트릭에 10-15% 코칭 보너스 적용
 import type { MetricScores, MetricKey, EvidenceDate, MetricEvidenceMap } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 interface ExecutionRecord {
   id: string
@@ -59,6 +61,7 @@ export interface CalculatorInput {
   answers: AnswerRecord[]
   surveys: SurveyRecord[]
   milestoneCount: number
+  coachingSignals?: CoachingSignals
 }
 
 export interface CalculatorResult {
@@ -410,10 +413,78 @@ export function calculateMetricsWithEvidence(input: CalculatorInput): Calculator
       .sort((a, b) => b.date.localeCompare(a.date))
   }
 
+  // ====================================================
+  // 코칭 데이터 보너스 (10-15% 가중치)
+  // 코칭 데이터 없으면 기존 점수 그대로 유지
+  // ====================================================
+  const cs = input.coachingSignals
+  let finalInitiative = initiative
+  let finalConsistency = consistency
+  let finalReflectiveness = reflectiveness
+  let finalAdaptability = adaptability
+  let finalCollaboration = collaboration
+  let finalGoalClarity = goalClarity
+  let finalEmotionalAware = emotionalAware
+  let finalGrowthMindset = growthMindset
+
+  if (cs && cs.sessionCount > 0) {
+    const coachingWeight = 0.12 // 12%
+    const baseWeight = 1 - coachingWeight
+
+    // initiative ← goalClarity + actionCommitment
+    const initCoaching = (cs.goalClarity * 0.5 + cs.actionCommitment * 0.5) / 100
+    finalInitiative = clamp(initiative * baseWeight + initCoaching * mf * 100 * coachingWeight)
+
+    // consistency ← sessionFrequency
+    const consCoaching = cs.sessionFrequency / 100
+    finalConsistency = clamp(consistency * baseWeight + consCoaching * mf * 100 * coachingWeight)
+
+    // reflectiveness ← selfReflectionDepth + engagementDepth
+    const reflCoaching = (cs.selfReflectionDepth * 0.5 + cs.engagementDepth * 0.5) / 100
+    finalReflectiveness = clamp(reflectiveness * baseWeight + reflCoaching * mf * 100 * coachingWeight)
+
+    // adaptability ← topicDiversity (use careerMention + learningMention + communityMention / 3)
+    const adaptCoaching = (cs.careerMention + cs.learningMention + cs.communityMention) / 300
+    finalAdaptability = clamp(adaptability * baseWeight + adaptCoaching * mf * 100 * coachingWeight)
+
+    // collaboration ← communityMention + emotionalAwareness
+    const collabCoaching = (cs.communityMention * 0.5 + cs.emotionalAwareness * 0.5) / 100
+    finalCollaboration = clamp(collaboration * baseWeight + collabCoaching * mf * 100 * coachingWeight)
+
+    // goalClarity ← goalClarity + careerMention
+    const goalCoaching = (cs.goalClarity * 0.5 + cs.careerMention * 0.5) / 100
+    finalGoalClarity = clamp(goalClarity * baseWeight + goalCoaching * mf * 100 * coachingWeight)
+
+    // emotionalAware ← emotionalAwareness
+    const emotCoaching = cs.emotionalAwareness / 100
+    finalEmotionalAware = clamp(emotionalAware * baseWeight + emotCoaching * mf * 100 * coachingWeight)
+
+    // growthMindset ← sessionCompletionRate + actionCommitment
+    const growthCoaching = (cs.sessionCompletionRate * 0.5 + cs.actionCommitment * 0.5) / 100
+    finalGrowthMindset = clamp(growthMindset * baseWeight + growthCoaching * mf * 100 * coachingWeight)
+
+    // 코칭 증거 추가 (최근 세션 날짜)
+    const coachingDate = toDateStr(new Date())
+    const coachingEvidence: EvidenceDate = {
+      date: coachingDate,
+      source: 'coaching',
+      label: `코칭(${cs.sessionCount}회)`,
+    }
+    for (const key of Object.keys(evidence) as MetricKey[]) {
+      evidence[key].push(coachingEvidence)
+    }
+  }
+
   return {
     scores: {
-      initiative, consistency, reflectiveness, adaptability,
-      collaboration, goalClarity, emotionalAware, growthMindset,
+      initiative: finalInitiative,
+      consistency: finalConsistency,
+      reflectiveness: finalReflectiveness,
+      adaptability: finalAdaptability,
+      collaboration: finalCollaboration,
+      goalClarity: finalGoalClarity,
+      emotionalAware: finalEmotionalAware,
+      growthMindset: finalGrowthMindset,
     },
     evidence,
   }

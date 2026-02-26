@@ -2,16 +2,19 @@
 // AI 성장엔진 — 공동체 기여도 (Community Contribution Score)
 // 가중치: relationship실행빈도(30%) + 공동체설문(25%)
 //         + character/attitude참여(20%) + 공동체키워드(15%) + 텍스트다양성(10%)
+// 코칭 데이터 있으면 기존 88% + 코칭 12% (communityMention 50% + emotionalAwareness 50%)
 // ========================================
 
 import { round2 } from '@/lib/research/longitudinalEngine'
 import { COMMUNITY_KEYWORDS, calcAvgKeywordDensity } from './textAnalysis'
 import type { RawExecution } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 export interface CommunityContributionInput {
   communitySurveyScore: number | null
   history: RawExecution[]
   answerTexts: string[]  // 레슨 답변 + 실행 텍스트
+  coachingSignals?: CoachingSignals
 }
 
 export function calcCommunityContributionScore(input: CommunityContributionInput): {
@@ -52,13 +55,24 @@ export function calcCommunityContributionScore(input: CommunityContributionInput
     ? Math.min(100, (uniqueTexts / relTexts.length) * 100)
     : 50
 
-  const score = round2(
+  const baseScore = round2(
     relFreqScore * 0.30 +
     surveyScore * 0.25 +
     charAttScore * 0.20 +
     keywordDensity * 0.15 +
     diversityScore * 0.10
   )
+
+  // 코칭 데이터 12% 가중치: communityMention(50%) + emotionalAwareness(50%)
+  const cs = input.coachingSignals
+  let score: number
+  if (cs && cs.sessionCount > 0) {
+    const coachingScore = cs.communityMention * 0.5 + cs.emotionalAwareness * 0.5
+    score = round2(baseScore * 0.88 + coachingScore * 0.12)
+    signals.push(`코칭 데이터 반영 (${cs.sessionCount}세션)`)
+  } else {
+    score = baseScore
+  }
 
   return {
     score: Math.min(100, Math.max(0, score)),
@@ -69,6 +83,7 @@ export function calcCommunityContributionScore(input: CommunityContributionInput
       charAttScore: round2(charAttScore),
       keywordDensity: round2(keywordDensity),
       diversityScore: round2(diversityScore),
+      ...(cs && cs.sessionCount > 0 ? { coachingScore: round2(cs.communityMention * 0.5 + cs.emotionalAwareness * 0.5) } : {}),
     },
   }
 }

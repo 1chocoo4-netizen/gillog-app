@@ -1,11 +1,27 @@
 // 할루시네이션 없는 객관적 인사이트 생성기
-// 모든 문구는 실제 점수 데이터에만 기반합니다.
+// 모든 문구는 실제 점수 데이터 + 실행/코칭/감정 맥락에 기반합니다.
 import type { MetricKey } from './types'
 
 interface InsightInput {
   key: MetricKey
   current: number
   previous: number | null  // null이면 100개 미만 (현재 상태만)
+}
+
+/** 메트릭별 맥락 데이터 (API에서 구축) */
+export interface MetricContext {
+  topActivities: string[]       // safe words에서 추출한 주요 활동
+  streak: number                // 연속 실행일
+  recentMoodAvg: number         // 최근 감정 평균 (0이면 데이터 없음)
+  coachingSessionCount: number  // 코칭 세션 수
+  coachingGoalClarity: number   // 코칭 goalClarity 시그널 (0-100)
+  coachingEmotional: number     // 코칭 emotionalAwareness (0-100)
+  coachingActionCommit: number  // 코칭 actionCommitment (0-100)
+  coachingCompletion: number    // 코칭 sessionCompletionRate (0-100)
+  coachingReflection: number    // 코칭 selfReflectionDepth (0-100)
+  worldDistribution: Record<string, number>  // 월드별 실행 비율
+  textDepthGrowing: boolean     // 글 깊이 성장 여부
+  energyTrend: 'up' | 'down' | 'stable'
 }
 
 const METRIC_LABELS: Record<MetricKey, string> = {
@@ -87,6 +103,151 @@ function generateGrowthInsight(key: MetricKey, current: number, previous: number
   return `${absDelta}점 변화가 있습니다. 실행 패턴을 점검해 보면 새로운 방향을 찾을 수 있습니다.`
 }
 
+// ─── 메트릭별 맥락 문장 생성 ───
+
+const WORLD_LABELS: Record<string, string> = {
+  cognition: '학습',
+  selfDirected: '자기주도',
+  habit: '습관',
+  attitude: '태도',
+  relationship: '관계',
+  character: '인성',
+}
+
+function generateContextSentence(key: MetricKey, ctx: MetricContext): string {
+  const parts: string[] = []
+
+  switch (key) {
+    case 'initiative': {
+      // topActivities + coachingGoalClarity
+      if (ctx.topActivities.length > 0) {
+        parts.push(`${ctx.topActivities.join(', ')} 활동을 실행하고 있`)
+      }
+      if (ctx.coachingSessionCount > 0 && ctx.coachingGoalClarity >= 30) {
+        parts.push('코칭에서 목표를 탐색하는 모습이 보입니다')
+      }
+      if (parts.length === 0) return ''
+      // 결합
+      if (parts.length === 2) {
+        return `${parts[0]}으며, ${parts[1]}.`
+      }
+      return parts[0] + (parts[0].endsWith('니다') ? '' : '습니다.')
+    }
+
+    case 'consistency': {
+      // streak + coachingSessionCount
+      if (ctx.streak >= 3) {
+        parts.push(`${ctx.streak}일 연속 실행을 이어가고 있어 좋은 습관이 형성되고 있습니다`)
+      }
+      if (ctx.coachingSessionCount >= 3) {
+        parts.push(`코칭에도 ${ctx.coachingSessionCount}회 참여하며 꾸준함을 보여주고 있습니다`)
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'reflectiveness': {
+      // textDepthGrowing + coachingReflection
+      if (ctx.textDepthGrowing) {
+        parts.push('최근 기록의 깊이가 성장하고 있어 성찰 능력이 발전하고 있습니다')
+      }
+      if (ctx.coachingSessionCount > 0 && ctx.coachingReflection >= 40) {
+        parts.push('코칭 대화에서도 자신을 깊이 돌아보는 모습이 나타납니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'adaptability': {
+      // worldDistribution 다양성 + 새 영역 도전
+      const worlds = Object.entries(ctx.worldDistribution)
+        .filter(([, v]) => v > 0)
+        .sort((a, b) => b[1] - a[1])
+      const worldCount = worlds.length
+      if (worldCount >= 4) {
+        parts.push(`${worldCount}개 영역에서 고르게 활동하며 다양한 경험을 쌓고 있습니다`)
+      } else if (worldCount >= 2) {
+        const topWorldNames = worlds.slice(0, 2).map(([k]) => WORLD_LABELS[k] || k)
+        parts.push(`${topWorldNames.join(', ')} 영역을 중심으로 활동하고 있습니다`)
+      }
+      if (ctx.energyTrend === 'up') {
+        parts.push('활동 에너지도 상승 추세입니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'collaboration': {
+      // 관계 월드 비율 + coachingEmotional
+      const relRatio = (ctx.worldDistribution['relationship'] || 0) + (ctx.worldDistribution['character'] || 0)
+      if (relRatio > 0) {
+        parts.push('관계·인성 영역에서 실행 경험을 쌓고 있습니다')
+      }
+      if (ctx.coachingSessionCount > 0 && ctx.coachingEmotional >= 30) {
+        parts.push('코칭에서 타인과의 관계를 돌아보는 모습이 보입니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'goalClarity': {
+      // coachingGoalClarity + 진로 활동 비율
+      if (ctx.coachingSessionCount > 0 && ctx.coachingGoalClarity >= 40) {
+        parts.push('코칭 대화에서 자신의 목표를 적극적으로 탐색하고 있습니다')
+      } else if (ctx.coachingSessionCount > 0 && ctx.coachingGoalClarity >= 20) {
+        parts.push('코칭을 통해 목표에 대해 생각하기 시작했습니다')
+      }
+      const selfDirectedRatio = ctx.worldDistribution['selfDirected'] || 0
+      if (selfDirectedRatio > 0) {
+        parts.push('자기주도 영역에서 실행을 이어가고 있습니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'emotionalAware': {
+      // recentMoodAvg + coachingEmotional
+      if (ctx.recentMoodAvg >= 4) {
+        parts.push('최근 정서 상태가 밝고 안정적입니다')
+      } else if (ctx.recentMoodAvg >= 3) {
+        parts.push('비교적 안정된 정서 상태를 유지하고 있습니다')
+      } else if (ctx.recentMoodAvg > 0) {
+        parts.push('최근 감정 상태가 다소 낮은 편이어서 따뜻한 격려가 도움이 될 수 있습니다')
+      }
+      if (ctx.coachingSessionCount > 0 && ctx.coachingEmotional >= 40) {
+        parts.push('코칭에서 자신의 감정을 인식하고 표현하는 힘이 보입니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length === 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    case 'growthMindset': {
+      // coachingCompletion + coachingActionCommit
+      if (ctx.coachingSessionCount > 0 && ctx.coachingCompletion >= 50) {
+        parts.push('코칭을 끝까지 완료하며 성장에 대한 의지가 뚜렷합니다')
+      }
+      if (ctx.coachingSessionCount > 0 && ctx.coachingActionCommit >= 40) {
+        parts.push('코칭에서 실행 약속을 자주 표현하고 있습니다')
+      }
+      if (ctx.energyTrend === 'up') {
+        parts.push('활동 에너지가 상승 추세로 긍정적인 흐름입니다')
+      }
+      if (parts.length === 0) return ''
+      if (parts.length >= 2) return `${parts[0]}. ${parts[1]}.`
+      return parts[0] + '.'
+    }
+
+    default:
+      return ''
+  }
+}
+
 /** 메트릭 카드에 표시할 인사이트 텍스트 생성 */
 export function generateInsight(input: InsightInput): string {
   const { key, current, previous } = input
@@ -102,16 +263,27 @@ export function generateInsight(input: InsightInput): string {
 export function generateAllInsights(
   currentScores: Record<MetricKey, number>,
   previousScores: Record<MetricKey, number> | null,
+  contexts?: Record<MetricKey, MetricContext>,
 ): Record<string, string> {
   const keys = Object.keys(currentScores) as MetricKey[]
   const result: Record<string, string> = {}
 
   for (const key of keys) {
-    result[key] = generateInsight({
+    let base = generateInsight({
       key,
       current: currentScores[key],
       previous: previousScores ? previousScores[key] : null,
     })
+
+    // 맥락 문장 추가 (context가 있을 때만)
+    if (contexts && contexts[key]) {
+      const contextSentence = generateContextSentence(key, contexts[key])
+      if (contextSentence) {
+        base += ' ' + contextSentence
+      }
+    }
+
+    result[key] = base
   }
 
   return result

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminAPI } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
 import { round2 } from '@/lib/research/longitudinalEngine'
+import { analyzeCoachingSessions, type CoachingSessionData } from '@/lib/coaching/coachingAnalyzer'
 
 // ========================================
 // GET /api/admin/ai-engine/[userId]
@@ -20,8 +21,8 @@ export async function GET(
   const { userId } = await params
 
   try {
-    // 스냅샷 히스토리 + 활성 추천 + 코칭 세션 수 병렬 쿼리
-    const [snapshots, recommendations, coachingSessionCount] = await Promise.all([
+    // 스냅샷 히스토리 + 활성 추천 + 코칭 세션 병렬 쿼리
+    const [snapshots, recommendations, coachingSessions] = await Promise.all([
       prisma.aiDimensionSnapshot.findMany({
         where: { userId },
         orderBy: { computedAt: 'desc' },
@@ -31,10 +32,43 @@ export async function GET(
         where: { userId, isActive: true },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.coachingSession.count({
+      prisma.coachingSession.findMany({
         where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 50, // 최근 50개
+        select: {
+          id: true,
+          userId: true,
+          mode: true,
+          createdAt: true,
+          messages: {
+            select: { role: true, content: true, order: true, createdAt: true },
+            orderBy: { order: 'asc' },
+          },
+        },
       }),
     ])
+
+    // 코칭 분석 시그널
+    const coachingSignals = coachingSessions.length > 0
+      ? analyzeCoachingSessions(coachingSessions as CoachingSessionData[])
+      : null
+
+    // 코칭 타임라인 구축
+    const coachingTimeline = coachingSessions.map(s => {
+      const userMessages = s.messages.filter(m => m.role === 'user')
+      const firstUserMsg = userMessages[0]?.content ?? ''
+      const isCompleted = s.messages.some(m => m.content.includes('[코칭완료]'))
+      return {
+        sessionId: s.id,
+        date: (s.createdAt as Date).toISOString(),
+        messageCount: s.messages.length,
+        userMessageCount: userMessages.length,
+        preview: firstUserMsg.slice(0, 80),
+        isCompleted,
+        mode: s.mode,
+      }
+    })
 
     if (snapshots.length === 0) {
       return NextResponse.json({
@@ -42,7 +76,9 @@ export async function GET(
         latest: null,
         history: [],
         recommendations: [],
-        coachingSessionCount,
+        coachingSessionCount: coachingSessions.length,
+        coachingTimeline,
+        coachingSignals,
         message: '아직 계산된 스냅샷이 없습니다. "재산출" 버튼을 눌러주세요.',
       })
     }
@@ -71,7 +107,9 @@ export async function GET(
 
     return NextResponse.json({
       userId,
-      coachingSessionCount,
+      coachingSessionCount: coachingSessions.length,
+      coachingTimeline,
+      coachingSignals,
       latest: {
         careerMaturity: round2(latest.careerMaturity),
         selfDirectedLearning: round2(latest.selfDirectedLearning),

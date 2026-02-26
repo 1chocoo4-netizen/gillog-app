@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Milestone, RegisteredUser, MetricEvidenceMap, PeriodMetrics } from '@/lib/b2b/types'
 import { DEMO_MILESTONE_DATA, DEMO_SPARKLINE } from '@/lib/b2b/demoData'
 import { METRIC_DEFINITIONS } from '@/lib/b2b/isoMapping'
-import { generateAllInsights } from '@/lib/b2b/insightGenerator'
+import { generateAllInsights, type MetricContext } from '@/lib/b2b/insightGenerator'
+import type { MetricKey } from '@/lib/b2b/types'
 import { B2BHeader } from './components/B2BHeader'
 import { B2BPlanCard } from './components/B2BPlanCard'
 import { ExecutionDNARadar } from './components/ExecutionDNARadar'
@@ -73,6 +74,7 @@ export default function B2BDashboardPage() {
   const [realCurrent, setRealCurrent] = useState<PeriodMetrics | null>(null)
   const [realPrevious, setRealPrevious] = useState<PeriodMetrics | null>(null)
   const [realEvidence, setRealEvidence] = useState<MetricEvidenceMap | null>(null)
+  const [realContexts, setRealContexts] = useState<Record<MetricKey, MetricContext> | null>(null)
   const [loading, setLoading] = useState(false)
 
   // 리포트 모달
@@ -94,16 +96,19 @@ export default function B2BDashboardPage() {
         setRealCurrent(null)
         setRealPrevious(null)
         setRealEvidence(null)
+        setRealContexts(null)
         return
       }
       const data = await res.json()
       setRealCurrent(data.current || null)
       setRealPrevious(data.previous || null)
       setRealEvidence(data.evidence || null)
+      setRealContexts(data.metricContexts || null)
     } catch {
       setRealCurrent(null)
       setRealPrevious(null)
       setRealEvidence(null)
+      setRealContexts(null)
     } finally {
       setLoading(false)
     }
@@ -117,6 +122,7 @@ export default function B2BDashboardPage() {
       setRealCurrent(null)
       setRealPrevious(null)
       setRealEvidence(null)
+      setRealContexts(null)
     }
   }, [selectedUser, milestone, fetchRealMetrics])
 
@@ -178,10 +184,11 @@ export default function B2BDashboardPage() {
     ? current.overallScore - effectivePrevious.overallScore
     : 0
 
-  // 동적 인사이트 생성 (실제 점수 기반, 할루시네이션 없음)
+  // 동적 인사이트 생성 (실제 점수 + 실행/코칭/감정 맥락 기반)
   const insights = generateAllInsights(
     current.scores,
     effectivePrevious?.scores ?? null,
+    isRealUser && realContexts ? realContexts : undefined,
   )
 
   return (

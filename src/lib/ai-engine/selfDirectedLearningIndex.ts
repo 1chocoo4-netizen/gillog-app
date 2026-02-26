@@ -2,15 +2,18 @@
 // AI 성장엔진 — 자기주도학습지수 (Self-Directed Learning Index)
 // 가중치: 일별실행일관성(30%) + cognition참여율(25%) + 학습설문(20%)
 //         + 알람자기설정비율(15%) + 월드다양성(10%)
+// 코칭 데이터 있으면 기존 88% + 코칭 12% (learningMention 40% + engagementDepth 30% + selfReflectionDepth 30%)
 // ========================================
 
 import { round2 } from '@/lib/research/longitudinalEngine'
 import type { RawExecution, RawExecutionItem } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 export interface SelfDirectedLearningInput {
   learningSurveyScore: number | null  // 학습 설문 점수 (0~100)
   history: RawExecution[]             // 전체 실행 기록
   executions: RawExecutionItem[]      // 현재 실행 항목
+  coachingSignals?: CoachingSignals   // 코칭 분석 시그널
 }
 
 export function calcSelfDirectedLearningIndex(input: SelfDirectedLearningInput): {
@@ -52,13 +55,24 @@ export function calcSelfDirectedLearningIndex(input: SelfDirectedLearningInput):
   const uniqueWorlds = new Set(input.history.map(h => h.worldKey)).size
   const diversityScore = Math.min(100, (uniqueWorlds / 6) * 100)
 
-  const score = round2(
+  const baseScore = round2(
     consistencyScore * 0.30 +
     cognitionScore * 0.25 +
     surveyScore * 0.20 +
     alarmScore * 0.15 +
     diversityScore * 0.10
   )
+
+  // 코칭 데이터 12% 가중치: learningMention(40%) + engagementDepth(30%) + selfReflectionDepth(30%)
+  const cs = input.coachingSignals
+  let score: number
+  if (cs && cs.sessionCount > 0) {
+    const coachingScore = cs.learningMention * 0.4 + cs.engagementDepth * 0.3 + cs.selfReflectionDepth * 0.3
+    score = round2(baseScore * 0.88 + coachingScore * 0.12)
+    signals.push(`코칭 데이터 반영 (${cs.sessionCount}세션)`)
+  } else {
+    score = baseScore
+  }
 
   return {
     score: Math.min(100, Math.max(0, score)),
@@ -69,6 +83,7 @@ export function calcSelfDirectedLearningIndex(input: SelfDirectedLearningInput):
       surveyScore: round2(surveyScore),
       alarmScore: round2(alarmScore),
       diversityScore: round2(diversityScore),
+      ...(cs && cs.sessionCount > 0 ? { coachingScore: round2(cs.learningMention * 0.4 + cs.engagementDepth * 0.3 + cs.selfReflectionDepth * 0.3) } : {}),
     },
   }
 }

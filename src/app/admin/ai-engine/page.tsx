@@ -57,9 +57,37 @@ interface DashboardData {
   }
 }
 
+interface CoachingTimelineItem {
+  sessionId: string
+  date: string
+  messageCount: number
+  userMessageCount: number
+  preview: string
+  isCompleted: boolean
+  mode: string
+}
+
+interface CoachingSignalsData {
+  sessionCount: number
+  totalUserMessages: number
+  engagementDepth: number
+  emotionalAwareness: number
+  goalClarity: number
+  actionCommitment: number
+  selfReflectionDepth: number
+  careerMention: number
+  communityMention: number
+  persistenceMention: number
+  learningMention: number
+  sessionFrequency: number
+  sessionCompletionRate: number
+}
+
 interface UserDetail {
   userId: string
   coachingSessionCount?: number
+  coachingTimeline?: CoachingTimelineItem[]
+  coachingSignals?: CoachingSignalsData | null
   latest: {
     careerMaturity: number
     selfDirectedLearning: number
@@ -631,6 +659,81 @@ function IndividualTab({
                     ))}
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* 코칭 시그널 패널 */}
+          {userDetail.coachingSignals && userDetail.coachingSignals.sessionCount > 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <h3 className="text-sm font-medium text-gray-300 mb-4">
+                코칭 시그널 분석 ({userDetail.coachingSignals.sessionCount}세션)
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {([
+                  { label: '참여 깊이', key: 'engagementDepth', color: '#3B82F6' },
+                  { label: '감정 인식', key: 'emotionalAwareness', color: '#EC4899' },
+                  { label: '목표 명확성', key: 'goalClarity', color: '#F59E0B' },
+                  { label: '실행 약속', key: 'actionCommitment', color: '#22C55E' },
+                  { label: '자기성찰', key: 'selfReflectionDepth', color: '#8B5CF6' },
+                  { label: '세션 빈도', key: 'sessionFrequency', color: '#06B6D4' },
+                  { label: '완료율', key: 'sessionCompletionRate', color: '#10B981' },
+                  { label: '학습 언급', key: 'learningMention', color: '#6366F1' },
+                ] as const).map(item => {
+                  const val = userDetail.coachingSignals![item.key as keyof CoachingSignalsData] as number
+                  return (
+                    <div key={item.key} className="bg-gray-800/50 rounded-lg p-3">
+                      <p className="text-xs text-gray-400 mb-1">{item.label}</p>
+                      <p className="text-lg font-bold text-white mb-1">{Math.round(val)}</p>
+                      <ProgressBar value={val} color={item.color} />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 코칭 개입 타임라인 */}
+          {userDetail.coachingTimeline && userDetail.coachingTimeline.length > 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <h3 className="text-sm font-medium text-gray-300 mb-4">
+                코칭 개입 타임라인 ({userDetail.coachingTimeline.length}건)
+              </h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {userDetail.coachingTimeline.map(item => (
+                  <div
+                    key={item.sessionId}
+                    className={`border rounded-lg p-3 ${
+                      item.isCompleted
+                        ? 'border-green-800/50 bg-green-900/10'
+                        : 'border-gray-700 bg-gray-800/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-400">
+                        {new Date(item.date).toLocaleDateString('ko-KR', {
+                          year: 'numeric', month: '2-digit', day: '2-digit',
+                        })}
+                        {' '}
+                        {new Date(item.date).toLocaleTimeString('ko-KR', {
+                          hour: '2-digit', minute: '2-digit',
+                        })}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">{item.messageCount}턴</span>
+                        <span className="text-xs text-gray-500">{item.mode}</span>
+                        {item.isCompleted && (
+                          <span className="text-xs text-green-400 bg-green-900/30 px-1.5 py-0.5 rounded">완료</span>
+                        )}
+                      </div>
+                    </div>
+                    {item.preview && (
+                      <p className="text-sm text-gray-300 truncate">
+                        &quot;{item.preview}&quot;
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}

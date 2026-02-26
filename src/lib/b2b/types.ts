@@ -40,7 +40,7 @@ export interface MetricChange {
 /** 지표별 증거 날짜 */
 export interface EvidenceDate {
   date: string        // "2026-01-15"
-  source: 'execution' | 'survey' | 'checkin' | 'report' | 'photo'
+  source: 'execution' | 'survey' | 'checkin' | 'report' | 'photo' | 'coaching'
   label?: string      // "설문(5회)" 등
 }
 

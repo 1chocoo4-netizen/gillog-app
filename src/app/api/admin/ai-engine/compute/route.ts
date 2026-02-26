@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { hashUserId } from '@/lib/survey-crypto'
 import { computeAllDimensions, type UserDataInput } from '@/lib/ai-engine/dimensionEngine'
 import { generateRecommendations } from '@/lib/ai-engine/recommendationEngine'
+import { analyzeCoachingSessions, type CoachingSessionData } from '@/lib/coaching/coachingAnalyzer'
 import type {
   RawExecution,
   RawExecutionItem,
@@ -24,7 +25,7 @@ export async function POST() {
 
   try {
     // 1. 전체 데이터 병렬 조회
-    const [allUserData, allAnswers, allSurveys, existingSnapshots, allCoachingMessages] = await Promise.all([
+    const [allUserData, allAnswers, allSurveys, existingSnapshots, allCoachingSessions] = await Promise.all([
       prisma.userData.findMany({
         select: {
           userId: true,
@@ -51,10 +52,18 @@ export async function POST() {
       prisma.aiDimensionSnapshot.findMany({
         orderBy: { computedAt: 'desc' },
       }),
-      // 코칭 대화 중 사용자 메시지만 조회
-      prisma.coachingMessage.findMany({
-        where: { role: 'user' },
-        select: { content: true, session: { select: { userId: true } } },
+      // 코칭 세션 + 메시지 전체 조회
+      prisma.coachingSession.findMany({
+        select: {
+          id: true,
+          userId: true,
+          mode: true,
+          createdAt: true,
+          messages: {
+            select: { role: true, content: true, order: true, createdAt: true },
+            orderBy: { order: 'asc' },
+          },
+        },
       }),
     ])
 
@@ -73,11 +82,18 @@ export async function POST() {
       if (a.rawText) answersByUser[a.userId].push(a.rawText)
     }
 
-    // 코칭 대화 텍스트를 userId별 그룹핑 → 답변에 합산
-    for (const cm of allCoachingMessages) {
-      const uid = cm.session.userId
-      if (!answersByUser[uid]) answersByUser[uid] = []
-      if (cm.content) answersByUser[uid].push(cm.content)
+    // 코칭 세션을 userId별 그룹핑 + 사용자 메시지를 답변에 합산
+    const coachingSessionsByUser: Record<string, CoachingSessionData[]> = {}
+    for (const cs of allCoachingSessions) {
+      if (!coachingSessionsByUser[cs.userId]) coachingSessionsByUser[cs.userId] = []
+      coachingSessionsByUser[cs.userId].push(cs as CoachingSessionData)
+      // 사용자 메시지를 레슨 답변에도 합산 (기존 호환)
+      for (const m of cs.messages) {
+        if (m.role === 'user' && m.content) {
+          if (!answersByUser[cs.userId]) answersByUser[cs.userId] = []
+          answersByUser[cs.userId].push(m.content)
+        }
+      }
     }
 
     // 설문 데이터를 userHash별 그룹핑
@@ -117,6 +133,12 @@ export async function POST() {
         const survey = surveyByHash[userHash]
         const lessonAnswerTexts = answersByUser[ud.userId] || []
 
+        // 코칭 시그널 분석
+        const userCoachingSessions = coachingSessionsByUser[ud.userId] ?? []
+        const coachingSignals = userCoachingSessions.length > 0
+          ? analyzeCoachingSessions(userCoachingSessions)
+          : undefined
+
         const input: UserDataInput = {
           userId: ud.userId,
           history,
@@ -128,6 +150,7 @@ export async function POST() {
           learningSurveyScore: survey?.learning ?? null,
           careerSurveyScores: survey?.careerScores ?? [],
           lessonAnswerTexts,
+          coachingSignals,
         }
 
         const previousOverall = prevSnapshotMap.get(ud.userId) ?? null

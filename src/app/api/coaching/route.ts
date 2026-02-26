@@ -1,7 +1,74 @@
 import { NextRequest } from 'next/server'
+import { prisma } from '@/lib/db'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`
+
+// 차원 키 → 한글 라벨
+const DIM_LABELS: Record<string, string> = {
+  careerMaturity: '진로성숙도',
+  selfDirectedLearning: '자기주도학습',
+  behavioralPersistence: '행동지속률',
+  communityContribution: '공동체기여도',
+  careerGoalConsistency: '진로목표일관성',
+}
+
+/** AI 엔진 맥락을 조회하여 시스템 프롬프트 보충 텍스트 생성 */
+async function buildAiContextPrompt(userId: string): Promise<string> {
+  try {
+    const [snapshot, recommendations] = await Promise.all([
+      prisma.aiDimensionSnapshot.findFirst({
+        where: { userId },
+        orderBy: { computedAt: 'desc' },
+      }),
+      prisma.aiRecommendation.findMany({
+        where: { userId, isActive: true },
+        orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
+        take: 3,
+      }),
+    ])
+
+    if (!snapshot) return ''
+
+    // 가장 낮은 차원 찾기
+    const dims = [
+      { key: 'careerMaturity', score: snapshot.careerMaturity },
+      { key: 'selfDirectedLearning', score: snapshot.selfDirectedLearning },
+      { key: 'behavioralPersistence', score: snapshot.behavioralPersistence },
+      { key: 'communityContribution', score: snapshot.communityContribution },
+      { key: 'careerGoalConsistency', score: snapshot.careerGoalConsistency },
+    ].sort((a, b) => a.score - b.score)
+
+    const weakest = dims[0]
+    const strongest = dims[dims.length - 1]
+
+    let context = `\n\n## AI 성장엔진 분석 (참고용, 사용자에게 직접 언급 금지)\n`
+    context += `- 종합 점수: ${snapshot.overallScore}점\n`
+    context += `- 가장 약한 영역: ${DIM_LABELS[weakest.key] || weakest.key} (${weakest.score}점)\n`
+    context += `- 가장 강한 영역: ${DIM_LABELS[strongest.key] || strongest.key} (${strongest.score}점)\n`
+
+    if (recommendations.length > 0) {
+      const topRec = recommendations[0]
+      context += `- 추천 코칭 방향: ${topRec.title}\n`
+    }
+
+    // 약한 영역에 따른 코칭 방향 힌트
+    if (weakest.score < 40) {
+      const hints: Record<string, string> = {
+        careerMaturity: '진로 탐색이나 미래 계획에 대한 질문으로 자연스럽게 유도',
+        selfDirectedLearning: '작은 학습 습관 만들기나 공부 방법에 대한 질문으로 유도',
+        behavioralPersistence: '꾸준함과 일상 루틴에 대한 질문으로 유도',
+        communityContribution: '주변 사람들과의 관계나 도움에 대한 질문으로 유도',
+        careerGoalConsistency: '목표 설정과 일관된 실행에 대한 질문으로 유도',
+      }
+      context += `→ ${hints[weakest.key] || '약한 영역 관련 질문으로 자연스럽게 유도'}\n`
+    }
+
+    return context
+  } catch {
+    return ''
+  }
+}
 
 const SYSTEM_PROMPT = `너는 길로그(Gillog)의 전속 AI 코치다.
 
@@ -92,7 +159,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { messages } = await req.json() as { messages: ChatMessage[] }
+    const { messages, userId } = await req.json() as { messages: ChatMessage[]; userId?: string }
+
+    // AI 엔진 맥락 조회 (첫 메시지일 때만)
+    let aiContextPrompt = ''
+    if (userId && messages.length <= 1) {
+      aiContextPrompt = await buildAiContextPrompt(userId)
+    }
 
     // user/model 교대로 변환
     const geminiContents: { role: string; parts: { text: string }[] }[] = []
@@ -119,7 +192,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
+          parts: [{ text: SYSTEM_PROMPT + aiContextPrompt }]
         },
         contents: geminiContents,
         generationConfig: {

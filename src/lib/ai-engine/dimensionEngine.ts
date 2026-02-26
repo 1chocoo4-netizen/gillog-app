@@ -17,6 +17,7 @@ import type {
   BucketItem,
   MonthlyGoalItem,
 } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 /** 전체 사용자 데이터 입력 */
 export interface UserDataInput {
@@ -33,6 +34,8 @@ export interface UserDataInput {
   careerSurveyScores: number[]
   // 레슨 답변 텍스트
   lessonAnswerTexts: string[]
+  // 코칭 분석 시그널 (없으면 기존 로직 유지)
+  coachingSignals?: CoachingSignals
 }
 
 /** 개별 차원 계산 결과 (상세 포함) */
@@ -52,6 +55,8 @@ export interface ComputeResult {
     totalMonthlyGoals: number
     hasSurvey: boolean
     lessonAnswers: number
+    coachingSessions: number
+    coachingMessages: number
   }
 }
 
@@ -90,6 +95,7 @@ export function computeAllDimensions(
     bucketList: input.bucketList,
     lessonAnswerTexts: input.lessonAnswerTexts,
     monthlyGoalTexts,
+    coachingSignals: input.coachingSignals,
   }
   const career = calcCareerMaturityIndex(careerInput)
 
@@ -98,6 +104,7 @@ export function computeAllDimensions(
     learningSurveyScore: input.learningSurveyScore,
     history: input.history,
     executions: input.executions,
+    coachingSignals: input.coachingSignals,
   }
   const sdl = calcSelfDirectedLearningIndex(sdlInput)
 
@@ -106,6 +113,7 @@ export function computeAllDimensions(
     history: input.history,
     executions: input.executions,
     monthlyGoals: input.monthlyGoals,
+    coachingSignals: input.coachingSignals,
   }
   const bp = calcBehavioralPersistenceRate(bpInput)
 
@@ -114,6 +122,7 @@ export function computeAllDimensions(
     communitySurveyScore: input.communitySurveyScore,
     history: input.history,
     answerTexts: [...input.lessonAnswerTexts, ...execTexts],
+    coachingSignals: input.coachingSignals,
   }
   const cc = calcCommunityContributionScore(ccInput)
 
@@ -123,6 +132,7 @@ export function computeAllDimensions(
     bucketList: input.bucketList,
     monthlyGoals: input.monthlyGoals,
     careerSurveyScores: input.careerSurveyScores,
+    coachingSignals: input.coachingSignals,
   }
   const cgc = calcCareerGoalConsistency(cgcInput)
 
@@ -171,6 +181,8 @@ export function computeAllDimensions(
                  input.communitySurveyScore !== null ||
                  input.learningSurveyScore !== null,
       lessonAnswers: input.lessonAnswerTexts.length,
+      coachingSessions: input.coachingSignals?.sessionCount ?? 0,
+      coachingMessages: input.coachingSignals?.totalUserMessages ?? 0,
     },
   }
 }

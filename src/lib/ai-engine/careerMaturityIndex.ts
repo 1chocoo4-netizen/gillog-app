@@ -2,11 +2,13 @@
 // AI 성장엔진 — 진로성숙도 (Career Maturity Index)
 // 가중치: 진로설문(25%) + selfDirected실행빈도(25%) + 진로키워드밀도(20%)
 //         + 버킷리스트진로완료율(15%) + 레슨답변깊이(15%)
+// 코칭 데이터 있으면 기존 88% + 코칭 12% (careerMention 60% + goalClarity 40%)
 // ========================================
 
 import { round2 } from '@/lib/research/longitudinalEngine'
 import { CAREER_KEYWORDS, calcAvgKeywordDensity, calcAnswerDepth, isCareerRelated } from './textAnalysis'
 import type { RawExecution, BucketItem } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 export interface CareerMaturityInput {
   careerSurveyScore: number | null   // 설문 진로 점수 (0~100), null이면 중립
@@ -14,6 +16,7 @@ export interface CareerMaturityInput {
   bucketList: BucketItem[]           // 버킷리스트
   lessonAnswerTexts: string[]        // 레슨 답변 텍스트들
   monthlyGoalTexts: string[]         // 월간 목표 텍스트들
+  coachingSignals?: CoachingSignals  // 코칭 분석 시그널 (없으면 기존 로직)
 }
 
 export function calcCareerMaturityIndex(input: CareerMaturityInput): {
@@ -54,13 +57,24 @@ export function calcCareerMaturityIndex(input: CareerMaturityInput): {
     : 50
 
   // 가중 합산
-  const score = round2(
+  const baseScore = round2(
     surveyScore * 0.25 +
     execFreqScore * 0.25 +
     keywordDensity * 0.20 +
     bucketScore * 0.15 +
     avgDepth * 0.15
   )
+
+  // 코칭 데이터 12% 가중치: careerMention(60%) + goalClarity(40%)
+  const cs = input.coachingSignals
+  let score: number
+  if (cs && cs.sessionCount > 0) {
+    const coachingScore = cs.careerMention * 0.6 + cs.goalClarity * 0.4
+    score = round2(baseScore * 0.88 + coachingScore * 0.12)
+    signals.push(`코칭 데이터 반영 (${cs.sessionCount}세션)`)
+  } else {
+    score = baseScore
+  }
 
   return {
     score: Math.min(100, Math.max(0, score)),
@@ -71,6 +85,7 @@ export function calcCareerMaturityIndex(input: CareerMaturityInput): {
       keywordDensity: round2(keywordDensity),
       bucketScore: round2(bucketScore),
       avgDepth: round2(avgDepth),
+      ...(cs && cs.sessionCount > 0 ? { coachingScore: round2(cs.careerMention * 0.6 + cs.goalClarity * 0.4) } : {}),
     },
   }
 }

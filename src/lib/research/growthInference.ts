@@ -5,6 +5,7 @@
 
 import { mean, sd, round2 } from './longitudinalEngine'
 import { WORLD_TO_AREA, type ResearchArea } from './competencyFramework'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 // ========================================
 // Types
@@ -439,6 +440,7 @@ export function computeUserInference(
   executionRecords: ExecutionRecord[],
   surveyScores: SurveyScores | null,
   goalData?: GoalItem[],
+  coachingSignals?: CoachingSignals,
 ): InferenceResult {
   // 실행 날짜 (고유 일자)
   const executionDatesSet = new Set<string>()
@@ -447,14 +449,21 @@ export function computeUserInference(
   }
   const executionDates = [...executionDatesSet].sort()
 
-  // 1. 자기조절지수
-  const selfRegulationIndex = calcSelfRegulationIndex(checkins, executionDatesSet)
+  // 1. 자기조절지수 (코칭: emotionalAwareness 10% 반영)
+  let selfRegulationIndex = calcSelfRegulationIndex(checkins, executionDatesSet)
+  if (coachingSignals && coachingSignals.sessionCount > 0) {
+    selfRegulationIndex = round2(selfRegulationIndex * 0.9 + coachingSignals.emotionalAwareness * 0.1)
+  }
 
-  // 2. 실행탄력성지수
+  // 2. 실행탄력성지수 (코칭: sessionFrequency를 갭 회복 시그널로 10% 반영)
   const failureEvents = detectFailureEvents(executionDates)
-  const executionResilienceIndex = calcExecutionResilienceIndex(failureEvents)
+  let executionResilienceIndex = calcExecutionResilienceIndex(failureEvents)
+  if (coachingSignals && coachingSignals.sessionCount > 0) {
+    executionResilienceIndex = round2(executionResilienceIndex * 0.9 + coachingSignals.sessionFrequency * 0.1)
+  }
 
   // 3. 가치-행동 일치도 (설문 우선, 없으면 목표 텍스트 추론)
+  // 코칭: careerMention + communityMention 으로 보충 가치 지표 10% 반영
   const executionWorldKeys = executionRecords.map(er => er.worldKey)
   let valueActionAlignment: number | null = null
   let vaaSource: string | null = null
@@ -468,6 +477,10 @@ export function computeUserInference(
       valueActionAlignment = calcValueActionAlignment(derivedScores, executionWorldKeys)
       vaaSource = 'VAA: 목표 텍스트 추론'
     }
+  }
+  if (coachingSignals && coachingSignals.sessionCount > 0 && valueActionAlignment !== null) {
+    const coachingValueBonus = (coachingSignals.careerMention + coachingSignals.communityMention) / 2
+    valueActionAlignment = round2(valueActionAlignment * 0.9 + coachingValueBonus * 0.1)
   }
 
   // 4. 회복탄성 변화곡선
@@ -515,6 +528,9 @@ export function computeUserInference(
   if (valueActionAlignment !== null && valueActionAlignment < 40) signals.push('가치-행동 괴리 감지')
   if (recoveryCurveTrend === 'improving') signals.push('회복력 개선 추세')
   if (recoveryCurveTrend === 'declining') signals.push('회복력 감소 추세')
+  if (coachingSignals && coachingSignals.sessionCount > 0) {
+    signals.push(`코칭 데이터 반영 (${coachingSignals.sessionCount}세션)`)
+  }
 
   return {
     selfRegulationIndex,

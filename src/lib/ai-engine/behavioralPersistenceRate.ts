@@ -2,15 +2,18 @@
 // AI 성장엔진 — 행동지속률 (Behavioral Persistence Rate)
 // 가중치: 최장연속실행(25%) + 일일과제완료율30일(25%)
 //         + 월간목표달성률(20%) + 실행갭빈도역수(15%) + habit월드지속(15%)
+// 코칭 데이터 있으면 기존 88% + 코칭 12% (actionCommitment 40% + sessionFrequency 30% + persistenceMention 30%)
 // ========================================
 
 import { round2 } from '@/lib/research/longitudinalEngine'
 import type { RawExecution, RawExecutionItem, MonthlyGoalItem } from './types'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 export interface BehavioralPersistenceInput {
   history: RawExecution[]
   executions: RawExecutionItem[]
   monthlyGoals: Record<string, MonthlyGoalItem[]>  // "2026-01" → goals
+  coachingSignals?: CoachingSignals
 }
 
 /** 연속 실행일 계산 */
@@ -98,13 +101,24 @@ export function calcBehavioralPersistenceRate(input: BehavioralPersistenceInput)
     : 50
   if (habitExecs.length === 0) signals.push('습관 월드 실행 없음')
 
-  const score = round2(
+  const baseScore = round2(
     streakScore * 0.25 +
     dailyCompletionScore * 0.25 +
     goalScore * 0.20 +
     gapInverseScore * 0.15 +
     habitStreakScore * 0.15
   )
+
+  // 코칭 데이터 12% 가중치: actionCommitment(40%) + sessionFrequency(30%) + persistenceMention(30%)
+  const cs = input.coachingSignals
+  let score: number
+  if (cs && cs.sessionCount > 0) {
+    const coachingScore = cs.actionCommitment * 0.4 + cs.sessionFrequency * 0.3 + cs.persistenceMention * 0.3
+    score = round2(baseScore * 0.88 + coachingScore * 0.12)
+    signals.push(`코칭 데이터 반영 (${cs.sessionCount}세션)`)
+  } else {
+    score = baseScore
+  }
 
   return {
     score: Math.min(100, Math.max(0, score)),
@@ -115,6 +129,7 @@ export function calcBehavioralPersistenceRate(input: BehavioralPersistenceInput)
       goalScore: round2(goalScore),
       gapInverseScore: round2(gapInverseScore),
       habitStreakScore: round2(habitStreakScore),
+      ...(cs && cs.sessionCount > 0 ? { coachingScore: round2(cs.actionCommitment * 0.4 + cs.sessionFrequency * 0.3 + cs.persistenceMention * 0.3) } : {}),
     },
   }
 }

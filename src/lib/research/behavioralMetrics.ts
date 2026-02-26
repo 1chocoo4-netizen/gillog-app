@@ -9,6 +9,7 @@ import {
   AREA_TO_WORLDS,
   NORMALIZATION_BENCHMARKS,
 } from './competencyFramework'
+import type { CoachingSignals } from '@/lib/coaching/coachingAnalyzer'
 
 // ExecutionRecord 타입 (UserDataProvider와 동일)
 interface ExecutionRecord {
@@ -136,6 +137,7 @@ export function calculateBehavioralScores(
   history: ExecutionRecord[],
   executions: ExecutionItem[],
   milestoneGroup: number,
+  coachingSignals?: CoachingSignals,
 ): BehavioralScores {
   const bench = NORMALIZATION_BENCHMARKS[milestoneGroup] ?? NORMALIZATION_BENCHMARKS[100]
 
@@ -200,40 +202,47 @@ export function calculateBehavioralScores(
     return worldExecs.filter(e => e.completed).length / worldExecs.length
   }
 
+  // 코칭 보너스 (최대 +10점)
+  const cb = (base: number, coachingValue: number): number => {
+    if (!coachingSignals || coachingSignals.sessionCount === 0) return base
+    const bonus = (coachingValue / 100) * 10 // 최대 +10
+    return Math.min(100, base + bonus)
+  }
+
   return {
-    // 진로 (Career)
-    C1: normCount(selfDirected.filter(r => r.executionText.length > 10).length, bench.countBase),
+    // 진로 (Career) — careerMention + goalClarity 보너스
+    C1: cb(normCount(selfDirected.filter(r => r.executionText.length > 10).length, bench.countBase), coachingSignals?.careerMention ?? 0),
     C2: normRatio(calcDiversity(selfDirected)),
     C3: normDays(calcStreak(selfDirected).longest, bench.daysBase),
     C4: normCount(selfDirected.length, bench.countBase),
-    C5: normRatio(completionRate(selfDirected)),
+    C5: cb(normRatio(completionRate(selfDirected)), coachingSignals?.goalClarity ?? 0),
 
-    // 공동체 (Community)
-    M1: normCount(relationship.length, bench.countBase),
-    M2: normCount(feltPatterns, bench.countBase),
+    // 공동체 (Community) — communityMention + emotionalAwareness 보너스
+    M1: cb(normCount(relationship.length, bench.countBase), coachingSignals?.communityMention ?? 0),
+    M2: cb(normCount(feltPatterns, bench.countBase), coachingSignals?.emotionalAwareness ?? 0),
     M3: normCount(relationship.filter(r => executions.some(e => e.id === r.id && e.completed)).length || relationship.length, bench.countBase),
     M4: normCount(missedPatterns, bench.countBase),
     M5: normRatio(calcDiversity(relationship)),
 
-    // 인성 (NonCognitive)
-    N1: normDays(allStreak.longest, bench.daysBase),
+    // 인성 (NonCognitive) — selfReflectionDepth + actionCommitment 보너스
+    N1: cb(normDays(allStreak.longest, bench.daysBase), coachingSignals?.actionCommitment ?? 0),
     N2: normRatio((dailyRatio + alarmRatio) / 2),
     N3: normCount(nonCogWorlds.length, bench.countBase),
     N4: normCount(uniqueWorlds, 6),
-    N5: normDays(calcActivityDuration(history), bench.daysBase),
+    N5: cb(normDays(calcActivityDuration(history), bench.daysBase), coachingSignals?.selfReflectionDepth ?? 0),
 
-    // 학습 (Learning)
-    L1: normCount(cognition.length, bench.countBase),
+    // 학습 (Learning) — learningMention + engagementDepth 보너스
+    L1: cb(normCount(cognition.length, bench.countBase), coachingSignals?.learningMention ?? 0),
     L2: normRatio(dailyRatio),
     L3: normDays(calcStreak(cognition).longest, bench.daysBase),
-    L4: normChars(avgTextLength, bench.charsBase),
+    L4: cb(normChars(avgTextLength, bench.charsBase), coachingSignals?.engagementDepth ?? 0),
     L5: normRatio(totalPossibleSubjects > 0 ? cognitionSubjects / totalPossibleSubjects : 0),
 
-    // 습관 (Habit)
+    // 습관 (Habit) — persistenceMention + sessionFrequency 보너스
     H1: normRatio(dailyRatio),
-    H2: normRatio(completionRate(habitRecords)),
+    H2: cb(normRatio(completionRate(habitRecords)), coachingSignals?.persistenceMention ?? 0),
     H3: normCount(habitRecords.length, bench.countBase),
-    H4: normRatio(resumeRatio),
+    H4: cb(normRatio(resumeRatio), coachingSignals?.sessionFrequency ?? 0),
     H5: normDays(calcStreak(habitRecords).longest + calcActivityDuration(habitRecords), bench.daysBase * 2),
   }
 }
