@@ -56,6 +56,13 @@ export default function GloryChat({ sessionId, initialMessage, initialStage }: P
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading, isComplete])
 
+  // 응답 완료 후 입력창에 포커스 유지
+  useEffect(() => {
+    if (!isLoading && !isComplete) {
+      inputRef.current?.focus()
+    }
+  }, [isLoading, isComplete])
+
   // 메시지 전송
   const handleSend = async () => {
     const text = input.trim()

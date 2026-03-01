@@ -203,14 +203,32 @@ function CoachingChat() {
     setHistoryDetail(null)
     setHistoryLoading(true)
     try {
-      const res = await fetch('/api/coaching/sessions')
-      const data = await res.json()
-      if (res.ok) {
-        setHistoryList(data.sessions || [])
-      } else {
-        console.error('코칭 기록 로드 실패:', res.status, data.error)
-        setHistoryList([])
+      const [regularRes, gloryRes] = await Promise.all([
+        fetch('/api/coaching/sessions'),
+        fetch('/api/coaching/glory'),
+      ])
+
+      let allSessions: typeof historyList = []
+
+      if (regularRes.ok) {
+        const data = await regularRes.json()
+        allSessions = [...(data.sessions || [])]
       }
+
+      if (gloryRes.ok) {
+        const gloryData = await gloryRes.json()
+        const glorySessions = (gloryData.sessions || []).map((s: { id: string; createdAt: string; messageCount: number; currentStage: string; status: string }) => ({
+          id: s.id,
+          mode: 'glory',
+          createdAt: s.createdAt,
+          messageCount: s.messageCount,
+          preview: s.status === 'completed' ? 'THE GLORY 코칭 완료' : 'THE GLORY 코칭 진행 중',
+        }))
+        allSessions = [...allSessions, ...glorySessions]
+      }
+
+      allSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      setHistoryList(allSessions)
     } catch (err) {
       console.error('코칭 기록 로드 에러:', err)
       setHistoryList([])
@@ -218,13 +236,30 @@ function CoachingChat() {
     setHistoryLoading(false)
   }
 
-  async function loadHistoryDetail(sessionId: string) {
+  async function loadHistoryDetail(sessionId: string, mode?: string) {
     setHistoryLoading(true)
     try {
-      const res = await fetch(`/api/coaching/sessions/${sessionId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setHistoryDetail(data)
+      if (mode === 'glory') {
+        const res = await fetch(`/api/coaching/glory?sessionId=${sessionId}`)
+        if (res.ok) {
+          const data = await res.json()
+          const s = data.session
+          setHistoryDetail({
+            id: s.id,
+            mode: 'glory',
+            createdAt: s.createdAt,
+            messages: s.messages.map((m: { role: string; content: string }) => ({
+              role: m.role === 'coach' ? 'coach' : 'user',
+              content: m.content,
+            })),
+          })
+        }
+      } else {
+        const res = await fetch(`/api/coaching/sessions/${sessionId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setHistoryDetail(data)
+        }
       }
     } catch { /* ignore */ }
     setHistoryLoading(false)
@@ -1053,13 +1088,17 @@ function CoachingChat() {
                   <div className="p-4 space-y-3 pb-32">
                     <div className="text-xs text-white/40 mb-2">
                       {new Date(historyDetail.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      {' '}{historyDetail.mode === 'voice' ? '(음성)' : '(텍스트)'}
+                      {' '}{historyDetail.mode === 'glory' ? '(✨ GLORY)' : historyDetail.mode === 'voice' ? '(음성)' : '(텍스트)'}
                     </div>
                     {historyDetail.messages.map((msg, i) => (
                       <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role === 'coach' && (
-                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xs mr-2 flex-shrink-0">
-                            AI
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs mr-2 flex-shrink-0 ${
+                            historyDetail.mode === 'glory'
+                              ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                              : 'bg-gradient-to-br from-violet-500 to-purple-600'
+                          }`}>
+                            {historyDetail.mode === 'glory' ? 'G' : 'AI'}
                           </div>
                         )}
                         <div className={`max-w-[85%] px-3 py-2 text-sm leading-relaxed break-words ${
@@ -1083,7 +1122,7 @@ function CoachingChat() {
                     {historyList.map(s => (
                       <button
                         key={s.id}
-                        onClick={() => loadHistoryDetail(s.id)}
+                        onClick={() => loadHistoryDetail(s.id, s.mode)}
                         className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-1">
@@ -1092,9 +1131,10 @@ function CoachingChat() {
                             {' '}{new Date(s.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                            s.mode === 'glory' ? 'bg-amber-500/20 text-amber-400' :
                             s.mode === 'voice' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-violet-500/20 text-violet-400'
                           }`}>
-                            {s.mode === 'voice' ? '음성' : '텍스트'}
+                            {s.mode === 'glory' ? '✨ GLORY' : s.mode === 'voice' ? '음성' : '텍스트'}
                           </span>
                         </div>
                         <p className="text-white/80 text-sm line-clamp-2">{s.preview || '대화 내용'}</p>
