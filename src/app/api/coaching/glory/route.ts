@@ -110,9 +110,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ session: glorySession })
     }
 
-    // 목록 조회 (최근 20개)
+    // 목록 조회 (완료된 세션만, 최근 20개)
     const sessions = await prisma.glorySession.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session.user.id, status: 'completed' },
       orderBy: { createdAt: 'desc' },
       take: 20,
       include: {
