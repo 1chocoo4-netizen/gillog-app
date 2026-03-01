@@ -432,6 +432,25 @@ function CoachingChat() {
       {/* 채팅 */}
       <div className="flex-1 pt-28 pb-52 px-4 overflow-y-auto">
         <div className="max-w-md mx-auto space-y-3">
+          {/* THE GLORY 성장 코칭 배너 */}
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => router.push('/coaching/glory')}
+            className="w-full bg-gradient-to-r from-violet-500/20 to-purple-500/20 border border-violet-500/30 rounded-xl p-4 flex items-center justify-between hover:from-violet-500/30 hover:to-purple-500/30 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <span className="text-lg">✨</span>
+              </div>
+              <div className="text-left">
+                <p className="text-white font-bold text-sm">성장 코칭 시작하기</p>
+                <p className="text-violet-300/70 text-xs">THE GLORY 모델 기반 AI 코칭</p>
+              </div>
+            </div>
+            <span className="text-violet-400 text-lg">→</span>
+          </motion.button>
+
           {/* 실제 코치 연결 배너 */}
           <motion.button
             initial={{ opacity: 0, y: -10 }}

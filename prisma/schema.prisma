@@ -95,6 +95,9 @@ model User {
 
   // Relations - 코칭 대화
   coachingSessions      CoachingSession[]
+
+  // Relations - THE GLORY 코칭
+  glorySessions         GlorySession[]
 }
 
 model Account {
@@ -590,6 +593,60 @@ model CoachingMessage {
   session CoachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, order])
+}
+
+// ========================================
+// THE GLORY 코칭
+// ========================================
+
+model GlorySession {
+  id        String   @id @default(cuid())
+  userId    String
+  status    String   @default("in_progress") // in_progress, completed, abandoned
+  currentStage String @default("GREETING")   // GREETING, THE_T, THE_H, THE_E, GLORY_G, GLORY_L, GLORY_O, GLORY_R, WHY_Y, COMPLETE
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  // THE 단계 요약
+  thankfulSummary  String?
+  happySummary     String?
+  emotionalSummary String?
+
+  // GLORY 단계 요약
+  groundedSummary  String?
+  luminousSummary  String?
+  optionsSummary   String?
+  realAction       String?
+
+  // Y 단계
+  whyMeaning       String?
+
+  // 완료 데이터
+  encouragement    String?
+  quote            String?
+  quoteAuthor      String?
+
+  createdAt DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages GloryMessage[]
+
+  @@index([userId, createdAt])
+}
+
+model GloryMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // "coach" | "user"
+  content   String
+  stage     String?  // 해당 메시지의 코칭 단계
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  session GlorySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
 }
 
 model AiRecommendation {
