@@ -28,8 +28,8 @@ interface PairedAnalysis {
 interface AttritionFunnel {
   totalParticipants: number
   milestone1: { n: number; rate: number }
-  milestone100: { n: number; retentionFrom1: number; pairedWith1: number }
-  milestone500: { n: number; retentionFrom100: number; pairedWith100: number }
+  milestone30: { n: number; retentionFrom1: number; pairedWith1: number }
+  milestone90: { n: number; retentionFrom30: number; pairedWith30: number }
   completedAll: number
   overallRetention: number
 }
@@ -143,7 +143,7 @@ export default function GrowthAnalysisPage() {
           </div>
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-xl font-bold text-white">{milestones.join(', ')}</div>
-            <div className="text-xs text-gray-400">측정 시점 (회)</div>
+            <div className="text-xs text-gray-400">측정 시점 (일)</div>
           </div>
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-xl font-bold text-white">5</div>
@@ -195,7 +195,7 @@ export default function GrowthAnalysisPage() {
                         <tr key={`${ms}-${area}`} className={`border-b border-gray-800/30 ${areaIdx === 0 ? 'border-t border-gray-700' : ''}`}>
                           {areaIdx === 0 && (
                             <td rowSpan={6} className="py-2 px-2 text-gray-200 font-semibold align-top">
-                              {ms}회
+                              {ms}일
                             </td>
                           )}
                           <td className="py-1.5 px-2" style={{ color: AREA_COLORS[area] }}>{AREA_LABELS[area]}</td>
@@ -227,7 +227,7 @@ export default function GrowthAnalysisPage() {
                   data={milestones
                     .filter((ms) => data.descriptiveByMilestone[ms]?.total?.n > 0)
                     .map((ms) => ({
-                      name: `${ms}회 (N=${data.descriptiveByMilestone[ms]?.total?.n || 0})`,
+                      name: `${ms}일 (N=${data.descriptiveByMilestone[ms]?.total?.n || 0})`,
                       진로: data.descriptiveByMilestone[ms]?.career?.mean || 0,
                       공동체: data.descriptiveByMilestone[ms]?.community?.mean || 0,
                       인성: data.descriptiveByMilestone[ms]?.nonCognitive?.mean || 0,
@@ -282,7 +282,7 @@ export default function GrowthAnalysisPage() {
                           <tr key={`${p.from}-${p.to}-${area}`} className={`border-b border-gray-800/30 ${areaIdx === 0 ? 'border-t border-gray-700' : ''}`}>
                             {areaIdx === 0 && (
                               <td rowSpan={6} className="py-2 px-2 text-gray-200 font-semibold align-top">
-                                {p.from}회 → {p.to}회
+                                {p.from}일 → {p.to}일
                               </td>
                             )}
                             <td className="py-1.5 px-2" style={{ color: AREA_COLORS[area] }}>{AREA_LABELS[area]}</td>
@@ -308,39 +308,39 @@ export default function GrowthAnalysisPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <SectionTitle sub="Figure 2. Participant Retention Funnel">참여자 유지율</SectionTitle>
             <div className="flex items-center justify-center gap-2 py-4">
-              {/* 1회 */}
+              {/* 1일 */}
               <div className="text-center">
                 <div className="bg-blue-600/20 border border-blue-600/40 rounded-lg px-6 py-4 min-w-[120px]">
                   <div className="text-2xl font-bold text-blue-400">{data.attritionFunnel.milestone1.n}</div>
-                  <div className="text-xs text-gray-400 mt-1">1회 설문</div>
+                  <div className="text-xs text-gray-400 mt-1">1일 설문</div>
                 </div>
               </div>
               {/* 화살표 + 유지율 */}
               <div className="text-center px-2">
                 <div className="text-xs text-gray-500">→</div>
-                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone100.retentionFrom1}%</div>
+                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone30.retentionFrom1}%</div>
                 <div className="text-[10px] text-gray-600">유지율</div>
               </div>
-              {/* 100회 */}
+              {/* 30일 */}
               <div className="text-center">
                 <div className="bg-green-600/20 border border-green-600/40 rounded-lg px-6 py-4 min-w-[120px]">
-                  <div className="text-2xl font-bold text-green-400">{data.attritionFunnel.milestone100.n}</div>
-                  <div className="text-xs text-gray-400 mt-1">100회 설문</div>
-                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone100.pairedWith1}</div>
+                  <div className="text-2xl font-bold text-green-400">{data.attritionFunnel.milestone30.n}</div>
+                  <div className="text-xs text-gray-400 mt-1">30일 설문</div>
+                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone30.pairedWith1}</div>
                 </div>
               </div>
               {/* 화살표 + 유지율 */}
               <div className="text-center px-2">
                 <div className="text-xs text-gray-500">→</div>
-                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone500.retentionFrom100}%</div>
+                <div className="text-xs text-yellow-400">{data.attritionFunnel.milestone90.retentionFrom30}%</div>
                 <div className="text-[10px] text-gray-600">유지율</div>
               </div>
-              {/* 500회 */}
+              {/* 90일 */}
               <div className="text-center">
                 <div className="bg-purple-600/20 border border-purple-600/40 rounded-lg px-6 py-4 min-w-[120px]">
-                  <div className="text-2xl font-bold text-purple-400">{data.attritionFunnel.milestone500.n}</div>
-                  <div className="text-xs text-gray-400 mt-1">500회 설문</div>
-                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone500.pairedWith100}</div>
+                  <div className="text-2xl font-bold text-purple-400">{data.attritionFunnel.milestone90.n}</div>
+                  <div className="text-xs text-gray-400 mt-1">90일 설문</div>
+                  <div className="text-[10px] text-gray-500">대응쌍: {data.attritionFunnel.milestone90.pairedWith30}</div>
                 </div>
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function GrowthAnalysisPage() {
                     const row: Record<string, string | number> = { range: label }
                     for (const ms of milestones) {
                       const dist = data.distribution[ms]?.[selectedArea]
-                      row[`${ms}회`] = dist?.[idx]?.count || 0
+                      row[`${ms}일`] = dist?.[idx]?.count || 0
                     }
                     return row
                   })}
@@ -389,9 +389,9 @@ export default function GrowthAnalysisPage() {
                   <YAxis tick={{ fill: '#9CA3AF', fontSize: 11 }} allowDecimals={false} label={{ value: '인원(명)', angle: -90, position: 'insideLeft', fill: '#6B7280', fontSize: 10 }} />
                   <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F3F4F6' }} />
                   <Legend formatter={(value) => <span style={{ color: '#D1D5DB', fontSize: '12px' }}>{value}</span>} />
-                  <Bar dataKey="1회" fill="#3B82F6" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="100회" fill="#10B981" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="500회" fill="#8B5CF6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="1일" fill="#3B82F6" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="30일" fill="#10B981" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="90일" fill="#8B5CF6" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -407,7 +407,7 @@ export default function GrowthAnalysisPage() {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={milestones.map((ms) => {
-                    const point: Record<string, string | number> = { milestone: `${ms}회` }
+                    const point: Record<string, string | number> = { milestone: `${ms}일` }
                     data.trajectories.forEach((t) => {
                       const found = t.milestones.find((m) => m.milestone === ms)
                       if (found) point[t.id] = found.total
@@ -455,7 +455,7 @@ export default function GrowthAnalysisPage() {
                 if (!s || s.n === 0) return null
                 return (
                   <p key={ms}>
-                    {ms}회 실행 시점(N={s.n})에서 전체 평균 점수는 <strong className="text-white">M={s.mean.toFixed(2)}</strong>(SD={s.sd.toFixed(2)})로 나타났다.
+                    {ms}일 출석 시점(N={s.n})에서 전체 평균 점수는 <strong className="text-white">M={s.mean.toFixed(2)}</strong>(SD={s.sd.toFixed(2)})로 나타났다.
                   </p>
                 )
               })}
@@ -463,7 +463,7 @@ export default function GrowthAnalysisPage() {
               {/* 대응표본 요약 */}
               {data.pairedAnalysis.filter((p) => p.total.n > 0).map((p) => (
                 <p key={`${p.from}-${p.to}`}>
-                  {p.from}회에서 {p.to}회로의 변화를 대응표본(N={p.total.n})으로 분석한 결과,
+                  {p.from}일에서 {p.to}일로의 변화를 대응표본(N={p.total.n})으로 분석한 결과,
                   총점 평균 차이는 <DiffBadge value={p.total.meanDiff} />점이었으며,
                   효과크기는 Cohen&apos;s d=<strong className="text-white">{p.total.cohenD.toFixed(2)}</strong>({p.total.interpretation})로 나타났다.
                 </p>

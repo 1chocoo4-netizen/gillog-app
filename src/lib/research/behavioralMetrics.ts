@@ -139,7 +139,7 @@ export function calculateBehavioralScores(
   milestoneGroup: number,
   coachingSignals?: CoachingSignals,
 ): BehavioralScores {
-  const bench = NORMALIZATION_BENCHMARKS[milestoneGroup] ?? NORMALIZATION_BENCHMARKS[100]
+  const bench = NORMALIZATION_BENCHMARKS[milestoneGroup] ?? NORMALIZATION_BENCHMARKS[30]
 
   // 월드별 기록 분류
   const selfDirected = filterByWorld(history, AREA_TO_WORLDS.career)

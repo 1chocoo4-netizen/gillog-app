@@ -26,6 +26,7 @@ export interface SubCompetency {
   surveyQuestionIds: string[]  // 매핑되는 설문 문항 ID
   behavioralMetric: string     // 행동 로그 지표 설명
   metricUnit: MetricUnit
+  theoryRef: string            // 근거 이론 및 참고문헌
 }
 
 /** 연구 영역 정의 */
@@ -110,6 +111,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['c1', 'c2'],
     behavioralMetric: 'selfDirected 성찰 기록 작성 빈도',
     metricUnit: 'count',
+    theoryRef: 'Holland 직업흥미이론(RIASEC); Super 자아개념 발달 — Holland(1997), Super(1990)',
   },
   {
     id: 'C2', area: 'career', label: '진로탐색',
@@ -117,6 +119,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['c3', 'c9'],
     behavioralMetric: 'selfDirected 실행 텍스트 다양성',
     metricUnit: 'diversity',
+    theoryRef: '진로성숙도 이론; 진로탐색 행동이론 — Super(1990), Stumpf et al.(1983)',
   },
   {
     id: 'C3', area: 'career', label: '진로설계',
@@ -124,6 +127,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['c5', 'c7'],
     behavioralMetric: 'selfDirected 실행 연속일(streak)',
     metricUnit: 'days',
+    theoryRef: 'Savickas 미래지향성; CDSE 목표설정 — Savickas(2013), Betz & Taylor(2012)',
   },
   {
     id: 'C4', area: 'career', label: '진로경험',
@@ -131,6 +135,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['c4', 'c6'],
     behavioralMetric: 'selfDirected 실행 총 횟수',
     metricUnit: 'count',
+    theoryRef: 'CDSE 정보수집; 구성주의 진로적응성 — Betz & Taylor(2012), Savickas & Porfeli(2012)',
   },
   {
     id: 'C5', area: 'career', label: '진로실행',
@@ -138,6 +143,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['c8', 'c10'],
     behavioralMetric: 'selfDirected 실행 완료율',
     metricUnit: 'ratio',
+    theoryRef: 'Bandura 자기효능; CDSE 전체 요인 — Bandura(1997), Betz & Taylor(2012)',
   },
 
   // ===== 공동체 (Community) =====
@@ -147,6 +153,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['m1', 'm4'],
     behavioralMetric: 'relationship 실행 등록 빈도',
     metricUnit: 'count',
+    theoryRef: '사회적 유능감 이론; 친사회적 행동 이론 — Rose-Krasnor(1997), Eisenberg et al.(2006)',
   },
   {
     id: 'M2', area: 'community', label: '공감/존중',
@@ -154,6 +161,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['m2', 'm6'],
     behavioralMetric: '느낀것 기록 작성 빈도',
     metricUnit: 'count',
+    theoryRef: 'Hoffman 공감이론; Vygotsky 사회문화이론 — Hoffman(2000), Vygotsky(1978)',
   },
   {
     id: 'M3', area: 'community', label: '참여/협력',
@@ -161,6 +169,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['m3', 'm9'],
     behavioralMetric: 'relationship 실행 완료 횟수',
     metricUnit: 'count',
+    theoryRef: '시민성 발달 이론; 협동학습 이론 — Flanagan(2013), Johnson & Johnson(2009)',
   },
   {
     id: 'M4', area: 'community', label: '갈등해결',
@@ -168,6 +177,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['m7', 'm5'],
     behavioralMetric: '놓친것 기록 작성 빈도(실패 성찰)',
     metricUnit: 'count',
+    theoryRef: 'CASEL SEL; Kohlberg 도덕발달이론 — CASEL(2020), Kohlberg(1984)',
   },
   {
     id: 'M5', area: 'community', label: '시민의식',
@@ -175,6 +185,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['m8', 'm10'],
     behavioralMetric: 'relationship 실행 텍스트 다양성',
     metricUnit: 'diversity',
+    theoryRef: '시민성·공동체 의식; Rawls 정의윤리 — McMillan & Chavis(1986), Rawls(1971)',
   },
 
   // ===== 인성 (NonCognitive) =====
@@ -184,6 +195,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['n1', 'n9'],
     behavioralMetric: '전체 실행 최장 연속일(longestStreak)',
     metricUnit: 'days',
+    theoryRef: 'Duckworth Grit(노력 지속성) — Duckworth et al.(2007), Duckworth & Quinn(2009)',
   },
   {
     id: 'N2', area: 'nonCognitive', label: '자기주도',
@@ -191,6 +203,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['n2', 'n6'],
     behavioralMetric: '알람/일일반복 설정 비율',
     metricUnit: 'ratio',
+    theoryRef: '자기조절이론; 자기통제 이론 — Zimmerman(2000), Baumeister et al.(2007)',
   },
   {
     id: 'N3', area: 'nonCognitive', label: '정서조절',
@@ -198,6 +211,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['n3', 'n8'],
     behavioralMetric: 'attitude+character 정서 관련 기록 빈도',
     metricUnit: 'count',
+    theoryRef: 'Gross 정서조절이론; Lazarus & Folkman Coping 이론 — Gross(1998), Lazarus & Folkman(1984)',
   },
   {
     id: 'N4', area: 'nonCognitive', label: '도전정신',
@@ -205,6 +219,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['n4', 'n5'],
     behavioralMetric: '신규 영역 시도 빈도(worldKey 수)',
     metricUnit: 'count',
+    theoryRef: 'Dweck 성장마인드셋; 회복탄력성 — Dweck(2006), Masten(2001)',
   },
   {
     id: 'N5', area: 'nonCognitive', label: '자기존중',
@@ -212,6 +227,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['n7', 'n10'],
     behavioralMetric: '전체 활동 지속 기간(일수)',
     metricUnit: 'days',
+    theoryRef: 'Rosenberg 자존감; Dweck Growth Mindset — Rosenberg(1965), Dweck(2006)',
   },
 
   // ===== 학습 (Learning) =====
@@ -221,6 +237,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['l1', 'l9'],
     behavioralMetric: 'cognition 실행 등록 빈도',
     metricUnit: 'count',
+    theoryRef: 'Deci & Ryan 내재적 동기(SDT); 탐구동기 — Deci & Ryan(2000), Litman(2008)',
   },
   {
     id: 'L2', area: 'learning', label: '자기주도학습',
@@ -228,6 +245,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['l2', 'l7'],
     behavioralMetric: 'cognition 자기주도적 등록 비율',
     metricUnit: 'ratio',
+    theoryRef: 'Knowles 자기주도학습; Zimmerman SRL 계획 단계 — Knowles(1975), Zimmerman(2000)',
   },
   {
     id: 'L3', area: 'learning', label: '학습집중',
@@ -235,6 +253,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['l3', 'l6'],
     behavioralMetric: 'cognition 실행 연속일(streak)',
     metricUnit: 'days',
+    theoryRef: '주의집중 이론; 학습 지속성 — Posner & Rothbart(2007), Zimmerman & Schunk(2011)',
   },
   {
     id: 'L4', area: 'learning', label: '메타인지',
@@ -242,6 +261,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['l4', 'l8'],
     behavioralMetric: '배운것 기록 텍스트 평균 길이',
     metricUnit: 'chars',
+    theoryRef: 'Flavell 메타인지; SRL 자기성찰 단계 — Flavell(1979), Zimmerman(2000)',
   },
   {
     id: 'L5', area: 'learning', label: '지식전이',
@@ -249,6 +269,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['l5', 'l10'],
     behavioralMetric: 'cognition 하위과목 다양성',
     metricUnit: 'diversity',
+    theoryRef: '인지적 정교화; 전이학습 이론 — Fiorella & Mayer(2014), Perkins & Salomon(1992)',
   },
 
   // ===== 습관 (Habit) =====
@@ -258,6 +279,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['h1', 'h2'],
     behavioralMetric: '일일반복 실행 비율',
     metricUnit: 'ratio',
+    theoryRef: '자기관리 행동; 시간관리 — Bandura(2005), Macan(1994)',
   },
   {
     id: 'H2', area: 'habit', label: '실행력',
@@ -265,6 +287,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['h3', 'h6'],
     behavioralMetric: 'habit 실행 완료율',
     metricUnit: 'ratio',
+    theoryRef: 'Baumeister 자기통제; Wood & Neal 습관형성 이론 — Steel(2007), Lally et al.(2010)',
   },
   {
     id: 'H3', area: 'habit', label: '건강관리',
@@ -272,6 +295,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['h4', 'h5'],
     behavioralMetric: 'habit 실행 총 빈도',
     metricUnit: 'count',
+    theoryRef: '건강행동 이론(TPB); 실행기능 — Ajzen(1991), Diamond(2013)',
   },
   {
     id: 'H4', area: 'habit', label: '자기통제',
@@ -279,6 +303,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['h7', 'h9'],
     behavioralMetric: '놓친것 기록 후 다음날 실행 재개 비율',
     metricUnit: 'ratio',
+    theoryRef: '행동수정 이론; Baumeister 자기통제 — Wood & Neal(2007), Baumeister & Tierney(2011)',
   },
   {
     id: 'H5', area: 'habit', label: '습관유지',
@@ -286,6 +311,7 @@ export const SUB_COMPETENCIES: SubCompetency[] = [
     surveyQuestionIds: ['h8', 'h10'],
     behavioralMetric: 'habit streak + 활동 지속 일수',
     metricUnit: 'days',
+    theoryRef: '성실성(Big Five); 습관 자동화 이론 — Roberts et al.(2009), Lally et al.(2010)',
   },
 ]
 
@@ -322,7 +348,7 @@ export function calcSubCompetencySurveyScore(
 // 마일스톤 상수
 // ========================================
 
-export const RESEARCH_MILESTONES = [1, 100, 500, 1000] as const
+export const RESEARCH_MILESTONES = [1, 30, 90, 180] as const
 
 /** 마일스톤별 정규화 기준값 */
 export const NORMALIZATION_BENCHMARKS: Record<number, {
@@ -331,7 +357,7 @@ export const NORMALIZATION_BENCHMARKS: Record<number, {
   charsBase: number
 }> = {
   1: { countBase: 1, daysBase: 1, charsBase: 20 },
-  100: { countBase: 30, daysBase: 30, charsBase: 50 },
-  500: { countBase: 100, daysBase: 90, charsBase: 80 },
-  1000: { countBase: 200, daysBase: 180, charsBase: 100 },
+  30: { countBase: 30, daysBase: 30, charsBase: 50 },
+  90: { countBase: 100, daysBase: 90, charsBase: 80 },
+  180: { countBase: 200, daysBase: 180, charsBase: 100 },
 }

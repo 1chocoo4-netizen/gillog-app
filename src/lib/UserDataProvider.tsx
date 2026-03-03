@@ -127,7 +127,7 @@ const UserDataContext = createContext<UserDataContextType | null>(null)
 // ========================================
 
 const GROWTH_AREAS = ['cognition', 'selfDirected', 'habit', 'attitude', 'relationship', 'character']
-const SURVEY_MILESTONES = [1, 100, 500, 1000]
+const SURVEY_MILESTONES = [1, 30, 90, 180]
 
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -189,10 +189,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           setSubscriptionInfo(data.subscriptionInfo)
         }
 
-        // 초기 로딩 시: 미완료 마일스톤 중 도달한 것이 있으면 트리거
+        // 초기 로딩 시: 미완료 마일스톤 중 도달한 것이 있으면 트리거 (출석일수 기준)
         const histArr = Array.isArray(hist) ? hist : []
+        const uniqueDays = new Set(histArr.map((r: ExecutionRecord) => r.date)).size
         const nextMilestone = SURVEY_MILESTONES.find(
-          m => histArr.length >= m && !sm.includes(m)
+          m => uniqueDays >= m && !sm.includes(m)
         )
         if (nextMilestone) {
           setPendingMilestone(nextMilestone)
@@ -346,9 +347,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       const updated = [...prev, newRecord]
       syncToServer({ history: updated })
 
-      // 마일스톤 도달 시 설문 트리거
+      // 마일스톤 도달 시 설문 트리거 (출석일수 기준)
+      const uniqueDays = new Set(updated.map(r => r.date)).size
       const reached = SURVEY_MILESTONES.find(
-        m => updated.length >= m && !surveyMilestones.includes(m)
+        m => uniqueDays >= m && !surveyMilestones.includes(m)
       )
       if (reached && !pendingMilestone) {
         setPendingMilestone(reached)

@@ -206,7 +206,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
 
   const abstractParts: string[] = []
   abstractParts.push(`본 연구는 실행 기반 성장 플랫폼 '길로그(GILLOG)'를 활용하여 청소년의 성장역량 종단 변화를 분석하였다.`)
-  abstractParts.push(`연구 참여자 총 ${N}명을 대상으로, 누적 실행 횟수에 따른 마일스톤(${milestones.join(', ')}회) 시점에서 반복측정을 실시하였다.`)
+  abstractParts.push(`연구 참여자 총 ${N}명을 대상으로, 출석일수에 따른 마일스톤(${milestones.join(', ')}일) 시점에서 반복측정을 실시하였다.`)
   abstractParts.push(`측정 도구는 5개 영역(진로탐색, 공동체의식, 인성역량, 학습역량, 습관형성) 25개 하위역량으로 구성된 자기보고식 설문(Likert 5점 척도, 50문항)${mode === 'integrated' ? '과 플랫폼 행동 로그 데이터를 통합하여 사용하였다' : '을 사용하였다'}.`)
 
   if (validMs.length >= 2 && validPairs.length > 0) {
@@ -215,7 +215,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
       Math.abs(firstPair.cohenDByArea[a]?.d || 0) > Math.abs(firstPair.cohenDByArea[max]?.d || 0) ? a : max
     , areas[0])
     const topD = firstPair.cohenDByArea[topArea]?.d || 0
-    abstractParts.push(`대응표본 분석(N=${firstPair.n}) 결과, ${firstPair.from}회에서 ${firstPair.to}회로의 변화에서 ${AREA_LABELS[topArea]} 영역이 가장 두드러진 변화를 보였으며(Cohen's d = ${topD.toFixed(2)}, ${dInterp(topD)}), 이는 실행 경험의 축적이 해당 역량의 질적 전환에 기여함을 시사한다.`)
+    abstractParts.push(`대응표본 분석(N=${firstPair.n}) 결과, ${firstPair.from}일에서 ${firstPair.to}일로의 변화에서 ${AREA_LABELS[topArea]} 영역이 가장 두드러진 변화를 보였으며(Cohen's d = ${topD.toFixed(2)}, ${dInterp(topD)}), 이는 실행 경험의 축적이 해당 역량의 질적 전환에 기여함을 시사한다.`)
   }
   abstractParts.push(`본 연구의 결과는 실행 기반 성장 프로그램의 효과성 근거를 제공하며, 한국 교육 인적자원 표준 개발을 위한 기초 자료로 활용될 수 있다.`)
 
@@ -267,6 +267,37 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('  2.5 습관 형성 (Habit Formation)')
   lines.push('    Lally et al.(2010)의 연구에 따르면, 새로운 습관이 자동화되기까지 평균 66일(범위 18-254일)이 소요되며, 이는 개인차와 행동 복잡성에 따라 달라진다. Deci & Ryan(2000)의 자기결정성이론(SDT)은 자율성, 유능성, 관계성의 기본심리욕구 충족이 내재적 동기와 습관 유지에 핵심적임을 밝히고 있다.')
   lines.push('')
+  lines.push('  2.6 THE GLORY 코칭 모델 (THE GLORY Coaching Model)')
+  lines.push('')
+  lines.push('    THE GLORY 모델은 정서 인식(THE)과 실행 설계(GLOR)를 거쳐 의미화(Y)에 도달하는 단계적 성장 코칭 구조이다. 본 모델은 Goleman(1995)의 정서지능(Emotional Intelligence) 이론, Whitmore(2009)의 GROW 코칭 모델, Frankl(1946)의 의미치료(Logotherapy), 그리고 Deci & Ryan(2000)의 자기결정성이론(Self-Determination Theory)을 이론적 기반으로 통합하여 설계되었다.')
+  lines.push('')
+  lines.push('    THE GLORY 모델의 구조는 3개 단계(Phase), 7개 핵심 요소로 구성된다:')
+  lines.push('')
+  lines.push('    [Phase 1] THE — 정서 인식 단계 (Emotional Awareness)')
+  lines.push('      T (Thankful): 감사 인식 — 현재 상황에서의 긍정적 요소를 인식하는 단계')
+  lines.push('      H (Happy): 행복 탐색 — 주관적 안녕감(subjective well-being)의 원천을 탐색하는 단계')
+  lines.push('      E (Emotional Experience): 정서 경험 — 현재의 정서 상태를 명확히 인식하고 명명하는 단계')
+  lines.push('      이론적 근거: Goleman(1995)의 정서지능 중 자기인식(self-awareness) 및 자기조절(self-regulation) 역량에 해당하며, Salovey & Mayer(1990)의 정서 인식 및 활용 모델과 일치한다.')
+  lines.push('')
+  lines.push('    [Phase 2] GLORY — 방향 설정 및 실행 설계 단계 (Direction & Execution Design)')
+  lines.push('      G (Grounded): 현재 자각 — 현재 위치와 상태에 대한 객관적 인식 (Whitmore의 Reality에 대응)')
+  lines.push('      L (Luminous): 이상 상태 설정 — 성장 목표 및 바람직한 미래상 설정 (Whitmore의 Goal에 대응)')
+  lines.push('      O (Options): 대안 탐색 — 목표 달성을 위한 다양한 전략과 경로 탐색 (Whitmore의 Options에 대응)')
+  lines.push('      R (Real Action): 실행 설계 — 구체적이고 실현 가능한 행동 계획 수립 (Whitmore의 Will/Way Forward에 대응)')
+  lines.push('      이론적 근거: Whitmore(2009)의 GROW 모델(Goal-Reality-Options-Will)을 기반으로 하되, 정서 인식 단계(THE)를 선행 조건으로 배치하여 정서적 준비(emotional readiness)가 목표 설정과 실행 설계의 질을 높인다는 관점을 반영하였다.')
+  lines.push('')
+  lines.push('    [Phase 3] Y — 의미화 단계 (Meaning Making)')
+  lines.push('      Y (whY / Yes to life): 의미 부여 — 실행 경험에 대한 의미를 발견하고 내면화하는 단계')
+  lines.push('      이론적 근거: Frankl(1946)의 의미치료(Logotherapy)에서 제시한 의미의지(will to meaning)에 기반하며, 실행 경험이 단순한 행동 수행을 넘어 개인의 성장 서사(growth narrative)로 통합되는 과정을 촉진한다. Deci & Ryan(2000)의 SDT에서 강조하는 내재화(internalization)와 통합(integration) 과정과도 일치한다.')
+  lines.push('')
+  lines.push('    THE GLORY 모델의 핵심 작동 원리는 다음과 같다:')
+  lines.push('    (1) 정서 선행 원리: 인지적 목표 설정 이전에 정서 인식을 선행시킴으로써, 자기인식에 기반한 진정성 있는(authentic) 목표 설정을 촉진한다.')
+  lines.push('    (2) 순환적 성장 구조: THE → GLORY → Y의 단계가 일회적이 아닌 반복적·순환적으로 작동하여, 매 실행 주기마다 깊이 있는 성찰과 성장이 이루어진다.')
+  lines.push('    (3) 의미 통합 원리: 실행(R)에서 곧바로 다음 목표로 이행하지 않고, 의미화(Y) 단계를 거침으로써 경험의 내면화와 자기성장 동기를 강화한다.')
+  lines.push('')
+  lines.push('    연구 모델 구조 (Research Model Structure):')
+  lines.push('    정서 인식(THE) → 현재 자각(G) → 이상 상태 설정(L) → 대안 탐색(O) → 실행 설계(R) → 의미화(Y) → 지속적 행동')
+  lines.push('')
   lines.push('')
 
   // ---------- 2. 연구 방법 ----------
@@ -277,7 +308,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
 
   lines.push('1. 연구 설계')
   lines.push('')
-  lines.push(`  본 연구는 종단적 반복측정 설계(longitudinal repeated-measures design)를 채택하였다. 참여자의 누적 실행 횟수가 사전 설정된 마일스톤(${milestones.join(', ')}회)에 도달할 때마다 동일한 측정 도구를 반복 투입하여, 실행 경험 축적에 따른 성장역량의 변화를 추적하였다. 이는 전통적인 시간 기반(time-based) 종단 설계와 달리, 개인의 실행 투입량(dosage)을 기준으로 한 투입량 기반(dosage-based) 종단 설계라는 점에서 방법론적 특이성을 갖는다.`)
+  lines.push(`  본 연구는 종단적 반복측정 설계(longitudinal repeated-measures design)를 채택하였다. 참여자의 출석일수가 사전 설정된 마일스톤(${milestones.join(', ')}일)에 도달할 때마다 동일한 측정 도구를 반복 투입하여, 실행 경험 축적에 따른 성장역량의 변화를 추적하였다. 이는 전통적인 시간 기반(time-based) 종단 설계와 달리, 개인의 출석일수(attendance days)를 기준으로 한 출석 기반(attendance-based) 종단 설계라는 점에서 방법론적 특이성을 갖는다.`)
   lines.push('')
   lines.push('')
 
@@ -287,12 +318,12 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   if (validMs.length > 0) {
     lines.push(`  마일스톤별 참여자 분포는 다음과 같다:`)
     for (const m of validMs) {
-      lines.push(`    - ${m.ms}회 마일스톤: ${m.n}명`)
+      lines.push(`    - ${m.ms}일 마일스톤: ${m.n}명`)
     }
   }
 
   // 대응표본 가능 수
-  const pairedCounts = validPairs.map(g => `${g.from}→${g.to}회 대응쌍 ${g.n}명`)
+  const pairedCounts = validPairs.map(g => `${g.from}→${g.to}일 대응쌍 ${g.n}명`)
   if (pairedCounts.length > 0) {
     lines.push(`  종단 대응표본: ${pairedCounts.join(', ')}`)
   }
@@ -324,7 +355,23 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('')
   lines.push('')
 
-  lines.push('4. 분석 방법')
+  lines.push('4. AI 성장 코칭 도구')
+  lines.push('')
+  lines.push('  본 연구에서 활용된 길로그(GILLOG) 플랫폼은 성장 추론 모델(Growth Inference Model)과 THE GLORY 코칭 모델을 탑재한 AI 기반 성장 코칭 시스템을 운용한다.')
+  lines.push('')
+  lines.push('  4.1 성장 추론 모델 (Growth Inference Model)')
+  lines.push('    성장 추론 모델은 참여자의 행동 로그(실행 기록, 연속일, 텍스트 다양성, 실행 완료율 등)와 설문 응답 데이터를 통합 분석하여 25개 하위역량별 성장 지표를 실시간으로 산출한다. 이 모델은 횟수 기반 정규화(count normalization), 비율 기반 정규화(ratio normalization), 일수 기반 정규화(days normalization), 텍스트 길이 기반 정규화(chars normalization)의 4가지 정규화 방식을 적용하여, 다양한 행동 양상을 0~100 척도로 통일적으로 변환한다. 산출된 행동 점수는 자기보고 설문 점수와 가중 합산(Survey 60% + Behavioral 40%)하여 통합 역량 점수로 제공된다.')
+  lines.push('')
+  lines.push('  4.2 THE GLORY 코칭 모델 기반 AI 코칭')
+  lines.push('    AI 코칭 시스템은 THE GLORY 모델의 3단계 구조를 대화형 인터페이스로 구현한다. 코칭 세션은 다음과 같이 진행된다:')
+  lines.push('    (1) THE 단계: AI가 참여자에게 감사(T), 행복(H), 정서 경험(E)에 대한 질문을 통해 현재 정서 상태를 탐색하도록 안내한다.')
+  lines.push('    (2) GLORY 단계: 정서 인식을 기반으로 현재 상태 자각(G), 이상적 목표 설정(L), 대안 탐색(O), 실행 계획 수립(R)을 순차적으로 진행한다.')
+  lines.push('    (3) Y 단계: 실행 경험에 대한 의미를 부여하고, 성장 서사(growth narrative)로 통합하는 과정을 촉진한다.')
+  lines.push('    코칭 세션에서 수집된 신호(coaching signals)—진로 언급, 학습 언급, 공동체 언급, 정서 인식 깊이, 자기성찰 깊이, 실행 의지, 참여 깊이, 지속성 언급, 목표 명확성, 세션 빈도—는 성장 추론 모델에 반영되어 역량 점수에 보정 보너스(최대 +10점)로 적용된다.')
+  lines.push('')
+  lines.push('')
+
+  lines.push('5. 분석 방법')
   lines.push('')
   lines.push('  수집된 데이터는 다음의 방법으로 분석하였다:')
   lines.push('  (1) 기술통계 분석: 마일스톤별 5개 영역 및 25개 하위역량의 평균, 표준편차, 중앙값, 사분위수를 산출하였다.')
@@ -354,7 +401,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
     const areaScores = scores[ms]
     if (!areaScores) continue
 
-    lines.push(`  [${ms}회 마일스톤] (N=${n})`)
+    lines.push(`  [${ms}일 마일스톤] (N=${n})`)
     lines.push('')
     lines.push('  | 영역 | M | SD* |')
     lines.push('  |------|---|-----|')
@@ -378,7 +425,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
     const areaScores = scores[ms]
     if (!areaScores) continue
     const { top, bottom } = findTopBottom(ms)
-    lines.push(`  ${ms}회 시점에서 가장 높은 점수를 보인 영역은 ${AREA_LABELS[top]}(M=${(areaScores[top] || 0).toFixed(2)})이었으며, 가장 낮은 점수를 보인 영역은 ${AREA_LABELS[bottom]}(M=${(areaScores[bottom] || 0).toFixed(2)})이었다.`)
+    lines.push(`  ${ms}일 시점에서 가장 높은 점수를 보인 영역은 ${AREA_LABELS[top]}(M=${(areaScores[top] || 0).toFixed(2)})이었으며, 가장 낮은 점수를 보인 영역은 ${AREA_LABELS[bottom]}(M=${(areaScores[bottom] || 0).toFixed(2)})이었다.`)
   }
   lines.push('')
   lines.push('')
@@ -390,7 +437,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   for (const ms of milestones) {
     const n = data.metadata.milestoneDistribution[ms] || 0
     if (n === 0) continue
-    lines.push(`  [Table ${milestones.indexOf(ms) + 1}] ${ms}회 마일스톤 하위역량 기술통계 (N=${n})`)
+    lines.push(`  [Table ${milestones.indexOf(ms) + 1}] ${ms}일 마일스톤 하위역량 기술통계 (N=${n})`)
     lines.push('')
     lines.push('  ' + makeSubCompTable(ms).split('\n').join('\n  '))
     lines.push('')
@@ -413,7 +460,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
       }
     }
     if (topSub.id) {
-      lines.push(`  ${ms}회 시점에서 25개 하위역량 중 최고 평균을 보인 역량은 ${SUB_COMP_LABELS[topSub.id]}(${topSub.area}, M=${topSub.mean.toFixed(2)})이었으며, 최저 평균은 ${SUB_COMP_LABELS[bottomSub.id]}(${bottomSub.area}, M=${bottomSub.mean.toFixed(2)})이었다.`)
+      lines.push(`  ${ms}일 시점에서 25개 하위역량 중 최고 평균을 보인 역량은 ${SUB_COMP_LABELS[topSub.id]}(${topSub.area}, M=${topSub.mean.toFixed(2)})이었으며, 최저 평균은 ${SUB_COMP_LABELS[bottomSub.id]}(${bottomSub.area}, M=${bottomSub.mean.toFixed(2)})이었다.`)
     }
   }
   lines.push('')
@@ -425,7 +472,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
     lines.push('')
 
     for (const g of validPairs) {
-      lines.push(`  [${g.from}회 → ${g.to}회 구간] (대응쌍 N=${g.n})`)
+      lines.push(`  [${g.from}일 → ${g.to}일 구간] (대응쌍 N=${g.n})`)
       lines.push('')
       lines.push('  | 영역 | 사전 M* | 사후 M* | 변화량 | Cohen\'s d | 효과크기 해석 |')
       lines.push('  |------|---------|---------|--------|-----------|-------------|')
@@ -447,7 +494,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
       const topA = sorted[0]
       const topD = g.cohenDByArea[topA]?.d || 0
 
-      lines.push(`  ${g.from}회에서 ${g.to}회로의 변화 분석 결과, 가장 큰 효과크기를 보인 영역은 ${AREA_LABELS[topA]}(d=${topD.toFixed(2)}, ${dInterp(topD)})이었다.`)
+      lines.push(`  ${g.from}일에서 ${g.to}일로의 변화 분석 결과, 가장 큰 효과크기를 보인 영역은 ${AREA_LABELS[topA]}(d=${topD.toFixed(2)}, ${dInterp(topD)})이었다.`)
 
       // 각 영역 서술
       for (const a of sorted) {
@@ -504,7 +551,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
         const intg = data.integratedScores.integrated[ms]?.[a] || 0
         const diff = intg - sv
         if (sv === 0 && intg === 0) continue
-        lines.push(`  | ${ms}회 | ${AREA_LABELS[a]} | ${sv.toFixed(2)} | ${intg.toFixed(2)} | ${diff > 0 ? '+' : ''}${diff.toFixed(2)} |`)
+        lines.push(`  | ${ms}일 | ${AREA_LABELS[a]} | ${sv.toFixed(2)} | ${intg.toFixed(2)} | ${diff > 0 ? '+' : ''}${diff.toFixed(2)} |`)
       }
     }
     lines.push('')
@@ -528,7 +575,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
     const areaScores = scores[firstMs.ms]
     if (areaScores) {
       const { top, bottom } = findTopBottom(firstMs.ms)
-      lines.push(`  ${firstMs.ms}회 시점의 기초선(baseline) 분석에서 ${AREA_LABELS[top]} 영역이 가장 높은 수준을 보인 것은, 플랫폼 사용 초기부터 참여자들이 해당 역량에 대한 자기인식이 상대적으로 높음을 시사한다. 반면, ${AREA_LABELS[bottom]} 영역이 가장 낮은 것은 해당 역량의 발달적 지원이 우선적으로 필요함을 의미한다.`)
+      lines.push(`  ${firstMs.ms}일 시점의 기초선(baseline) 분석에서 ${AREA_LABELS[top]} 영역이 가장 높은 수준을 보인 것은, 플랫폼 사용 초기부터 참여자들이 해당 역량에 대한 자기인식이 상대적으로 높음을 시사한다. 반면, ${AREA_LABELS[bottom]} 영역이 가장 낮은 것은 해당 역량의 발달적 지원이 우선적으로 필요함을 의미한다.`)
       lines.push('')
     }
   }
@@ -542,7 +589,7 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
       const topD = g.cohenDByArea[topA]?.d || 0
 
       if (Math.abs(topD) >= 0.2) {
-        lines.push(`  ${g.from}→${g.to}회 구간에서 ${AREA_LABELS[topA]} 영역이 가장 현저한 변화(d=${topD.toFixed(2)})를 보인 것은 주목할 만하다. 이는 누적 실행 경험이 ${(g.to - g.from)}회 증가하는 동안 해당 역량의 질적 변화가 발생하였음을 시사하며, ${
+        lines.push(`  ${g.from}→${g.to}일 구간에서 ${AREA_LABELS[topA]} 영역이 가장 현저한 변화(d=${topD.toFixed(2)})를 보인 것은 주목할 만하다. 이는 출석일수가 ${(g.to - g.from)}일 증가하는 동안 해당 역량의 질적 변화가 발생하였음을 시사하며, ${
           topA === 'career' ? 'Super(1990)의 진로 탐색기 이론' :
           topA === 'community' ? 'CASEL(2020)의 SEL 프레임워크' :
           topA === 'nonCognitive' ? 'Seligman & Peterson(2004)의 VIA 성격강점 이론' :
@@ -560,6 +607,8 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('  본 연구의 결과는 역량 발달이 단순한 선형적 증가가 아닌, 실행 투입량에 따른 비선형적 궤적(nonlinear trajectory)을 보일 수 있음을 시사한다. 특히, 마일스톤 구간별 성장 기울기의 차이는 역량 발달에 임계점(threshold)이 존재할 가능성을 제기하며, 이는 Lally et al.(2010)이 제시한 습관 자동화의 변곡점 개념과 맥락을 같이 한다.')
   lines.push('')
   lines.push('  또한, 5개 영역의 발달 궤적이 상이한 패턴을 보이는 것은, 각 역량의 발달 기제(mechanism)와 소요 시간이 다를 수 있음을 의미한다. 이는 역량 교육의 시기별 중점 영역을 차별화할 필요성을 시사한다.')
+  lines.push('')
+  lines.push('  THE GLORY 코칭 모델의 관점에서, 정서 인식(THE) 단계를 선행시킨 코칭 구조가 참여자의 자기인식과 내재적 동기를 강화하여 역량 발달을 촉진하였을 가능성이 있다. 이는 Goleman(1995)이 제시한 정서지능의 자기인식 역량이 목표 지향적 행동의 선행 조건이라는 주장과 일치하며, 의미화(Y) 단계를 통한 경험의 내면화가 Frankl(1946)의 의미의지(will to meaning)를 충족시켜 지속적 실행 동기로 작용하였을 것으로 추론된다. 성장 추론 모델과 THE GLORY 코칭 모델의 통합은 자기보고 편향을 보완하는 동시에, AI 기반 개인화 코칭이 대규모 교육 맥락에서 적용 가능함을 시사한다.')
   lines.push('')
   lines.push('')
 
@@ -623,6 +672,10 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('')
   lines.push('Flavell, J. H. (1979). Metacognition and cognitive monitoring: A new area of cognitive-developmental inquiry. American Psychologist, 34(10), 906-911.')
   lines.push('')
+  lines.push('Frankl, V. E. (1946). Man\'s search for meaning: An introduction to logotherapy. Beacon Press.')
+  lines.push('')
+  lines.push('Goleman, D. (1995). Emotional intelligence: Why it can matter more than IQ. Bantam Books.')
+  lines.push('')
   lines.push('Lally, P., van Jaarsveld, C. H. M., Potts, H. W. W., & Wardle, J. (2010). How are habits formed: Modelling habit formation in the real world. European Journal of Social Psychology, 40(6), 998-1009.')
   lines.push('')
   lines.push('Lent, R. W., Brown, S. D., & Hackett, G. (1994). Toward a unifying social cognitive theory of career and academic interest, choice, and performance. Journal of Vocational Behavior, 45(1), 79-122.')
@@ -635,7 +688,11 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('')
   lines.push('Sheeran, P., & Webb, T. L. (2016). The intention-behavior gap. Social and Personality Psychology Compass, 10(9), 503-518.')
   lines.push('')
+  lines.push('Salovey, P., & Mayer, J. D. (1990). Emotional intelligence. Imagination, Cognition and Personality, 9(3), 185-211.')
+  lines.push('')
   lines.push('Super, D. E. (1990). A life-span, life-space approach to career development. In D. Brown & L. Brooks (Eds.), Career choice and development (pp. 197-261). Jossey-Bass.')
+  lines.push('')
+  lines.push('Whitmore, J. (2009). Coaching for performance: GROWing human potential and purpose (4th ed.). Nicholas Brealey Publishing.')
   lines.push('')
   lines.push('Zimmerman, B. J. (2000). Attaining self-regulation: A social cognitive perspective. In M. Boekaerts, P. R. Pintrich, & M. Zeidner (Eds.), Handbook of self-regulation (pp. 13-39). Academic Press.')
   lines.push('')
@@ -652,48 +709,125 @@ function generateReport(data: ResearchData, mode: 'surveyOnly' | 'integrated'): 
   lines.push('')
   lines.push('[부록 A] 25개 하위역량 정의 및 측정 지표')
   lines.push('')
-  lines.push('| ID | 영역 | 하위역량 | 조작적 정의 | 설문 문항 | 행동 지표 |')
-  lines.push('|----|------|---------|------------|----------|---------|')
+  lines.push('| ID | 영역 | 하위역량 | 조작적 정의 | 설문 문항 | 행동 지표 | 이론적 근거 |')
+  lines.push('|----|------|---------|------------|----------|---------|-----------|')
 
-  const subCompDefs: Record<string, { def: string; surveys: string; behavioral: string }> = {
-    C1: { def: '자신의 흥미/강점/약점 인식', surveys: 'c1, c2', behavioral: '성찰 기록 빈도' },
-    C2: { def: '다양한 진로 경로 탐색', surveys: 'c3, c9', behavioral: '텍스트 다양성' },
-    C3: { def: '진로 목표 설정 및 계획', surveys: 'c5, c7', behavioral: '연속 실행일' },
-    C4: { def: '진로 관련 경험 축적', surveys: 'c4, c6', behavioral: '실행 총 횟수' },
-    C5: { def: '진로 목표 실행 및 자신감', surveys: 'c8, c10', behavioral: '실행 완료율' },
-    M1: { def: '또래와의 관계 형성', surveys: 'm1, m4', behavioral: '실행 등록 빈도' },
-    M2: { def: '타인 공감 및 존중', surveys: 'm2, m6', behavioral: '느낀것 기록 빈도' },
-    M3: { def: '공동체 참여 및 협력', surveys: 'm3, m9', behavioral: '실행 완료 횟수' },
-    M4: { def: '갈등의 대화적 해결', surveys: 'm7, m5', behavioral: '실패 성찰 빈도' },
-    M5: { def: '시민의식 및 공정 추구', surveys: 'm8, m10', behavioral: '텍스트 다양성' },
-    N1: { def: '어려움 속 끈기/인내', surveys: 'n1, n9', behavioral: '최장 연속일' },
-    N2: { def: '자기주도적 계획 실행', surveys: 'n2, n6', behavioral: '일일반복 설정률' },
-    N3: { def: '정서 조절 및 스트레스 관리', surveys: 'n3, n8', behavioral: '정서 기록 빈도' },
-    N4: { def: '새로운 도전 및 재시도', surveys: 'n4, n5', behavioral: '신규 영역 시도 수' },
-    N5: { def: '자기존중 및 성장 신념', surveys: 'n7, n10', behavioral: '활동 지속 일수' },
-    L1: { def: '배움에 대한 내적 동기', surveys: 'l1, l9', behavioral: '학습 실행 빈도' },
-    L2: { def: '자기주도적 학습 계획', surveys: 'l2, l7', behavioral: '자기주도 등록 비율' },
-    L3: { def: '학습 집중 및 끈기', surveys: 'l3, l6', behavioral: '학습 연속일' },
-    L4: { def: '학습 전략 인식 및 오류 학습', surveys: 'l4, l8', behavioral: '기록 텍스트 길이' },
-    L5: { def: '배운 내용의 전이 및 적용', surveys: 'l5, l10', behavioral: '과목 다양성' },
-    H1: { def: '규칙적 생활 유지', surveys: 'h1, h2', behavioral: '일일반복 비율' },
-    H2: { def: '해야 할 일의 꾸준한 실행', surveys: 'h3, h6', behavioral: '실행 완료율' },
-    H3: { def: '건강 관리 및 정리정돈', surveys: 'h4, h5', behavioral: '습관 실행 빈도' },
-    H4: { def: '나쁜 습관 교정 및 자기통제', surveys: 'h7, h9', behavioral: '실행 재개 비율' },
-    H5: { def: '좋은 습관의 장기 유지', surveys: 'h8, h10', behavioral: 'streak + 활동일수' },
+  const subCompDefs: Record<string, { def: string; surveys: string; behavioral: string; theoryRef: string }> = {
+    C1: { def: '자신의 흥미/강점/약점 인식', surveys: 'c1, c2', behavioral: '성찰 기록 빈도', theoryRef: 'Holland 직업흥미이론; Super 자아개념 발달' },
+    C2: { def: '다양한 진로 경로 탐색', surveys: 'c3, c9', behavioral: '텍스트 다양성', theoryRef: '진로성숙도 이론; 진로탐색 행동이론' },
+    C3: { def: '진로 목표 설정 및 계획', surveys: 'c5, c7', behavioral: '연속 실행일', theoryRef: 'Savickas 미래지향성; CDSE 목표설정' },
+    C4: { def: '진로 관련 경험 축적', surveys: 'c4, c6', behavioral: '실행 총 횟수', theoryRef: 'CDSE 정보수집; 구성주의 진로적응성' },
+    C5: { def: '진로 목표 실행 및 자신감', surveys: 'c8, c10', behavioral: '실행 완료율', theoryRef: 'Bandura 자기효능; CDSE 전체 요인' },
+    M1: { def: '또래와의 관계 형성', surveys: 'm1, m4', behavioral: '실행 등록 빈도', theoryRef: '사회적 유능감 이론; 친사회적 행동 이론' },
+    M2: { def: '타인 공감 및 존중', surveys: 'm2, m6', behavioral: '느낀것 기록 빈도', theoryRef: 'Hoffman 공감이론; Vygotsky 사회문화이론' },
+    M3: { def: '공동체 참여 및 협력', surveys: 'm3, m9', behavioral: '실행 완료 횟수', theoryRef: '시민성 발달 이론; 협동학습 이론' },
+    M4: { def: '갈등의 대화적 해결', surveys: 'm7, m5', behavioral: '실패 성찰 빈도', theoryRef: 'CASEL SEL; Kohlberg 도덕발달이론' },
+    M5: { def: '시민의식 및 공정 추구', surveys: 'm8, m10', behavioral: '텍스트 다양성', theoryRef: '시민성·공동체 의식; Rawls 정의윤리' },
+    N1: { def: '어려움 속 끈기/인내', surveys: 'n1, n9', behavioral: '최장 연속일', theoryRef: 'Duckworth Grit(노력 지속성)' },
+    N2: { def: '자기주도적 계획 실행', surveys: 'n2, n6', behavioral: '일일반복 설정률', theoryRef: '자기조절이론; 자기통제 이론' },
+    N3: { def: '정서 조절 및 스트레스 관리', surveys: 'n3, n8', behavioral: '정서 기록 빈도', theoryRef: 'Gross 정서조절이론; Lazarus Coping 이론' },
+    N4: { def: '새로운 도전 및 재시도', surveys: 'n4, n5', behavioral: '신규 영역 시도 수', theoryRef: 'Dweck 성장마인드셋; 회복탄력성' },
+    N5: { def: '자기존중 및 성장 신념', surveys: 'n7, n10', behavioral: '활동 지속 일수', theoryRef: 'Rosenberg 자존감; Dweck Growth Mindset' },
+    L1: { def: '배움에 대한 내적 동기', surveys: 'l1, l9', behavioral: '학습 실행 빈도', theoryRef: 'Deci & Ryan 내재적 동기(SDT); 탐구동기' },
+    L2: { def: '자기주도적 학습 계획', surveys: 'l2, l7', behavioral: '자기주도 등록 비율', theoryRef: 'Knowles 자기주도학습; Zimmerman SRL' },
+    L3: { def: '학습 집중 및 끈기', surveys: 'l3, l6', behavioral: '학습 연속일', theoryRef: '주의집중 이론; 학습 지속성' },
+    L4: { def: '학습 전략 인식 및 오류 학습', surveys: 'l4, l8', behavioral: '기록 텍스트 길이', theoryRef: 'Flavell 메타인지; SRL 자기성찰 단계' },
+    L5: { def: '배운 내용의 전이 및 적용', surveys: 'l5, l10', behavioral: '과목 다양성', theoryRef: '인지적 정교화; 전이학습 이론' },
+    H1: { def: '규칙적 생활 유지', surveys: 'h1, h2', behavioral: '일일반복 비율', theoryRef: '자기관리 행동; 시간관리' },
+    H2: { def: '해야 할 일의 꾸준한 실행', surveys: 'h3, h6', behavioral: '실행 완료율', theoryRef: 'Baumeister 자기통제; Wood & Neal 습관형성' },
+    H3: { def: '건강 관리 및 정리정돈', surveys: 'h4, h5', behavioral: '습관 실행 빈도', theoryRef: '건강행동 이론(TPB); 실행기능' },
+    H4: { def: '나쁜 습관 교정 및 자기통제', surveys: 'h7, h9', behavioral: '실행 재개 비율', theoryRef: '행동수정 이론; Baumeister 자기통제' },
+    H5: { def: '좋은 습관의 장기 유지', surveys: 'h8, h10', behavioral: 'streak + 활동일수', theoryRef: '성실성(Big Five); 습관 자동화 이론' },
   }
 
   for (const area of areas) {
     for (const id of AREA_SUB_IDS[area]) {
       const d = subCompDefs[id]
       if (d) {
-        lines.push(`| ${id} | ${AREA_LABELS[area]} | ${SUB_COMP_LABELS[id]} | ${d.def} | ${d.surveys} | ${d.behavioral} |`)
+        lines.push(`| ${id} | ${AREA_LABELS[area]} | ${SUB_COMP_LABELS[id]} | ${d.def} | ${d.surveys} | ${d.behavioral} | ${d.theoryRef} |`)
       }
     }
   }
   lines.push('')
   lines.push('')
-  lines.push('[부록 B] 연구 영역-월드 매핑 구조')
+
+  // 부록 B: 설문 문항별 이론적 근거 매핑
+  lines.push('[부록 B] 설문 문항별 이론적 근거 매핑')
+  lines.push('')
+
+  const questionTheoryMap: Record<string, { text: string; theory: string; ref: string }> = {
+    c1: { text: '좋아하는 일 인식', theory: 'Holland 직업흥미이론', ref: 'Holland(1997)' },
+    c2: { text: '강점·약점 파악', theory: 'Super 자아개념 발달', ref: 'Super(1990)' },
+    c3: { text: '관심 직업 보유', theory: '진로성숙도 이론', ref: 'Super(1990)' },
+    c4: { text: '정보 탐색 경험', theory: 'CDSE 정보수집 하위요인', ref: 'Betz & Taylor(2012)' },
+    c5: { text: '미래 모습 상상', theory: 'Savickas 미래지향성', ref: 'Savickas(2013)' },
+    c6: { text: '진로 관련 경험', theory: '구성주의 진로적응성', ref: 'Savickas & Porfeli(2012)' },
+    c7: { text: '목표 설정', theory: '진로결정 자기효능감', ref: 'Betz & Taylor(2012)' },
+    c8: { text: '목표 실행 노력', theory: 'Bandura 자기효능', ref: 'Bandura(1997)' },
+    c9: { text: '직업세계 관심', theory: '진로탐색 행동이론', ref: 'Stumpf et al.(1983)' },
+    c10: { text: '진로 자신감', theory: 'CDSE 전체 요인', ref: 'Betz & Taylor(2012)' },
+    m1: { text: '친구와 어울림', theory: '사회적 유능감 이론', ref: 'Rose-Krasnor(1997)' },
+    m2: { text: '타인 입장 고려', theory: 'Hoffman 공감이론', ref: 'Hoffman(2000)' },
+    m3: { text: '학교 참여', theory: '시민성 발달 이론', ref: 'Flanagan(2013)' },
+    m4: { text: '도움 행동', theory: '친사회적 행동 이론', ref: 'Eisenberg et al.(2006)' },
+    m5: { text: '규칙 준수', theory: 'Kohlberg 도덕발달이론', ref: 'Kohlberg(1984)' },
+    m6: { text: '의견 존중', theory: '사회적 상호작용 이론', ref: 'Vygotsky(1978)' },
+    m7: { text: '갈등 대화 해결', theory: '사회정서학습(SEL)', ref: 'CASEL(2020)' },
+    m8: { text: '지역사회 관심', theory: '시민성·공동체 의식', ref: 'McMillan & Chavis(1986)' },
+    m9: { text: '협력 가치', theory: '협동학습 이론', ref: 'Johnson & Johnson(2009)' },
+    m10: { text: '공정·정의', theory: 'Rawls 정의윤리', ref: 'Rawls(1971)' },
+    n1: { text: '포기하지 않음', theory: 'Duckworth Grit', ref: 'Duckworth et al.(2007)' },
+    n2: { text: '계획·실천', theory: '자기조절이론', ref: 'Zimmerman(2000)' },
+    n3: { text: '감정조절', theory: 'Gross 정서조절이론', ref: 'Gross(1998)' },
+    n4: { text: '도전 선호', theory: 'Dweck 성장마인드셋', ref: 'Dweck(2006)' },
+    n5: { text: '실패 후 재도전', theory: '회복탄력성', ref: 'Masten(2001)' },
+    n6: { text: '하기 싫은 일 수행', theory: '자기통제 이론', ref: 'Baumeister et al.(2007)' },
+    n7: { text: '자기존중', theory: 'Rosenberg 자존감', ref: 'Rosenberg(1965)' },
+    n8: { text: '스트레스 해소', theory: 'Lazarus & Folkman Coping 이론', ref: 'Lazarus & Folkman(1984)' },
+    n9: { text: '꾸준함', theory: 'Grit Perseverance', ref: 'Duckworth & Quinn(2009)' },
+    n10: { text: '성장 가능성 믿음', theory: 'Dweck Growth Mindset', ref: 'Dweck(2006)' },
+    l1: { text: '학습 즐거움', theory: 'Deci & Ryan 내재적 동기(SDT)', ref: 'Deci & Ryan(2000)' },
+    l2: { text: '스스로 탐색', theory: '자기주도학습', ref: 'Knowles(1975)' },
+    l3: { text: '수업 집중', theory: '주의집중 이론', ref: 'Posner & Rothbart(2007)' },
+    l4: { text: '공부 방법 인식', theory: 'Flavell 메타인지', ref: 'Flavell(1979)' },
+    l5: { text: '설명 가능', theory: '인지적 정교화', ref: 'Fiorella & Mayer(2014)' },
+    l6: { text: '어려움 지속', theory: '학습 지속성', ref: 'Zimmerman & Schunk(2011)' },
+    l7: { text: '계획 실천', theory: 'SRL 계획 단계', ref: 'Zimmerman(2000)' },
+    l8: { text: '실수 학습', theory: 'SRL 반성적 사고', ref: 'Zimmerman(2000)' },
+    l9: { text: '호기심', theory: '탐구동기', ref: 'Litman(2008)' },
+    l10: { text: '실생활 적용', theory: '전이학습 이론', ref: 'Perkins & Salomon(1992)' },
+    h1: { text: '수면 규칙성', theory: '자기관리 행동', ref: 'Bandura(2005)' },
+    h2: { text: '일과 규칙성', theory: '시간관리', ref: 'Macan(1994)' },
+    h3: { text: '미루지 않음', theory: 'Baumeister 자기통제', ref: 'Steel(2007)' },
+    h4: { text: '운동', theory: '건강행동 이론(TPB)', ref: 'Ajzen(1991)' },
+    h5: { text: '정리정돈', theory: '실행기능', ref: 'Diamond(2013)' },
+    h6: { text: '매일 반복', theory: 'Wood & Neal 습관형성 이론', ref: 'Lally et al.(2010)' },
+    h7: { text: '나쁜 습관 수정', theory: '행동수정 이론', ref: 'Wood & Neal(2007)' },
+    h8: { text: '약속 준수', theory: '성실성(Big Five)', ref: 'Roberts et al.(2009)' },
+    h9: { text: '스마트폰 조절', theory: 'Baumeister 자기통제', ref: 'Baumeister & Tierney(2011)' },
+    h10: { text: '습관 유지', theory: '습관 자동화 이론', ref: 'Lally et al.(2010)' },
+  }
+
+  const areaLabelsForQ: Record<string, string> = {
+    c: '진로탐색', m: '공동체의식', n: '인성역량', l: '학습역량', h: '습관형성',
+  }
+
+  for (const prefix of ['c', 'm', 'n', 'l', 'h']) {
+    lines.push(`  [${areaLabelsForQ[prefix]}]`)
+    lines.push('  | 문항 | 측정 내용 | 이론적 근거 | 참고문헌 |')
+    lines.push('  |------|---------|-----------|---------|')
+    for (let i = 1; i <= 10; i++) {
+      const qid = `${prefix}${i}`
+      const q = questionTheoryMap[qid]
+      if (q) {
+        lines.push(`  | ${qid} | ${q.text} | ${q.theory} | ${q.ref} |`)
+      }
+    }
+    lines.push('')
+  }
+  lines.push('')
+
+  lines.push('[부록 C] 연구 영역-월드 매핑 구조')
   lines.push('')
   lines.push('| 연구 영역 | 플랫폼 월드 | 이론적 근거 |')
   lines.push('|----------|-----------|-----------|')

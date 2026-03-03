@@ -15,7 +15,7 @@ interface MilestoneData {
 
 export function MilestoneComparisonChart({ data }: { data: MilestoneData[] }) {
   const chartData = data.map((d) => ({
-    name: `${d.milestone}회`,
+    name: `${d.milestone}일`,
     진로: d.avgCareer,
     공동체: d.avgCommunity,
     인성: d.avgNonCognitive,

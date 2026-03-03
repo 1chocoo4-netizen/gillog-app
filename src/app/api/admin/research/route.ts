@@ -243,7 +243,7 @@ export async function GET() {
     }
 
     // B-3. 성장률 분석 (paired)
-    const growthPairs: [number, number][] = [[1, 100], [100, 500], [500, 1000], [1, 500], [1, 1000]]
+    const growthPairs: [number, number][] = [[1, 30], [30, 90], [90, 180], [1, 90], [1, 180]]
     const growthAnalysis = growthPairs.map(([from, to]) => {
       const pairedUsers = Object.entries(userMilestoneMap)
         .filter(([, ms]) => ms[from] && ms[to])

@@ -146,7 +146,7 @@ export default function ResearchDashboardPage() {
         <div>
           <h2 className="text-2xl font-bold text-white">종단 성장 연구 엔진</h2>
           <p className="text-sm text-gray-400 mt-1">
-            설문 + 행동 로그 통합 분석 | 5개 영역 x 25개 하위역량 | 마일스톤 1/100/500/1000
+            설문 + 행동 로그 통합 분석 | 5개 영역 x 25개 하위역량 | 출석일 1/30/90/180일
           </p>
         </div>
         {/* 모드 전환 토글 */}
@@ -217,7 +217,7 @@ export default function ResearchDashboardPage() {
           {milestones.map((ms) => (
             <div key={ms} className="bg-gray-800/50 rounded-lg p-3">
               <div className="text-xl font-bold text-white">{data.metadata.milestoneDistribution[ms] || 0}</div>
-              <div className="text-xs text-gray-400">{ms}회 설문</div>
+              <div className="text-xs text-gray-400">{ms}일 설문</div>
             </div>
           ))}
         </div>
@@ -260,7 +260,7 @@ export default function ResearchDashboardPage() {
                   data={milestones.map((ms) => {
                     const scores = mode === 'integrated' ? data.integratedScores.integrated : data.integratedScores.surveyOnly
                     return {
-                      name: `${ms}회 (N=${data.metadata.milestoneDistribution[ms] || 0})`,
+                      name: `${ms}일 (N=${data.metadata.milestoneDistribution[ms] || 0})`,
                       점수: scores[ms]?.[selectedArea] || 0,
                     }
                   })}
@@ -305,7 +305,7 @@ export default function ResearchDashboardPage() {
                 className="bg-gray-800 text-gray-300 text-xs border border-gray-700 rounded px-2 py-1.5"
               >
                 {milestones.map((ms) => (
-                  <option key={ms} value={ms}>{ms}회</option>
+                  <option key={ms} value={ms}>{ms}일</option>
                 ))}
               </select>
             </div>
@@ -325,7 +325,7 @@ export default function ResearchDashboardPage() {
                   <PolarAngleAxis dataKey="subject" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
                   <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#6B7280', fontSize: 10 }} />
                   <Radar
-                    name={`${selectedMilestone}회`}
+                    name={`${selectedMilestone}일`}
                     dataKey="value"
                     stroke={AREA_COLORS[selectedArea]}
                     fill={AREA_COLORS[selectedArea]}
@@ -384,7 +384,7 @@ export default function ResearchDashboardPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={milestones.map((ms) => {
-                      const point: Record<string, string | number> = { milestone: `${ms}회` }
+                      const point: Record<string, string | number> = { milestone: `${ms}일` }
                       data.individualCurves
                         .filter(c => c.dataPoints.length >= 2)
                         .forEach((c) => {
@@ -426,7 +426,7 @@ export default function ResearchDashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={milestones.map((ms) => ({
-                    name: `${ms}회`,
+                    name: `${ms}일`,
                     'Survey Only': data.integratedScores.surveyOnly[ms]?.[selectedArea] || 0,
                     'Integrated': data.integratedScores.integrated[ms]?.[selectedArea] || 0,
                   }))}
@@ -464,7 +464,7 @@ export default function ResearchDashboardPage() {
                   <tbody>
                     {data.growthAnalysis.filter(g => g.n >= 2).map((g) => (
                       <tr key={`${g.from}-${g.to}`} className="border-b border-gray-800/30">
-                        <td className="py-1.5 px-2 text-gray-300">{g.from}회 → {g.to}회</td>
+                        <td className="py-1.5 px-2 text-gray-300">{g.from}일 → {g.to}일</td>
                         <td className="py-1.5 px-2 text-center text-gray-300">{g.n}</td>
                         {areas.map(a => (
                           <td key={a} className="py-1.5 px-2 text-center">
@@ -502,7 +502,7 @@ export default function ResearchDashboardPage() {
                       : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-gray-200'
                   }`}
                 >
-                  {ms}회
+                  {ms}일
                 </button>
               ))}
             </div>
@@ -556,7 +556,7 @@ export default function ResearchDashboardPage() {
             <div className="text-sm text-gray-300 leading-relaxed space-y-3">
               <p>
                 본 종단 연구에는 총 <strong className="text-white">{data.metadata.totalParticipants}명</strong>의 참여자가 포함되었으며,
-                {milestones.map(ms => ` ${ms}회 시점 ${data.metadata.milestoneDistribution[ms] || 0}명`).join(',')}이 설문에 응답하였다.
+                {milestones.map(ms => ` ${ms}일 시점 ${data.metadata.milestoneDistribution[ms] || 0}명`).join(',')}이 설문에 응답하였다.
                 분석 모드는 {mode === 'integrated' ? '설문+행동 로그 통합(가중 60:40)' : '설문 단독'}으로 설정되었다.
               </p>
 
@@ -570,7 +570,7 @@ export default function ResearchDashboardPage() {
                 const avgAll = Object.values(areaScores).reduce((a, b) => a + b, 0) / Object.values(areaScores).length
                 return (
                   <p key={ms}>
-                    {ms}회 시점(N={n})에서 5개 영역 평균은 <strong className="text-white">{avgAll.toFixed(1)}점</strong>으로,
+                    {ms}일 시점(N={n})에서 5개 영역 평균은 <strong className="text-white">{avgAll.toFixed(1)}점</strong>으로,
                     {areas.map(a => ` ${AREA_LABELS[a]} ${(areaScores[a] || 0).toFixed(1)}`).join(',')}이었다.
                   </p>
                 )
@@ -583,7 +583,7 @@ export default function ResearchDashboardPage() {
                 , areas[0])
                 return (
                   <p key={`${g.from}-${g.to}`}>
-                    {g.from}회 → {g.to}회 대응표본(N={g.n}) 분석 결과,
+                    {g.from}일 → {g.to}일 대응표본(N={g.n}) 분석 결과,
                     가장 큰 성장을 보인 영역은 <strong className="text-white">{AREA_LABELS[maxGrowthArea]}</strong>
                     (성장률 {(g.growthRateByArea[maxGrowthArea] || 0).toFixed(1)}%)이었다.
                   </p>
