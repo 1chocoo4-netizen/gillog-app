@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth-config'
 import { prisma } from '@/lib/db'
 import { buildGlorySystemPrompt, parseGloryResponse } from '@/lib/coaching/glory-prompt'
+import type { PastSession } from '@/lib/coaching/glory-prompt'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
@@ -81,9 +82,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid message sequence' }, { status: 400 })
     }
 
+    // 4-1. 과거 완료 세션 조회 (최근 5개)
+    const pastCompletedSessions = await prisma.glorySession.findMany({
+      where: {
+        userId: session.user.id,
+        status: 'completed',
+        id: { not: sessionId },
+      },
+      orderBy: { completedAt: 'desc' },
+      take: 5,
+    })
+
+    const pastSessions: PastSession[] = pastCompletedSessions
+      .filter(s => s.thankfulSummary || s.happySummary || s.realAction)
+      .map(s => ({
+        date: s.completedAt?.toLocaleDateString('ko-KR') || s.createdAt.toLocaleDateString('ko-KR'),
+        thankful: s.thankfulSummary || '',
+        happy: s.happySummary || '',
+        emotional: s.emotionalSummary || '',
+        grounded: s.groundedSummary || '',
+        luminous: s.luminousSummary || '',
+        realAction: s.realAction || '',
+        meaning: s.whyMeaning || '',
+      }))
+
     // 5. Gemini API 호출
     const currentStage = glorySession.currentStage as Parameters<typeof buildGlorySystemPrompt>[0]
-    const systemPrompt = buildGlorySystemPrompt(currentStage)
+    const systemPrompt = buildGlorySystemPrompt(currentStage, pastSessions.length > 0 ? pastSessions : undefined)
 
     let aiResponse = {
       message: '잠시 후 다시 이야기해 주시겠어요? 제가 잠깐 생각을 정리할게요.',
@@ -122,6 +147,39 @@ export async function POST(request: NextRequest) {
       } catch {
         retryCount++
       }
+    }
+
+    // 5-1. stage가 COMPLETE이면 isComplete 강제 설정
+    if (aiResponse.stage === 'COMPLETE' && !aiResponse.isComplete) {
+      aiResponse.isComplete = true
+    }
+
+    // 5-2. WHY_Y에서 완료되어야 하는데 안 된 경우 한 번 더 시도
+    if (!aiResponse.isComplete && currentStage === 'WHY_Y' && !aiResponse.message) {
+      try {
+        const retryPrompt = buildGlorySystemPrompt(currentStage)
+          + '\n\n[긴급] 피코치가 WHY_Y 의미 질문에 이미 답했습니다. 반드시 isComplete:true인 완료 JSON을 출력하세요. 추가 질문하지 마세요.'
+        const retryRes = await fetch(GEMINI_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: retryPrompt }] },
+            contents: fixedContents,
+            generationConfig: { temperature: 0.85, maxOutputTokens: 1024 },
+          }),
+        })
+        if (retryRes.ok) {
+          const retryData = await retryRes.json()
+          const retryRaw = retryData.candidates?.[0]?.content?.parts?.[0]?.text || ''
+          if (retryRaw) {
+            const retryParsed = parseGloryResponse(retryRaw, currentStage)
+            if (retryParsed.message) {
+              aiResponse = retryParsed
+              if (aiResponse.stage === 'COMPLETE') aiResponse.isComplete = true
+            }
+          }
+        }
+      } catch { /* 재시도 실패는 무시 */ }
     }
 
     // 6. 세션 상태 업데이트

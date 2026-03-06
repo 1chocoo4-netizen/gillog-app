@@ -5,12 +5,13 @@ export const GLORY_STAGES = {
   THE_T: { label: '감사 (Thankful)', group: 'THE', order: 1 },
   THE_H: { label: '행복 (Happy)', group: 'THE', order: 2 },
   THE_E: { label: '감정 (Emotional)', group: 'THE', order: 3 },
-  GLORY_G: { label: '현재자각 (Grounded)', group: 'GLORY', order: 4 },
-  GLORY_L: { label: '이상설정 (Luminous)', group: 'GLORY', order: 5 },
-  GLORY_O: { label: '대안탐색 (Options)', group: 'GLORY', order: 6 },
-  GLORY_R: { label: '실행설계 (Real Action)', group: 'GLORY', order: 7 },
-  WHY_Y: { label: '의미화 (Why)', group: 'Y', order: 8 },
-  COMPLETE: { label: '완료', group: 'complete', order: 9 },
+  TOPIC: { label: '주제 설정 (Topic)', group: 'GLORY', order: 4 },
+  GLORY_G: { label: '현재자각 (Grounded)', group: 'GLORY', order: 5 },
+  GLORY_L: { label: '이상설정 (Luminous)', group: 'GLORY', order: 6 },
+  GLORY_O: { label: '대안탐색 (Options)', group: 'GLORY', order: 7 },
+  GLORY_R: { label: '실행설계 (Real Action)', group: 'GLORY', order: 8 },
+  WHY_Y: { label: '의미화 (Why)', group: 'Y', order: 9 },
+  COMPLETE: { label: '완료', group: 'complete', order: 10 },
 } as const
 
 export type GloryStage = keyof typeof GLORY_STAGES
@@ -20,6 +21,7 @@ export const STAGE_ORDER: GloryStage[] = [
   'THE_T',
   'THE_H',
   'THE_E',
+  'TOPIC',
   'GLORY_G',
   'GLORY_L',
   'GLORY_O',
@@ -30,7 +32,7 @@ export const STAGE_ORDER: GloryStage[] = [
 
 export const STAGE_GROUPS = [
   { key: 'THE', label: 'THE', stages: ['THE_T', 'THE_H', 'THE_E'] },
-  { key: 'GLORY', label: 'GLORY', stages: ['GLORY_G', 'GLORY_L', 'GLORY_O', 'GLORY_R'] },
+  { key: 'GLORY', label: 'GLORY', stages: ['TOPIC', 'GLORY_G', 'GLORY_L', 'GLORY_O', 'GLORY_R'] },
   { key: 'Y', label: 'Y', stages: ['WHY_Y'] },
 ] as const
 
