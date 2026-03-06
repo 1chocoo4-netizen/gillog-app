@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, LogOut, Mail, ClipboardCheck, Gift, ShieldCheck, ShieldOff } from 'lucide-react'
+import { X, LogOut, Mail, ClipboardCheck, Gift, ShieldCheck, ShieldOff, CalendarCheck } from 'lucide-react'
 import { useUserData } from '@/lib/UserDataProvider'
 import { useSession, signOut } from 'next-auth/react'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
@@ -29,7 +29,7 @@ const AREA_CONFIG = [
 
 export function LevelBadge() {
   const [isOpen, setIsOpen] = useState(false)
-  const { levelData, subscriptionInfo, refreshSubscription } = useUserData()
+  const { levelData, subscriptionInfo, refreshSubscription, history } = useUserData()
   const { data: session, update } = useSession()
   const [surveyResults, setSurveyResults] = useState<SurveyResult[]>([])
   const [surveyLoading, setSurveyLoading] = useState(false)
@@ -193,6 +193,14 @@ export function LevelBadge() {
                       <p className="text-white/40 text-sm">{session.user.email}</p>
                     </div>
                   )}
+
+                  {/* 총 접속일수 */}
+                  <div className="flex items-center gap-1.5 mt-3 px-3 py-2 bg-violet-500/10 border border-violet-500/20 rounded-xl">
+                    <CalendarCheck className="w-4 h-4 text-violet-400" />
+                    <span className="text-violet-300 text-sm font-semibold">
+                      총 {new Set(history.map(r => r.date)).size}일 접속
+                    </span>
+                  </div>
                 </div>
 
                 {/* 개인정보 동의 상태 */}
