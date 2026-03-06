@@ -39,7 +39,7 @@ function getMonthKey(year: number, month: number) {
 function MonthlyContent() {
   const router = useRouter()
   const { energy, addEnergy, history, executions, monthlyGoals, saveMonthlyGoals, getMonthlyGoals, addHistoryRecord } = useUserData()
-  const [currentDate] = useState(new Date())
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [goals, setGoals] = useState<MonthlyGoal[]>([
     { id: '1', text: '', completed: false },
     { id: '2', text: '', completed: false },
@@ -67,10 +67,20 @@ function MonthlyContent() {
   const [showTip, setShowTip] = useState(false)
 
   useEffect(() => {
+    // 월 변경 시 선택 날짜 리셋
+    setSelectedDay(null)
+    setDayExecutions([])
+
     // 월 목표 불러오기
     const savedGoals = getMonthlyGoals(monthKey)
     if (savedGoals.length > 0) {
       setGoals(savedGoals)
+    } else {
+      setGoals([
+        { id: '1', text: '', completed: false },
+        { id: '2', text: '', completed: false },
+        { id: '3', text: '', completed: false },
+      ])
     }
 
     // 실행 기록에서 날짜별 카운트
@@ -232,9 +242,25 @@ function MonthlyContent() {
       {/* 메인 */}
       <div className="pt-24 pb-28 px-4">
         <div className="max-w-md mx-auto">
-          {/* 월 표시 */}
-          <div className="text-center mb-4">
-            <h2 className="text-white font-bold text-xl">{year}년 {monthNames[month]}</h2>
+          {/* 월 표시 + 이동 */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <button
+              onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            <h2 className="text-white font-bold text-xl min-w-[120px] text-center">{year}년 {monthNames[month]}</h2>
+            <button
+              onClick={() => {
+                const next = new Date(year, month + 1, 1)
+                if (next <= new Date()) setCurrentDate(next)
+              }}
+              disabled={year === new Date().getFullYear() && month === new Date().getMonth()}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors disabled:opacity-20 disabled:hover:bg-white/10"
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
           </div>
 
           {/* 월 목표 (위로) */}
